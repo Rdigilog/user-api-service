@@ -1,0 +1,10 @@
+// import { UploadedFileDto } from './dto/uploaded-file.dto';
+
+export interface FileUploadProvider {
+  upload(file: Express.Multer.File): Promise<UploadedFileDto>;
+}
+
+export interface UploadedFileDto {
+  name: string;
+  url: string;
+}

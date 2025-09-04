@@ -1,0 +1,275 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/user/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/user/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/user",
+  "projects": {
+    "user": {
+      "type": "application",
+      "root": "apps/user",
+      "entryFile": "main",
+      "sourceRoot": "apps/user/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/user/tsconfig.app.json"
+      }
+    },
+    "admin": {
+      "type": "application",
+      "root": "apps/admin",
+      "entryFile": "main",
+      "sourceRoot": "apps/admin/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/admin/tsconfig.app.json"
+      }
+    },
+    "repository": {
+      "type": "library",
+      "root": "libs/repository",
+      "entryFile": "index",
+      "sourceRoot": "libs/repository/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/repository/tsconfig.lib.json"
+      }
+    },
+    "model": {
+      "type": "library",
+      "root": "libs/model",
+      "entryFile": "index",
+      "sourceRoot": "libs/model/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/model/tsconfig.lib.json"
+      }
+    },
+    "utils": {
+      "type": "library",
+      "root": "libs/utils",
+      "entryFile": "index",
+      "sourceRoot": "libs/utils/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/utils/tsconfig.lib.json"
+      }
+    },
+    "config": {
+      "type": "library",
+      "root": "libs/config",
+      "entryFile": "index",
+      "sourceRoot": "libs/config/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/config/tsconfig.lib.json"
+      }
+    },
+    "queue": {
+      "type": "library",
+      "root": "libs/queue",
+      "entryFile": "index",
+      "sourceRoot": "libs/queue/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/queue/tsconfig.lib.json"
+      }
+    },
+    "guard": {
+      "type": "library",
+      "root": "libs/guard",
+      "entryFile": "index",
+      "sourceRoot": "libs/guard/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/guard/tsconfig.lib.json"
+      }
+    },
+    "interceptors": {
+      "type": "library",
+      "root": "libs/interceptors",
+      "entryFile": "index",
+      "sourceRoot": "libs/interceptors/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/interceptors/tsconfig.lib.json"
+      }
+    },
+    "team": {
+      "type": "application",
+      "root": "apps/team",
+      "entryFile": "main",
+      "sourceRoot": "apps/team/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/team/tsconfig.app.json"
+      }
+    },
+    "mail": {
+      "type": "library",
+      "root": "libs/mail",
+      "entryFile": "index",
+      "sourceRoot": "libs/mail/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/mail/tsconfig.lib.json"
+      }
+    },
+    "auth": {
+      "type": "library",
+      "root": "libs/auth",
+      "entryFile": "index",
+      "sourceRoot": "libs/auth/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/auth/tsconfig.lib.json"
+      }
+    },
+    "authentication": {
+      "type": "application",
+      "root": "apps/authentication",
+      "entryFile": "main",
+      "sourceRoot": "apps/authentication/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/authentication/tsconfig.app.json"
+      }
+    },
+    "careplan": {
+      "type": "application",
+      "root": "apps/careplan",
+      "entryFile": "main",
+      "sourceRoot": "apps/careplan/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/careplan/tsconfig.app.json"
+      }
+    },
+    "rostering": {
+      "type": "application",
+      "root": "apps/rostering",
+      "entryFile": "main",
+      "sourceRoot": "apps/rostering/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/rostering/tsconfig.app.json"
+      }
+    },
+    "medication": {
+      "type": "application",
+      "root": "apps/medication",
+      "entryFile": "main",
+      "sourceRoot": "apps/medication/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/medication/tsconfig.app.json"
+      }
+    },
+    "recordnotes": {
+      "type": "application",
+      "root": "apps/recordnotes",
+      "entryFile": "main",
+      "sourceRoot": "apps/recordnotes/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/recordnotes/tsconfig.app.json"
+      }
+    },
+    "communication": {
+      "type": "application",
+      "root": "apps/communication",
+      "entryFile": "main",
+      "sourceRoot": "apps/communication/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/communication/tsconfig.app.json"
+      }
+    },
+    "compliance-documentation": {
+      "type": "application",
+      "root": "apps/compliance-documentation",
+      "entryFile": "main",
+      "sourceRoot": "apps/compliance-documentation/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/compliance-documentation/tsconfig.app.json"
+      }
+    },
+    "billing-payroll": {
+      "type": "application",
+      "root": "apps/billing-payroll",
+      "entryFile": "main",
+      "sourceRoot": "apps/billing-payroll/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/billing-payroll/tsconfig.app.json"
+      }
+    },
+    "family-portal": {
+      "type": "application",
+      "root": "apps/family-portal",
+      "entryFile": "main",
+      "sourceRoot": "apps/family-portal/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/family-portal/tsconfig.app.json"
+      }
+    },
+    "analytic-report": {
+      "type": "application",
+      "root": "apps/analytic-report",
+      "entryFile": "main",
+      "sourceRoot": "apps/analytic-report/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/analytic-report/tsconfig.app.json"
+      }
+    },
+    "audit": {
+      "type": "application",
+      "root": "apps/audit",
+      "entryFile": "main",
+      "sourceRoot": "apps/audit/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/audit/tsconfig.app.json"
+      }
+    },
+    "hr": {
+      "type": "application",
+      "root": "apps/hr",
+      "entryFile": "main",
+      "sourceRoot": "apps/hr/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/hr/tsconfig.app.json"
+      }
+    },
+    "branch-department": {
+      "type": "application",
+      "root": "apps/branch-department",
+      "entryFile": "main",
+      "sourceRoot": "apps/branch-department/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/branch-department/tsconfig.app.json"
+      }
+    },
+    "time-tracking": {
+      "type": "application",
+      "root": "apps/time-tracking",
+      "entryFile": "main",
+      "sourceRoot": "apps/time-tracking/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/time-tracking/tsconfig.app.json"
+      }
+    },
+    "leave-absence": {
+      "type": "application",
+      "root": "apps/leave-absence",
+      "entryFile": "main",
+      "sourceRoot": "apps/leave-absence/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/leave-absence/tsconfig.app.json"
+      }
+    },
+    "settings": {
+      "type": "application",
+      "root": "apps/settings",
+      "entryFile": "main",
+      "sourceRoot": "apps/settings/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/settings/tsconfig.app.json"
+      }
+    },
+    "operations": {
+      "type": "application",
+      "root": "apps/operations",
+      "entryFile": "main",
+      "sourceRoot": "apps/operations/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/operations/tsconfig.app.json"
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Your Demo is Booked</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+    <div style="max-width: 600px; margin: auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+      <h2 style="color: #333;">Hi {{name}},</h2>
+
+      <p>Thanks for booking a demo with us! We're excited to connect and show you how <strong>{{company_name}}</strong> can support your goals.</p>
+
+      <p><strong>📅 Date & Time:</strong> {{booked_date}}</p>
+      {{#if meeting_link}}
+      <p><strong>🔗 Meeting Link:</strong> <a href="{{meeting_link}}" target="_blank">{{meeting_link}}</a></p>
+      {{/if}}
+
+      <p>During your session, we’ll cover:</p>
+      <ul>
+        <li>Product overview tailored to your needs</li>
+        <li>Live walkthrough of key features</li>
+        <li>Q&A to address your specific goals</li>
+      </ul>
+
+      <p>If you have any specific questions or topics you'd like to cover, just reply to this email—we’re here for you!</p>
+
+      <p>Looking forward to speaking with you,</p>
+
+      <p>Best regards,<br />
+      <strong>TheRadiant Group</strong><br />
+      {{!-- <a href="{{company_website}}" style="color: #1a73e8;">{{company_website}}</a></p> --}}
+    </div>
+  </body>
+</html>

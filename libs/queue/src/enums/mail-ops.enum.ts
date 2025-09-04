@@ -1,0 +1,5 @@
+export enum MAIL_OPS {
+  OTP = 'OTP',
+  ORDER_STATUS = 'ORDER_STATUS',
+  FILE_UPLOAD = 'FILE_UPLOAD',
+}

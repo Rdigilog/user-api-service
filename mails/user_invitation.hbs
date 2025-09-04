@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>You're Invited!</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+    <div style="max-width: 600px; margin: auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+      <h2 style="color: #333;">Hi {{name}},</h2>
+
+      <p>
+        {{inviter_name}} from <strong>{{company_name}}</strong> has invited you to join our platform!
+      </p>
+
+      <p>
+        By joining, you’ll be able to collaborate with your team, access company resources, and take advantage of all the tools designed to help you succeed.
+      </p>
+
+      {{#if invite_link}}
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="{{invite_link}}" target="_blank" style="background-color: #1a73e8; color: white; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+          Accept Invitation
+        </a>
+      </p>
+      {{/if}}
+
+      <p>
+        If the button above doesn’t work, you can copy and paste this link into your browser: <br />
+        <a href="{{invite_link}}" target="_blank">{{invite_link}}</a>
+      </p>
+
+      <p>
+        We’re excited to have you on board and can’t wait for you to explore what we’ve built together!
+      </p>
+
+      <p>Best regards,<br />
+      <strong>The {{company_name}} Team</strong></p>
+    </div>
+  </body>
+</html>
