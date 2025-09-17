@@ -1,0 +1,64 @@
+import { Module } from '@nestjs/common';
+import { UtilsModule } from './utils/utils.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { RedisCacheOptions } from './config/redis.config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { HttpModule } from '@nestjs/axios';
+import { ConfigModule } from '@nestjs/config';
+import { JwtConfig } from './config/jwt.config';
+import { MailConfig } from './config/mail.config';
+import { QueueConfig } from './config/queue.config';
+import configuration from './config/configuration';
+import { validationSchema } from './config/validation.schema';
+import { PlanController } from './controllers/plan.controller';
+import { StatusInterceptor } from './interceptors/status.interceptor';
+import { AuthController } from './controllers/auth.controller';
+import { UserController } from './controllers/user.controller';
+import { HealthController } from './controllers/health.controller';
+import { UserService } from './services/user.service';
+import { RoleService } from './services/role.service';
+import { TermLegalService } from './services/term-legal.service';
+import { PrismaService } from './config/prisma.service';
+import { PlanService } from './enums/plan.service';
+import { bullboardConfig } from './config/bull-board.config';
+import { QueueModuleConfig } from './config/queue.module.config';
+
+@Module({
+  imports: [
+    // ServeStaticModule.forRoot({
+    //   // rootPath: join(__dirname, '..', 'uploads'),
+    //   rootPath: './public',
+    //   serveRoot: '/public',
+    // }),
+    QueueConfig,
+    JwtConfig,
+    MailConfig,
+    QueueModuleConfig,
+    ConfigModule.forRoot({
+      load: [configuration],
+      validationSchema,
+      isGlobal: true,
+    }),
+    HttpModule,
+    UtilsModule,
+    CacheModule.registerAsync(RedisCacheOptions)
+  ],
+  controllers: [
+    AuthController,
+    UserController,
+    PlanController,
+    HealthController,
+  ],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: StatusInterceptor,
+    },
+    UserService,
+    RoleService,
+    TermLegalService,
+    PrismaService,
+    PlanService
+  ],
+})
+export class AppModule { }
