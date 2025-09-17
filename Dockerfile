@@ -62,7 +62,7 @@ COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
 
 # Set production environment with resource optimization
 ENV NODE_ENV=production \
-    PORT=3000 \
+    PORT=3001 \
     NODE_OPTIONS="--max-old-space-size=460 --unhandled-rejections=strict" \
     NPM_CONFIG_CACHE=/tmp/.npm
 
