@@ -18,7 +18,7 @@ services:
       - MAIL_USER=${MAIL_USER}
       - MAIL_PASS=${MAIL_PASS}
       - FRONTEND_URL=${FRONTEND_URL}
-      - AUTO_MIGRATE=${AUTO_MIGRATE:-true}
+      - AUTO_MIGRATE=${AUTO_MIGRATE:-false}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "--timeout=5", "http://localhost:3001/api/v1/health"]
