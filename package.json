@@ -29,7 +29,7 @@
     "health:check": "curl -f http://localhost:3000/api/v1/health || exit 1",
     "health:db": "curl -f http://localhost:3000/api/v1/health/db || exit 1",
     "health:migration": "curl -f http://localhost:3000/api/v1/health/migration || exit 1",
-     "db:pull": "prisma db pull --schema=prisma/schema.prisma && prisma-case-format --file prisma/schema.prisma --table-case pascal,singular --field-case camel,singular --map-table-case snake --map-field-case snake --enum-case pascal,singular --map-enum-case snake && prisma generate --schema=prisma/schema.prisma"
+    "db:pull": "prisma db pull --schema=prisma/schema.prisma && prisma-case-format --file prisma/schema.prisma --table-case pascal,singular --field-case camel,singular --map-table-case snake --map-field-case snake --enum-case pascal,singular --map-enum-case snake && prisma generate --schema=prisma/schema.prisma"
   },
   "dependencies": {
     "@bull-board/express": "^6.12.7",
