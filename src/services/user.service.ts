@@ -514,7 +514,7 @@ export class UserService extends PrismaService {
   ) {
     try {
       const { offset, limit } = this.responseService.pagination(page, size);
-      const where: Prisma.invitationWhereInput = {};
+      const where: Prisma.InvitationWhereInput = {};
       if (search) {
         where.OR = [];
       }
@@ -641,6 +641,7 @@ export class UserService extends PrismaService {
         template: mailTemplates.ACCOUNT_ACTIVATION,
         content: { code: otpCode.code, name: '' },
       };
+      console.log('mail payload',maidData)
       await this.mailQueue.add('SEND_OTP', maidData);
       return { error: 0, body: { token: otpCode.secret } };
     } catch (e) {
@@ -656,6 +657,7 @@ export class UserService extends PrismaService {
         to: phoneNumber,
         content: `Your One Time Password is  ${otpCode.code}`,
       };
+         console.log('mail payload',maidData)
       await this.smsQueue.add('SEND_OTP', maidData);
       return { error: 0, body: { token: otpCode.secret } };
     } catch (e) {
