@@ -40,6 +40,7 @@ import { QueueModuleConfig } from './config/queue.module.config';
       isGlobal: true,
       cache: true, // Cache the configuration to avoid repeated AWS calls
     }),
+    bullboardConfig,
     HttpModule,
     UtilsModule,
     CacheModule.registerAsync(RedisCacheOptions)
