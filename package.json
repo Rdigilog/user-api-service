@@ -32,6 +32,7 @@
     "db:pull": "prisma db pull --schema=prisma/schema.prisma && prisma-case-format --file prisma/schema.prisma --table-case pascal,singular --field-case camel,singular --map-table-case snake --map-field-case snake --enum-case pascal,singular --map-enum-case snake && prisma generate --schema=prisma/schema.prisma"
   },
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.901.0",
     "@bull-board/express": "^6.12.7",
     "@bull-board/nestjs": "^6.12.7",
     "@nestjs-modules/mailer": "^2.0.2",
