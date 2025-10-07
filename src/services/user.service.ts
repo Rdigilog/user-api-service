@@ -27,7 +27,7 @@ export class UserService extends PrismaService {
     private readonly otpService: OtpService,
     private readonly responseService: ResponsesService,
     private readonly fileUploadService: FileUploadService,
-    private readonly prismaService:PrismaService,
+    private readonly prismaService: PrismaService,
     private readonly userConfigService: ConfigService
   ) {
     super(userConfigService);
@@ -115,6 +115,8 @@ export class UserService extends PrismaService {
       if (role) {
         filter.user = { type: role };
       }
+
+      console.log(JSON.stringify(filter))
 
       const result = await this.profile.findMany({
         where: filter,
@@ -210,7 +212,7 @@ export class UserService extends PrismaService {
         const result = await tx.user.create({
           data: userCreateInput,
         });
-        return await this.sendOtp(result.email as string) ;
+        return await this.sendOtp(result.email as string);
       });
       return result;
     } catch (e) {
@@ -293,7 +295,7 @@ export class UserService extends PrismaService {
         profile: true,
         password: includePassword,
         userRole: {
-          select: { role: true, company: true },
+          select: { companyId: true, role: true, company: true },
         },
       },
     });
@@ -641,7 +643,7 @@ export class UserService extends PrismaService {
         template: mailTemplates.ACCOUNT_ACTIVATION,
         content: { code: otpCode.code, name: '' },
       };
-      console.log('mail payload',maidData)
+      console.log('mail payload', maidData)
       await this.mailQueue.add('SEND_OTP', maidData);
       return { error: 0, body: { token: otpCode.secret } };
     } catch (e) {
@@ -651,13 +653,13 @@ export class UserService extends PrismaService {
 
   async sendOtpPhone(phoneNumber: string) {
     try {
-      console.log('sending otp to '+phoneNumber)
+      console.log('sending otp to ' + phoneNumber)
       const otpCode = this.otpService.secretOTP();
       const maidData = {
         to: phoneNumber,
         content: `Your One Time Password is  ${otpCode.code}`,
       };
-         console.log('mail payload',maidData)
+      console.log('mail payload', maidData)
       await this.smsQueue.add('SEND_OTP', maidData);
       return { error: 0, body: { token: otpCode.secret } };
     } catch (e) {
@@ -751,6 +753,36 @@ export class UserService extends PrismaService {
       return { error: 0, body: result };
     } catch (e) {
       return this.responseService.errorHandler(e);
+    }
+  }
+
+  async view(userId: string) {
+    try {
+      const result = await this.profile.findUnique({
+        where: { userId },
+        include: {
+          employee: {
+            include: {
+              jobInformation: true,
+              emergencyContact: true,
+              bankInformation: true,
+              department: {
+                select: {
+                  department: true
+                }
+              },
+              branch: {
+                select: {
+                  branch: true
+                }
+              }
+            }
+          }
+        }
+      })
+      return { error: 0, body: result }
+    } catch (e) {
+      return this.responseService.errorHandler(e)
     }
   }
 }

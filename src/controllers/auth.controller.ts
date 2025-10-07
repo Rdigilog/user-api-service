@@ -20,9 +20,9 @@ export class AuthController {
     private readonly userService: UserService,
     private readonly responseService: ResponsesService,
     private readonly jwtService: JwtService,
-    private readonly utilService:UtilsService,
+    private readonly utilService: UtilsService,
     private readonly configService: ConfigService
-  ) {}
+  ) { }
   @Post('/initiate')
   async create(@Body() payload: InitiateRegistrationDto) {
     try {
@@ -47,6 +47,13 @@ export class AuthController {
   @Post('/phone-number')
   async verifyPhoneNumber(@Body() payload: PhoneNumberDTO, @Request() req) {
     try {
+      try {
+        await this.userService.findByUsername(payload.phoneNumber);
+        return this.responseService.badRequest(`Phone Number ${payload.phoneNumber} already tied to another account`)
+      } catch (e) {
+
+      }
+
       const result = await this.userService.addPhoneNumber(
         payload,
         req.user.id,
@@ -87,6 +94,7 @@ export class AuthController {
         if (requestBody.username == result.email) {
           update.verified = true;
         }
+        update.active = true
         await this.userService.updateUser(update, result.id);
         const userInfo = await this.userService.findById(result.id);
         const token = await this.jwtService.signAsync(payload);
@@ -229,15 +237,15 @@ export class AuthController {
       requestBody.password = await new UtilsService().hashPassword(
         requestBody.password,
         10,
-      )|| requestBody.password;
+      ) || requestBody.password;
       const userData = { password: requestBody.password, active: true };
       const result = await this.userService.updateUser(userData, user.id);
       if (result.error == 1)
         return this.responseService.badRequest(result.body);
       if (result.error == 2) return this.responseService.exception(result.body);
-      return this.responseService.success(result.body);
+      return this.responseService.success('Password reset successfully');
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       return this.responseService.exception(e.message);
     }
   }

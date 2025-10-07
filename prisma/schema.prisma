@@ -56,11 +56,10 @@ model Profile {
   deleted     Boolean  @default(false)
   user        User     @relation(fields: [userId], references: [id], name: "user_profile")
 
-  profileBranch ProfileBranch[]
+  // profileBranch ProfileBranch[]
   status        LeaveStatus     @default(APPROVED)
   employee      Employee?
-  Branch        Branch[]
-  departmentEmployee DepartmentEmployee[]
+  branch        Branch[]
 
   @@map("profiles")
 }
@@ -69,23 +68,22 @@ model Faq {
   id          String   @id @default(uuid())
   question    String
   answer      String
-  // categoryId  String?   @map("category_id")
-  // category    FaqCategory? @relation(fields: [categoryId], references: [id])
+  active Boolean @default(true)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("faqs")
 }
 
-model ProfileBranch {
+model EmployeeBranch {
   branchId String @map("branch_id")
-  userId   String @map("user_id")
+  employeeId   String @map("employeeId")
 
   branch  Branch? @relation(fields: [branchId], references: [id])
-  profile Profile @relation(fields: [userId], references: [userId])
+  employee Employee @relation(fields: [employeeId], references: [id])
 
-  @@id([branchId, userId])
-  @@map("profile_branches")
+  @@id([branchId, employeeId])
+  @@map("employee_branches")
 }
 
 model Employee {
@@ -114,6 +112,8 @@ model Employee {
   bankInformation  BankInformation?
   profile          Profile           @relation(fields: [userId], references: [userId])
   company          Company           @relation(fields: [companyId], references: [id])
+  department DepartmentEmployee[]
+  branch EmployeeBranch[]
 
   @@unique([userId, companyId])
   @@index([userId, companyId])
@@ -513,7 +513,7 @@ model Branch {
   company       Company         @relation(fields: [companyId], references: [id])
   country       Country         @relation(fields: [countryCode], references: [code])
   manager       Profile?        @relation(fields: [managerId], references: [userId])
-  profileBranch ProfileBranch[]
+  employees EmployeeBranch[]
   LeavePolicy   LeavePolicy[]   @relation("PolicyBranches")
   department    Department[]
 
@@ -538,12 +538,12 @@ model Department {
 model DepartmentEmployee {
   id        String   @id @default(uuid())
   departmentId String
-  userId String
+  employeeId String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   archived  Boolean  @default(false)
 
-  employee Profile @relation(fields: [userId], references: [userId])
+  employee Employee @relation(fields: [employeeId], references: [id])
   department Department @relation(fields: [departmentId], references: [id])
 
   @@map("department_employees")

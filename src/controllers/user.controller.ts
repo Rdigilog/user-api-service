@@ -45,53 +45,54 @@ export class UserController {
     private readonly utilService: UtilsService,
   ) {}
 
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'size', required: false, type: Number })
-  @ApiQuery({ name: 'search', required: false, type: String })
-  @ApiQuery({ name: 'sortDirection', required: false, type: String })
-  @ApiQuery({ name: 'sortBy', required: false, type: String })
-  @ApiQuery({ name: 'role', required: false, type: String })
-  @Get('/list')
-  async list(
-    @Query('page') page: number = 1,
-    @Query('size') size: number = 50,
-    @Query('search') search?: string,
-    @Query('sortDirection') sortDirection?: 'asc' | 'desc',
-    @Query('sortBy') sortBy?: string,
-    @Query('role') role?: string,
-  ) {
-    try {
-      const result = await this.service.list(
-        page,
-        size,
-        search,
-        sortBy,
-        sortDirection,
-        role,
-      );
-      if (result.error == 2) {
-        return this.responseService.exception(result.body);
-      }
-      return this.responseService.success(result.body);
-    } catch (e) {
-      return this.responseService.exception(e.message);
-    }
-  }
+  // @ApiQuery({ name: 'page', required: false, type: Number })
+  // @ApiQuery({ name: 'size', required: false, type: Number })
+  // @ApiQuery({ name: 'search', required: false, type: String })
+  // @ApiQuery({ name: 'sortDirection', required: false, type: String })
+  // @ApiQuery({ name: 'sortBy', required: false, type: String })
+  // @ApiQuery({ name: 'role', required: false, type: String })
+  // @Get('/list')
+  // async list(
+  //   @Query('page') page: number = 1,
+  //   @Query('size') size: number = 50,
+  //   @Query('search') search?: string,
+  //   @Query('sortDirection') sortDirection?: 'asc' | 'desc',
+  //   @Query('sortBy') sortBy?: string,
+  //   @Query('role') role?: string,
+  // ) {
+  //   try {
+  //     const result = await this.service.list(
+  //       page,
+  //       size,
+  //       search,
+  //       sortBy,
+  //       sortDirection,
+  //       role,
+  //     );
+  //     if (result.error == 2) {
+  //       return this.responseService.exception(result.body);
+  //     }
+  //     return this.responseService.success(result.body);
+  //   } catch (e) {
+  //     return this.responseService.exception(e.message);
+  //   }
+  // }
 
-  @ApiHeader({
-    name: 'X-Company-id',
-    description: 'A Company tenant Id',
-    required: true,
-  })
+  // @ApiHeader({
+  //   name: 'X-Company-id',
+  //   description: 'A Company tenant Id',
+  //   required: true,
+  // })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'size', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'sortDirection', required: false, type: String })
   @ApiQuery({ name: 'sortBy', required: false, type: String })
   @ApiQuery({ name: 'role', required: false, type: String })
-  @Get('/list/company')
+  @Get('')
   async companyList(
-    @Headers('X-Company-id') companyId: string, // single header
+    // @Headers('X-Company-id') companyId: string, // single header
+    @AuthUser() user: LoggedInUser,
     @Query('page') page: number = 1,
     @Query('size') size: number = 50,
     @Query('search') search?: string,
@@ -106,9 +107,10 @@ export class UserController {
         search,
         sortBy,
         sortDirection,
-        companyId,
+        user.userRole[0].company?.id as string,
         role,
       );
+      console.log(user);
       if (result.error == 2) {
         return this.responseService.exception(result.body);
       }
@@ -118,9 +120,22 @@ export class UserController {
     }
   }
 
-  @Get('')
-  async getUser(@Request() req) {
-    return this.responseService.success(req.user);
+  @Get('/:userId')
+  async getUser(
+    @Param('userId') userId:string,
+    @AuthUser() user:LoggedInUser,
+  ) {
+    try{
+      const result = await this.service.view(
+        userId
+      )
+      if(result.error == 2)
+        return this.responseService.notFound('no user found')
+
+      return this.responseService.success(result.body)
+    } catch(e){
+      return this.responseService.exception(e.message)
+    } 
   }
 
   // @Patch()
@@ -135,6 +150,24 @@ export class UserController {
   //     return this.responseService.exception(e.message);
   //   }
   // }
+
+  @Get('/prifle')
+  @ApiOperation({ summary: 'Fetch profile of login user' })
+  async userProfile(
+    @AuthUser() user:LoggedInUser,
+  ) {
+    try {
+      const result = await this.service.view(
+        user.id
+      );
+      if (result.error == 1)
+        return this.responseService.badRequest(result.body);
+      if (result.error == 2) return this.responseService.exception(result.body);
+      return this.responseService.success(result.body);
+    } catch (e) {
+      return this.responseService.exception(e.message);
+    }
+  }
 
   @Patch('/prifle')
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
@@ -158,13 +191,13 @@ export class UserController {
   async updateProfile(
     @Body() payload: UpdateProfileDto,
     @UploadedFile() profilePicture: Express.Multer.File,
-    @Request() req,
+    @AuthUser() user:LoggedInUser,
   ) {
     try {
       const result = await this.service.updateProfile(
         payload,
         profilePicture,
-        req.user.id,
+        user.id,
       );
       if (result.error == 1)
         return this.responseService.badRequest(result.body);
@@ -198,13 +231,16 @@ export class UserController {
   }
 
   @Patch('/change-password')
-  async changePassword(@Request() req, @Body() payload: ChangePassword) {
+  async changePassword(
+    @AuthUser() loggedInUser:LoggedInUser, 
+    @Body() payload: ChangePassword
+  ) {
     try {
       if (payload.newPassword != payload.confirmPassword) {
         return this.responseService.badRequest('Passwords do not match');
       }
 
-      const user = await this.service.findById(req.user.id, true);
+      const user = await this.service.findById(loggedInUser.id, true);
       if(!user){
         return {error:1, body:"No User found"}
       }
@@ -221,7 +257,7 @@ export class UserController {
       );
       const result = await this.service.updateUser(
         { password: hashPassword },
-        req.user.id,
+        user.id,
       );
       if (result.error == 1)
         return this.responseService.badRequest(result.body);
@@ -234,7 +270,7 @@ export class UserController {
 
   @Patch('/change-status/:userId')
   async changeStatus(
-    @Request() req,
+    @AuthUser() user: LoggedInUser,
     @Body() payload: ChangeStatus,
     @Param('userId') userId: string,
   ) {
