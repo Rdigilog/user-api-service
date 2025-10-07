@@ -8,7 +8,7 @@ export const RedisCacheOptions: CacheModuleAsyncOptions = {
   imports: [ConfigModule],
   inject: [ConfigService],
   useFactory: async (configService: ConfigService) => {
-    console.log('Setting up Redis Cache with URL:', configService.get<string>('REDIS_URL'));
+    // console.log('Setting up Redis Cache with URL:', configService.get<string>('REDIS_URL'));
     const store = await redisStore({
       url: `${configService.get<string>('REDIS_URL')}`, // cache in db 0
     });
