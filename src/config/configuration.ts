@@ -99,7 +99,7 @@ export default async (): Promise<Configuration> => {
   
   return {
     port: config.port || 3000,
-    nodeEnv: config.nodeEnv || 'local',
+    nodeEnv: config.nodeEnv || 'prod',
     frontendUrl: config.frontendUrl || '',
     jwt: {
       secret: config.jwt?.secret || '',
