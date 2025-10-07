@@ -46,6 +46,7 @@ export class AwsSecretsService {
 
       const response = await this.secretsClient.send(command);
       
+      
       if (!response.SecretString) {
         throw new Error('No secret string found in AWS Secrets Manager response');
       }

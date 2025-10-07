@@ -30,16 +30,16 @@ import { QueueModuleConfig } from './config/queue.module.config';
     //   rootPath: './public',
     //   serveRoot: '/public',
     // }),
+    ConfigModule.forRoot({
+      load: [configuration],
+      // validationSchema,
+      isGlobal: true,
+      cache: true, // Cache the configuration to avoid repeated AWS calls
+    }),
     QueueConfig,
     JwtConfig,
     MailConfig,
     QueueModuleConfig,
-    ConfigModule.forRoot({
-      load: [configuration],
-      validationSchema,
-      isGlobal: true,
-      cache: true, // Cache the configuration to avoid repeated AWS calls
-    }),
     bullboardConfig,
     HttpModule,
     UtilsModule,

@@ -28,10 +28,11 @@ export interface Configuration {
 /**
  * Gets configuration values from either .env files (local) or AWS Secrets Manager (cloud)
  */
-async function getConfigValues(): Promise<Partial<Configuration>> {
+export async function getConfigValues(): Promise<Partial<Configuration>> {
   // When working locally, use local environment in .env file
-  const nodeEnv = process.env.NODE_ENV || 'development';
-  
+
+  const nodeEnv = process.env.NODE_ENV || 'production';
+  // console.log(nodeEnv)
   // For local development, use environment variables
   if (nodeEnv === 'local') {
     return {
@@ -64,10 +65,13 @@ async function getConfigValues(): Promise<Partial<Configuration>> {
     const awsSecretsService = new AwsSecretsService();
     const secretId = process.env.AWS_SECRET_ID || 'dev-secret-manager-01';
     const secrets = await awsSecretsService.getSecrets(secretId);
-
+    for (const [key, value] of Object.entries(secrets)) {
+      process.env[key] = String(value);
+    }
+    // console.log('Secrets loaded from AWS Secrets Manager', secrets);
     return {
       port: parseInt(process.env.PORT || '3001', 10), // Keep PORT as env var for flexibility
-      nodeEnv: secrets.NODE_ENV || 'development',
+      nodeEnv: secrets.NODE_ENV || 'production',
       frontendUrl: secrets.FRONTEND_URL || '',
       jwt: {
         secret: secrets.JWT_SECRET || '',
@@ -95,11 +99,12 @@ async function getConfigValues(): Promise<Partial<Configuration>> {
 }
 
 export default async (): Promise<Configuration> => {
+
   const config = await getConfigValues();
-  
+  console.log('Configuration values retrieved:', config)
   return {
     port: config.port || 3000,
-    nodeEnv: config.nodeEnv || 'prod',
+    nodeEnv: config.nodeEnv || 'production',
     frontendUrl: config.frontendUrl || '',
     jwt: {
       secret: config.jwt?.secret || '',

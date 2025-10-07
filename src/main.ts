@@ -4,8 +4,11 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { CONFIG_KEYS } from './config/config.keys';
+import { getConfigValues } from './config/configuration';
 
 async function bootstrap() {
+  const response = await getConfigValues()
+  // console.log('Starting application...', response)
   const app = await NestFactory.create(AppModule, {
     cors: {
       origin: '*',
@@ -13,6 +16,7 @@ async function bootstrap() {
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     },
   });
+
 
   const configService = app.get(ConfigService);
   
