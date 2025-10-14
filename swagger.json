@@ -1,0 +1,1692 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/user/api/v1/auth/signup": {
+      "post": {
+        "operationId": "AuthController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitiateRegistrationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/TokenDataDto"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/user/api/v1/auth/phone-number": {
+      "post": {
+        "operationId": "AuthController_verifyPhoneNumber",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneNumberDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/TokenDataDto"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/user/api/v1/auth/verify-otp": {
+      "post": {
+        "operationId": "AuthController_otp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserOtpVerification"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/AuthResponseDto"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/user/api/v1/auth/company-details": {
+      "post": {
+        "operationId": "AuthController_addCompanyDetails",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompanyDetailsDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/user/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/AuthResponseDto"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/user/api/v1/auth/resend-otp": {
+      "post": {
+        "operationId": "AuthController_resentOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsernameDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/TokenDataDto"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/user/api/v1/auth/forgot-password": {
+      "post": {
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsernameDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/TokenDataDto"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/user/api/v1/auth/reset-password": {
+      "post": {
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/resetPasswordDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/String"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/user/api/v1/auth/password-reset/verify-otp": {
+      "post": {
+        "operationId": "AuthController_passwordResetVerifyOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserOtpVerification"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/String"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/user/api/v1/user": {
+      "get": {
+        "operationId": "UserController_companyList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortDirection",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/api/v1/user/{userId}": {
+      "get": {
+        "operationId": "UserController_getUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/api/v1/user/prifle": {
+      "get": {
+        "operationId": "UserController_userProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Fetch profile of login user",
+        "tags": [
+          "User"
+        ]
+      },
+      "patch": {
+        "operationId": "UserController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "example": "John"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "example": "Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                  },
+                  "phoneNumber": {
+                    "type": "string",
+                    "example": "+123456789"
+                  },
+                  "profilePicture": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update profile (with optional profile picture)",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/api/v1/user/prifle/{userId}": {
+      "patch": {
+        "operationId": "UserController_updateProfileFull",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmployeeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update profile (with optional profile picture)",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/api/v1/user/change-password": {
+      "patch": {
+        "operationId": "UserController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/api/v1/user/change-status/{userId}": {
+      "patch": {
+        "operationId": "UserController_changeStatus",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeStatus"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/api/v1/user/invite": {
+      "post": {
+        "operationId": "UserController_inviteUser",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteUserDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      },
+      "get": {
+        "operationId": "UserController_invites",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortDirection",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/api/v1/user/re-invite//{inviteLink}": {
+      "post": {
+        "operationId": "UserController_reInviteUser",
+        "parameters": [
+          {
+            "name": "X-Company-id",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "inviteLink",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/api/v1/user/profile/picture": {
+      "delete": {
+        "operationId": "UserController_removeProfilePic",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/api/v1/plan": {
+      "get": {
+        "operationId": "PlanController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortDirection",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Plans"
+        ]
+      }
+    },
+    "/user/api/v1/health": {
+      "get": {
+        "operationId": "HealthController_healthCheck",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Service is healthy"
+          },
+          "503": {
+            "description": "Service is unhealthy"
+          }
+        },
+        "summary": "Health check endpoint",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/user/api/v1/health/db": {
+      "get": {
+        "operationId": "HealthController_databaseHealthCheck",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Database is healthy"
+          },
+          "503": {
+            "description": "Database is unhealthy"
+          }
+        },
+        "summary": "Database health check",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/user/api/v1/health/migration": {
+      "get": {
+        "operationId": "HealthController_migrationStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Migration status retrieved"
+          }
+        },
+        "summary": "Check migration status",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/user/api/v1/base/country": {
+      "get": {
+        "operationId": "BaseController_getCountries",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Base"
+        ]
+      }
+    },
+    "/user/api/v1/base/{country_code}/state": {
+      "get": {
+        "operationId": "BaseController_getStatesByCountry",
+        "parameters": [
+          {
+            "name": "countryCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortDirection",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Base"
+        ]
+      }
+    },
+    "/user/api/v1/base/country/paginated": {
+      "get": {
+        "operationId": "BaseController_getCountriesPaginated",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortDirection",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Base"
+        ]
+      }
+    },
+    "/user/api/v1/base/plans": {
+      "get": {
+        "operationId": "BaseController_basePlans",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Base"
+        ]
+      }
+    },
+    "/user/api/v1/base/roles": {
+      "get": {
+        "operationId": "BaseController_baseRoles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Base"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "DigiLog User API Documentation",
+    "description": "The DigiLog API description",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "access-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "Authorization",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "ApiResponseDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "SUCCESSFUL"
+          },
+          "data": {
+            "type": "object",
+            "description": "Response data (dynamic type)"
+          }
+        },
+        "required": [
+          "statusCode",
+          "message",
+          "data"
+        ]
+      },
+      "TokenDataDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "example": "JA5T6SL2F4VHANDLGQUVG2JOKNLW66RT"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "InitiateRegistrationDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "businessEmail": {
+            "type": "string",
+            "example": "jondoe@exmple.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "StrongPass123!"
+          },
+          "heardAboutUs": {
+            "type": "string",
+            "example": "Facebook, friend, ad, etc."
+          },
+          "type": {
+            "type": "string",
+            "description": "lOGIN TYPE FIELD",
+            "example": "SOCIAL"
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "businessEmail",
+          "password",
+          "heardAboutUs",
+          "type"
+        ]
+      },
+      "PhoneNumberDTO": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "example": "Enter Phone Number"
+          }
+        }
+      },
+      "ProfileDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "91e5af75-b8e3-4b8a-849a-85a54200f5ab"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "Super Admin"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Admin"
+          },
+          "email": {
+            "type": "string",
+            "example": "engineeringteam@radiantlife.co.uk"
+          },
+          "imageUrl": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "08011223344"
+          },
+          "userId": {
+            "type": "string",
+            "example": "baf2fff1-d1b8-4c42-8362-78d8f53bfcbd"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-10-14T09:05:27.501Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-10-14T09:05:27.501Z"
+          },
+          "deleted": {
+            "type": "boolean",
+            "example": false
+          },
+          "status": {
+            "type": "string",
+            "example": "APPROVED"
+          }
+        },
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "imageUrl",
+          "phoneNumber",
+          "userId",
+          "createdAt",
+          "updatedAt",
+          "deleted",
+          "status"
+        ]
+      },
+      "RoleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "43cabb3a-6e49-4d57-ba09-cc6953922f67"
+          },
+          "name": {
+            "type": "string",
+            "example": "SUPER_ADMIN"
+          },
+          "description": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-10-14T09:05:17.519Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-10-14T09:05:17.519Z"
+          },
+          "archived": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "createdAt",
+          "updatedAt",
+          "archived"
+        ]
+      },
+      "UserRoleDto": {
+        "type": "object",
+        "properties": {
+          "companyId": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          },
+          "role": {
+            "$ref": "#/components/schemas/RoleDto"
+          },
+          "company": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          }
+        },
+        "required": [
+          "companyId",
+          "role",
+          "company"
+        ]
+      },
+      "UserInfoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "baf2fff1-d1b8-4c42-8362-78d8f53bfcbd"
+          },
+          "email": {
+            "type": "string",
+            "example": "engineeringteam@radiantlife.co.uk"
+          },
+          "active": {
+            "type": "boolean",
+            "example": true
+          },
+          "deleted": {
+            "type": "boolean",
+            "example": false
+          },
+          "profile": {
+            "$ref": "#/components/schemas/ProfileDto"
+          },
+          "userRole": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserRoleDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "active",
+          "deleted",
+          "profile",
+          "userRole"
+        ]
+      },
+      "AuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiYWYyZmZmMS1kMWI4LTRjNDItODM2Mi03OGQ4ZjUzYmZjYmQiLCJ1c2VybmFtZSI6ImVuZ2luZWVyaW5ndGVhbUByYWRpYW50bGlmZS5jby51ayIsImlhdCI6MTc2MDQzOTc3MiwiZXhwIjoxNzYwNTI2MTcyfQ.yJ0Uri2DwPAmLtDkERMgr0-DBPA6Yi_XeoCvQC7cG5g"
+          },
+          "expiresIn": {
+            "type": "string",
+            "example": "1d"
+          },
+          "user_info": {
+            "$ref": "#/components/schemas/UserInfoDto"
+          }
+        },
+        "required": [
+          "access_token",
+          "expiresIn",
+          "user_info"
+        ]
+      },
+      "UserOtpVerification": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "User phone number or email",
+            "example": "1234"
+          },
+          "code": {
+            "type": "string",
+            "description": "Foreign key to the users model",
+            "example": "1234"
+          },
+          "token": {
+            "type": "string",
+            "description": "Foreign key to the users model",
+            "example": "123456789012345678"
+          }
+        },
+        "required": [
+          "username",
+          "code",
+          "token"
+        ]
+      },
+      "CompanyDetailsDTO": {
+        "type": "object",
+        "properties": {
+          "companyName": {
+            "type": "string",
+            "example": "Enter Phone Number"
+          },
+          "totalEmployee": {
+            "type": "string",
+            "example": "10-50",
+            "description": "Total number of employees in a range format like 10-50"
+          },
+          "industry": {
+            "type": "string",
+            "example": "FinTech",
+            "description": "Company Industry i.e FinTech Agriculture etc"
+          },
+          "planId": {
+            "type": "string",
+            "example": "uuid",
+            "description": "Subscription PLan Id"
+          },
+          "resumptionTime": {
+            "type": "string",
+            "example": "08:00",
+            "description": "Company's resumption time"
+          },
+          "closingTime": {
+            "type": "string",
+            "example": "17:00",
+            "description": "Company's resumption time"
+          }
+        }
+      },
+      "LoginDTO": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Foreign key to the users model",
+            "example": "123456789012345678"
+          },
+          "password": {
+            "type": "string",
+            "description": "pass phrase to the users model",
+            "example": "123456789012345678"
+          },
+          "type": {
+            "type": "string",
+            "description": "lOGIN TYPE FIELD",
+            "example": "SOCIAL"
+          }
+        },
+        "required": [
+          "username",
+          "password",
+          "type"
+        ]
+      },
+      "UsernameDTO": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "Enter Phone Number/Email"
+          }
+        }
+      },
+      "String": {
+        "type": "object",
+        "properties": {}
+      },
+      "resetPasswordDTO": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          },
+          "code": {
+            "type": "string",
+            "description": "Foreign key to the users model",
+            "example": "1234"
+          },
+          "token": {
+            "type": "string",
+            "description": "Foreign key to the users model",
+            "example": "123456789012345678"
+          },
+          "password": {
+            "type": "string",
+            "description": "Foreign key to the users model",
+            "example": "123456789012345678"
+          }
+        },
+        "required": [
+          "code",
+          "token",
+          "password"
+        ]
+      },
+      "JobInformationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "uuid"
+          },
+          "memberId": {
+            "type": "string",
+            "description": "Member identifier"
+          },
+          "employmentDate": {
+            "type": "string",
+            "description": "Employment date in string format"
+          },
+          "workType": {
+            "type": "string",
+            "description": "Type of work (enum in DB)"
+          },
+          "location": {
+            "type": "string",
+            "description": "Job location"
+          }
+        },
+        "required": [
+          "id",
+          "location"
+        ]
+      },
+      "EmergencyContactDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the emergency contact"
+          },
+          "relationship": {
+            "type": "string",
+            "description": "Relationship with the user"
+          },
+          "address": {
+            "type": "string",
+            "description": "Address of the emergency contact"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "Country code of the contact"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "BankInformationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "uuid"
+          },
+          "accountNumber": {
+            "type": "string",
+            "description": "Bank account number"
+          },
+          "ifsCode": {
+            "type": "string",
+            "description": "IFSC / IFS code of the bank"
+          },
+          "bankName": {
+            "type": "string",
+            "description": "Bank name"
+          },
+          "branchName": {
+            "type": "string",
+            "description": "Branch name of the bank"
+          }
+        },
+        "required": [
+          "id",
+          "accountNumber",
+          "ifsCode",
+          "bankName",
+          "branchName"
+        ]
+      },
+      "EmployeeDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Residential address of the employee"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Phone number of the employee"
+          },
+          "maritalStatus": {
+            "type": "string",
+            "enum": [
+              "SINGLE",
+              "MARRIED"
+            ],
+            "description": "Marital status of the employee"
+          },
+          "bio": {
+            "type": "string",
+            "description": "Short biography of the employee"
+          },
+          "interest": {
+            "type": "string",
+            "description": "Employee interests"
+          },
+          "Gender": {
+            "type": "string",
+            "enum": [
+              "MALE",
+              "FEMALE"
+            ],
+            "description": "Gender of the employee"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "Country dialing code"
+          },
+          "religion": {
+            "type": "string",
+            "description": "Religion of the employee"
+          },
+          "altPhoneNumber": {
+            "type": "string",
+            "description": "Alternative phone number"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "description": "Date of birth (string format, e.g. YYYY-MM-DD)"
+          },
+          "bloodGroup": {
+            "type": "string",
+            "enum": [
+              "A_POS",
+              "A_NEG",
+              "B_POS",
+              "B_NEG",
+              "AB_POS",
+              "AB_NEG",
+              "O_POS",
+              "O_NEG"
+            ],
+            "description": "Blood group of the employee"
+          },
+          "allergy": {
+            "type": "string",
+            "description": "Known allergies"
+          },
+          "jobInformation": {
+            "$ref": "#/components/schemas/JobInformationDto"
+          },
+          "emergencyContact": {
+            "$ref": "#/components/schemas/EmergencyContactDto"
+          },
+          "bankInformation": {
+            "$ref": "#/components/schemas/BankInformationDto"
+          }
+        }
+      },
+      "ChangePassword": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string"
+          },
+          "confirmPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "password",
+          "newPassword",
+          "confirmPassword"
+        ]
+      },
+      "ChangeStatus": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "boolean",
+            "description": "Update user status to active and inactive",
+            "example": true
+          }
+        },
+        "required": [
+          "active"
+        ]
+      },
+      "InviteUserDTO": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          },
+          "memberId": {
+            "type": "string",
+            "example": "1234ABDC"
+          },
+          "roleId": {
+            "type": "string",
+            "example": "Doe"
+          }
+        }
+      }
+    }
+  }
+}

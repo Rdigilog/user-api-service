@@ -1,7 +1,7 @@
 
 import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { LoginDTO } from 'src/models/onboarding/Login.dto';
@@ -12,6 +12,8 @@ import { ResponsesService } from 'src/utils/services/responses.service';
 import { UtilsService } from 'src/utils/services/utils.service';
 import { ConfigService } from '@nestjs/config';
 import { CONFIG_KEYS } from '../config/config.keys';
+import { ApiResponseDto } from 'src/models/responses/generic.dto';
+import { AuthResponseDto, TokenDataDto } from 'src/models/responses/Login.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -23,7 +25,22 @@ export class AuthController {
     private readonly utilService: UtilsService,
     private readonly configService: ConfigService
   ) { }
-  @Post('/initiate')
+
+  @ApiExtraModels(ApiResponseDto, TokenDataDto)
+  @ApiOkResponse({
+    description: 'Token generated successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(TokenDataDto) },
+          },
+        },
+      ],
+    },
+  })
+  @Post('/signup')
   async create(@Body() payload: InitiateRegistrationDto) {
     try {
       let result = {
@@ -42,6 +59,21 @@ export class AuthController {
     }
   }
 
+
+  @ApiExtraModels(ApiResponseDto, TokenDataDto)
+  @ApiOkResponse({
+    description: 'Token generated successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(TokenDataDto) },
+          },
+        },
+      ],
+    },
+  })
   @UseGuards(AuthGuard)
   @ApiBearerAuth('access-token') // allow using access token with swagger()
   @Post('/phone-number')
@@ -67,6 +99,20 @@ export class AuthController {
     }
   }
 
+  @ApiExtraModels(ApiResponseDto, AuthResponseDto)
+  @ApiOkResponse({
+    description: 'Token generated successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(AuthResponseDto) },
+          },
+        },
+      ],
+    },
+  })
   @Post('/verify-otp')
   async otp(@Body() requestBody: UserOtpVerification) {
     try {
@@ -130,6 +176,21 @@ export class AuthController {
     }
   }
 
+
+  @ApiExtraModels(ApiResponseDto, AuthResponseDto)
+  @ApiOkResponse({
+    description: 'Token generated successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(AuthResponseDto) },
+          },
+        },
+      ],
+    },
+  })
   @Post('login')
   async login(@Body() requestBody: LoginDTO) {
     try {
@@ -177,6 +238,20 @@ export class AuthController {
     }
   }
 
+  @ApiExtraModels(ApiResponseDto, TokenDataDto)
+  @ApiOkResponse({
+    description: 'Token generated successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(TokenDataDto) },
+          },
+        },
+      ],
+    },
+  })
   @Post('resend-otp')
   async resentOtp(@Body() requestBody: UsernameDTO) {
     try {
@@ -196,6 +271,20 @@ export class AuthController {
     }
   }
 
+  @ApiExtraModels(ApiResponseDto, TokenDataDto)
+  @ApiOkResponse({
+    description: 'Token generated successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(TokenDataDto) },
+          },
+        },
+      ],
+    },
+  })
   @Post('forgot-password')
   async forgotPassword(@Body() requestBody: UsernameDTO) {
     try {
@@ -218,6 +307,20 @@ export class AuthController {
     }
   }
 
+  @ApiExtraModels(ApiResponseDto, String)
+  @ApiOkResponse({
+    description: 'Token generated successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(String) },
+          },
+        },
+      ],
+    },
+  })
   @Post('reset-password')
   async resetPassword(@Body() requestBody: resetPasswordDTO) {
     try {
@@ -250,6 +353,20 @@ export class AuthController {
     }
   }
 
+  @ApiExtraModels(ApiResponseDto, String)
+  @ApiOkResponse({
+    description: 'Token generated successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(String) },
+          },
+        },
+      ],
+    },
+  })
   @Post('password-reset/verify-otp')
   async passwordResetVerifyOtp(@Body() payload: UserOtpVerification) {
     try {

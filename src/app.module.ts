@@ -23,6 +23,7 @@ import { PlanService } from './enums/plan.service';
 import { bullboardConfig } from './config/bull-board.config';
 import { QueueModuleConfig } from './config/queue.module.config';
 import { BaseController } from './controllers/base.controller';
+import { BaseService } from './services/base.service';
 
 @Module({
   imports: [
@@ -62,7 +63,8 @@ import { BaseController } from './controllers/base.controller';
     RoleService,
     TermLegalService,
     PrismaService,
-    PlanService
+    PlanService,
+    BaseService
   ],
 })
 export class AppModule { }
