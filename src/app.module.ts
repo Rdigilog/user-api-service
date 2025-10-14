@@ -22,6 +22,7 @@ import { PrismaService } from './config/prisma.service';
 import { PlanService } from './enums/plan.service';
 import { bullboardConfig } from './config/bull-board.config';
 import { QueueModuleConfig } from './config/queue.module.config';
+import { BaseController } from './controllers/base.controller';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { QueueModuleConfig } from './config/queue.module.config';
     UserController,
     PlanController,
     HealthController,
+    BaseController
   ],
   providers: [
     {

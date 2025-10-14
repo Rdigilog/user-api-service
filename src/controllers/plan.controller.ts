@@ -40,31 +40,31 @@ export class PlanController {
         sortBy,
         sortDirection,
       );
-      if (result.error == 2) {
-        return this.responseService.exception(result.body);
-      }
+      // if (result.error == 2) {
+      //   return this.responseService.exception(result.body);
+      // }
       return this.responseService.success(result.body);
     } catch (e) {
       return this.responseService.exception(e.message);
     }
   }
 
-  @Get('feature')
-  @ApiOperation({ summary: 'Get all features (paginated)' })
-  @ApiResponse({ status: 200, description: 'List of features with pagination' })
-  async all(
-    @Query('page') page = 1,
-    @Query('size') size = 10,
-    @Query('search') search = '',
-    @Query('sortBy') sortBy = 'updatedAt',
-    @Query('sortDirection') sortDirection: 'asc' | 'desc' = 'desc',
-  ) {
-    const result = this.service.all(
-      Number(page),
-      Number(size),
-      search,
-      sortBy,
-      sortDirection,
-    );
-  }
+  // @Get('feature')
+  // @ApiOperation({ summary: 'Get all features (paginated)' })
+  // @ApiResponse({ status: 200, description: 'List of features with pagination' })
+  // async all(
+  //   @Query('page') page = 1,
+  //   @Query('size') size = 10,
+  //   @Query('search') search = '',
+  //   @Query('sortBy') sortBy = 'updatedAt',
+  //   @Query('sortDirection') sortDirection: 'asc' | 'desc' = 'desc',
+  // ) {
+  //   const result = this.service.all(
+  //     Number(page),
+  //     Number(size),
+  //     search,
+  //     sortBy,
+  //     sortDirection,
+  //   );
+  // }
 }
