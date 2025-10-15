@@ -23,7 +23,7 @@ import { fileUploadProviderFactory } from './services/factory.provider';
       provide: 'FileUploadProvider',
       useFactory: (configService: ConfigService) => {
         return fileUploadProviderFactory(
-          configService.get('FILE_UPLOAD_PROVIDER') || '',
+          configService.get('FILE_UPLOAD_PROVIDER') || 'cloudinary',
           configService,
         );
       },

@@ -7,7 +7,7 @@ export function fileUploadProviderFactory(
 ): any {
   if (provider != null && provider.toLocaleLowerCase() === 'aws') {
     return new S3FileUploadProvider(configService);
-  } else if (provider == 'cloudinary') {
+  } else {
     return new CooudinaryFileUploadProvider(configService);
   }
 }

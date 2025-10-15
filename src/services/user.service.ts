@@ -15,6 +15,7 @@ import { ResponsesService } from 'src/utils/services/responses.service';
 import { UtilsService } from 'src/utils/services/utils.service';
 import { ConfigService } from '@nestjs/config';
 import { CONFIG_KEYS } from '../config/config.keys';
+import { InjectFileRemovalQueue } from 'src/queue/src/decorators/queue.decorator';
 
 
 @Injectable()
@@ -22,6 +23,7 @@ export class UserService extends PrismaService {
   constructor(
     @InjectMailQueue() private mailQueue: Queue,
     @InjectSMSQueue() private smsQueue: Queue,
+    @InjectFileRemovalQueue() private fileRemovalQueue: Queue,
     // @InjectFileQueue() private fileQueue: Queue,
     private readonly utilsService: UtilsService,
     private readonly otpService: OtpService,
@@ -319,10 +321,15 @@ export class UserService extends PrismaService {
     userId: string,
   ) {
     try {
+      const profile = await this.profile.findFirst({
+        where: { userId }
+      })
       let fileUrl = '';
       if (profilePicture) {
+        this.fileRemovalQueue.add('REMOVE_PROFILE_PIC', profile?.imageUrl)
         const fileUploadResult =
           await this.fileUploadService.uploadPicture(profilePicture);
+        // console.log(fileUploadResult)
         fileUrl = fileUploadResult.url;
       }
       const data: any = {
@@ -746,6 +753,10 @@ export class UserService extends PrismaService {
 
   async removeProfilePic(userId: string) {
     try {
+      const profile = await this.profile.findFirst({
+        where: { userId }
+      })
+      this.fileRemovalQueue.add('REMOVE_PROFILE_PIC', profile?.imageUrl)
       const result = await this.profile.update({
         where: { userId },
         data: { imageUrl: null },

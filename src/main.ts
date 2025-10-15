@@ -11,7 +11,7 @@ import { writeFileSync } from 'fs';
 
 async function bootstrap() {
   const response = await getConfigValues()
-  // console.log('Starting application...', response)
+  console.log('Starting application...', response)
   const app = await NestFactory.create(AppModule, {
     cors: {
       origin: '*',

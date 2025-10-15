@@ -120,6 +120,25 @@ export class UserController {
     }
   }
 
+  @Get('/prifle')
+  @ApiOperation({ summary: 'Fetch profile of login user' })
+  async userProfile(
+    @AuthUser() user:LoggedInUser,
+  ) {
+    console.log('login user',user)
+    try {
+      const result = await this.service.view(
+        user.id
+      );
+      if (result.error == 1)
+        return this.responseService.badRequest(result.body);
+      if (result.error == 2) return this.responseService.exception(result.body);
+      return this.responseService.success(result.body);
+    } catch (e) {
+      return this.responseService.exception(e.message);
+    }
+  }
+
   @Get('/:userId')
   async getUser(
     @Param('userId') userId:string,
@@ -151,23 +170,7 @@ export class UserController {
   //   }
   // }
 
-  @Get('/prifle')
-  @ApiOperation({ summary: 'Fetch profile of login user' })
-  async userProfile(
-    @AuthUser() user:LoggedInUser,
-  ) {
-    try {
-      const result = await this.service.view(
-        user.id
-      );
-      if (result.error == 1)
-        return this.responseService.badRequest(result.body);
-      if (result.error == 2) return this.responseService.exception(result.body);
-      return this.responseService.success(result.body);
-    } catch (e) {
-      return this.responseService.exception(e.message);
-    }
-  }
+
 
   @Patch('/prifle')
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
@@ -188,6 +191,7 @@ export class UserController {
       },
     },
   })
+  
   async updateProfile(
     @Body() payload: UpdateProfileDto,
     @UploadedFile() profilePicture: Express.Multer.File,

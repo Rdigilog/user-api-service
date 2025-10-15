@@ -194,9 +194,15 @@ export class AuthController {
   @Post('login')
   async login(@Body() requestBody: LoginDTO) {
     try {
-      const result = await this.userService.findByUsername(
-        requestBody.username,
-      );
+      let result:User | null;
+      try {
+        result = await this.userService.findByUsername(
+          requestBody.username,
+        );
+      } catch (e) {
+        console.log(e);
+        return this.responseService.unauthorized('invalid username/password')
+      }
       if (!result) {
         return this.responseService.unauthorized('Invalid username/password');
       }
