@@ -213,11 +213,14 @@ export class AuthController {
           result.password,
         );
         if (isMatch) {
+          const userInfo = await this.userService.findById(result.id);
+          if (userInfo?.userRole.some(r => r.role.name == 'SUPER_ADMIN')) {
+            return this.processOtp(requestBody.username, result);
+          }
           const payload = {
             sub: result.id,
             username: result.email,
           };
-          const userInfo = await this.userService.findById(result.id);
           const token = await this.jwtService.signAsync(payload);
           return this.responseService.success({
             access_token: token,
@@ -228,10 +231,10 @@ export class AuthController {
           return this.responseService.unauthorized('Invalid username/Password');
         }
       }
-      await this.processOtp(requestBody.username, result);
-      return this.responseService.success(
-        `OTP sent to ${requestBody.username}`,
-      );
+      return this.processOtp(requestBody.username, result);
+      // return this.responseService.success(
+      //   `OTP sent to ${requestBody.username}`,
+      // );
     } catch (e) {
       console.log(e);
       return this.responseService.exception(e.message);
