@@ -1,6 +1,6 @@
 
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { JobRole, Prisma } from '@prisma/client';
 
 import { Queue } from 'bullmq';
 import { PrismaService } from 'src/config/prisma.service';
@@ -333,6 +333,13 @@ export class UserService extends PrismaService {
       const result = await this.user.update({
         where: { id },
         data: payload,
+        select:{
+          email:true, 
+          phoneNumber:true,
+          active:true,
+          verified:true,
+          phoneVerified:true,
+        }
       });
       return { error: 0, body: result };
     } catch (e) {
@@ -433,10 +440,12 @@ export class UserService extends PrismaService {
           },
         },
       });
-
-      const jobRole = await this.jobRole.findFirst({
-        where:{id:payload.roleId}
-      })
+      let jobRole:JobRole|null=null;
+      if(payload.roleId){
+        jobRole = await this.jobRole.findFirst({
+         where:{id:payload.roleId}
+       })
+      }
       if (user) {
         const { userRole } = user;
         if (

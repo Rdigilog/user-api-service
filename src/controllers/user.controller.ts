@@ -279,11 +279,13 @@ export class UserController {
     @Param('userId') userId: string,
   ) {
     try {
-      const result = await this.service.updateUser(payload, userId);
+      const result = await this.service.updateUser({
+        ...payload,
+      }, userId);
       if (result.error == 1)
         return this.responseService.badRequest(result.body);
       if (result.error == 2) return this.responseService.exception(result.body);
-      return this.responseService.success('User Status changed successfully');
+      return this.responseService.success(result.body);
     } catch (e) {
       return this.responseService.exception(e.message);
     }
