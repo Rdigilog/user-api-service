@@ -414,7 +414,7 @@ export class UserService extends PrismaService {
       });
 
       const role = await this.role.findUnique({
-        where: { id: payload.roleId },
+        where: { name: 'STAFF' },
       });
       let user = await this.user.findUnique({
         where: { email: payload.email },
