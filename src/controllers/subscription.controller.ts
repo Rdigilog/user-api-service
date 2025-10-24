@@ -1,7 +1,13 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Body, Controller, Get, Patch, Query, UseGuards } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiQuery,
+  ApiOperation,
+} from '@nestjs/swagger';
 import { AuthUser } from 'src/decorators/logged-in-user-decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { UpdateSubscriptionUsersDto } from 'src/models/plans/plan.dto';
 import type { LoggedInUser } from 'src/models/types/user.types';
 import { SubscriptionService } from 'src/services/subscription.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
@@ -61,5 +67,27 @@ export class SubscriptionController {
     } catch (e) {
       return this.responseService.exception(e.message);
     }
+  }
+
+  @Patch('')
+  @ApiOperation({
+    summary: 'Update a company total number of users for subscription',
+    description:
+      'This endpoint updates the total number of users assigned to a specific company. The value must be an integer greater than or equal to zero.',
+  })
+  async updateUserSubscription(
+    @AuthUser() user: LoggedInUser,
+    @Body() payload: UpdateSubscriptionUsersDto,
+  ) {
+    try {
+      const result = await this.service.addUsers(
+        user.userRole[0].companyId as string,
+        payload,
+      );
+      if (result.error == 2) {
+        return this.responseService.exception(result.body);
+      }
+      return this.responseService.success(result.body);
+    } catch (e) {}
   }
 }

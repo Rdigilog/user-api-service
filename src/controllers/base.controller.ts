@@ -2,7 +2,7 @@
 import { Controller, Get, Param, Query, Request } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { RouteName } from 'src/decorators/route-name.decorator';
-import { PlanService } from 'src/enums/plan.service';
+import { PlanService } from 'src/services/plan.service';
 import { BaseService } from 'src/services/base.service';
 import { RoleService } from 'src/services/role.service';
 import { ResponsesService } from 'src/utils/services/responses.service';

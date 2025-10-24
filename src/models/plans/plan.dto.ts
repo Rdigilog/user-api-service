@@ -49,3 +49,17 @@ export class PlanDto {
   @IsString({ each: true })
   featureIds: string[];
 }
+
+import { IsInt, Min } from 'class-validator';
+
+export class UpdateSubscriptionUsersDto {
+  @ApiProperty({
+    description: 'Number of users allowed or assigned',
+    example: 10,
+    minimum: 0,
+  })
+  @IsInt()
+  @Min(0)
+  users: number;
+}
+

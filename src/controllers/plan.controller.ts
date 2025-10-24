@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RouteName } from 'src/decorators/route-name.decorator';
-import { PlanService } from 'src/enums/plan.service';
+import { PlanService } from 'src/services/plan.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
 
 

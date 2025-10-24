@@ -19,7 +19,7 @@ import { UserService } from './services/user.service';
 import { RoleService } from './services/role.service';
 import { TermLegalService } from './services/term-legal.service';
 import { PrismaService } from './config/prisma.service';
-import { PlanService } from './enums/plan.service';
+import { PlanService } from './services/plan.service';
 import { bullboardConfig } from './config/bull-board.config';
 import { QueueModuleConfig } from './config/queue.module.config';
 import { BaseController } from './controllers/base.controller';
