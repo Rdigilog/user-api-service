@@ -433,6 +433,10 @@ export class UserService extends PrismaService {
           },
         },
       });
+
+      const jobRole = await this.jobRole.findFirst({
+        where:{id:payload.roleId}
+      })
       if (user) {
         const { userRole } = user;
         if (
@@ -461,14 +465,35 @@ export class UserService extends PrismaService {
         user = await this.user.create({
           data: {
             email: payload.email,
-            verified: true,
-            active: true,
+            verified: false,
+            active: false,
             deleted: false,
             profile: {
               create: {
                 firstName: '',
                 lastName: '',
                 email: payload.email,
+                employee:{
+                  create:{
+                    jobInformation:{
+                      create:{
+                        jobRole: jobRole ? {
+                          connect:{
+                            id:jobRole.id
+                          }
+                        }:undefined
+                      }
+                    },
+                    emergencyContact:{
+                      create:{}
+                    },
+                    company:{
+                      connect:{
+                        id:companyId
+                      }
+                    }
+                  }
+                }
               },
             },
             userRole: {

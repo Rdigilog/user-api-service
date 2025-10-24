@@ -26,6 +26,8 @@ import { BaseController } from './controllers/base.controller';
 import { BaseService } from './services/base.service';
 import { SubscriptionService } from './services/subscription.service';
 import { SubscriptionController } from './controllers/subscription.controller';
+import { JobRoleController } from './controllers/job-role.controller';
+import { JobRoleService } from './services/job-role.service';
 
 @Module({
   imports: [
@@ -55,7 +57,8 @@ import { SubscriptionController } from './controllers/subscription.controller';
     PlanController,
     HealthController,
     BaseController,
-    SubscriptionController
+    SubscriptionController,
+    JobRoleController
   ],
   providers: [
     {
@@ -68,7 +71,8 @@ import { SubscriptionController } from './controllers/subscription.controller';
     PrismaService,
     PlanService,
     BaseService,
-    SubscriptionService
+    SubscriptionService,
+    JobRoleService
   ],
 })
 export class AppModule { }
