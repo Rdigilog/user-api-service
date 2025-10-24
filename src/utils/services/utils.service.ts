@@ -16,6 +16,13 @@ export class UtilsService {
     return { totalItems, result, totalPages, currentPage };
   }
 
+  nextBilling() {
+    const currentDate = new Date();
+    const nextBilling = new Date(currentDate);
+    nextBilling.setDate(currentDate.getDate() + 30);
+    return nextBilling;
+  }
+
   //to help exclude any database field from being send back via apis i.e password and activation tokens
   exclude(data: any, keys: any[]) {
     return Object.fromEntries(

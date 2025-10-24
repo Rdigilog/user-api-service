@@ -24,6 +24,8 @@ import { bullboardConfig } from './config/bull-board.config';
 import { QueueModuleConfig } from './config/queue.module.config';
 import { BaseController } from './controllers/base.controller';
 import { BaseService } from './services/base.service';
+import { SubscriptionService } from './services/subscription.service';
+import { SubscriptionController } from './controllers/subscription.controller';
 
 @Module({
   imports: [
@@ -52,7 +54,8 @@ import { BaseService } from './services/base.service';
     UserController,
     PlanController,
     HealthController,
-    BaseController
+    BaseController,
+    SubscriptionController
   ],
   providers: [
     {
@@ -64,7 +67,8 @@ import { BaseService } from './services/base.service';
     TermLegalService,
     PrismaService,
     PlanService,
-    BaseService
+    BaseService,
+    SubscriptionService
   ],
 })
 export class AppModule { }

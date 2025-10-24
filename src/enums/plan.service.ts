@@ -26,13 +26,7 @@ export class PlanService extends PrismaService {
       const result = await this.plan.findMany({
         where: filter,
         include: {
-          planFeature: {
-            select: {
-              maxLimit:true,
-              hasLimit:true,
-              feature: true,
-            },
-          },
+          features:true
         },
         orderBy: {
           [sortBy]: sortDirection,

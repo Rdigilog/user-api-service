@@ -63,9 +63,9 @@ export class UserService extends PrismaService {
               active: true,
               verified: true,
               phoneNumber: true,
-              // userRole: {
-              //   select: { role: true },
-              // },
+              userRole: {
+                select: { role: true },
+              },
             },
           },
         },
@@ -240,14 +240,11 @@ export class UserService extends PrismaService {
     }
   }
 
-  async addCompanyDetails(payload: CompanyDetailsDTO, userId: string) {
+  async addCompanyDetails(payload: CompanyDetailsDTO, companyId: string) {
     try {
-      const user = await this.user.findUniqueOrThrow({
-        where: { id: userId },
-      });
 
       await this.company.update({
-        where: { email: user.email as string },
+        where: { id:companyId },
         data: {
           ...(payload.companyName && { name: payload.companyName }),
           ...(payload.totalEmployee && {
@@ -267,6 +264,34 @@ export class UserService extends PrismaService {
           }),
         },
       });
+
+      if(payload.planId){
+              const plan = await this.plan.findUniqueOrThrow({
+        where: { id: payload.planId },
+      });
+        await this.subscription.upsert({
+          where:{
+            companyId
+          },
+          update:{},
+          create:{
+            plan:{
+              connect:{
+                id:payload.planId,
+              }
+            },
+            status:'PENDING',
+            users:plan.minimumUsers,
+            nextBilling:this.utilsService.nextBilling(),
+            totalAmount:plan.minimumUsers * plan.price,
+            company:{
+              connect:{
+                id:companyId
+              }
+            }
+          }
+        })
+      }
       return { error: 0, body: 'Company Details updated successfully' };
     } catch (e) {
       return this.responseService.errorHandler(e);

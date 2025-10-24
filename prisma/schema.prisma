@@ -39,6 +39,9 @@ model User {
   LeavePolicy1     LeavePolicy[]      @relation("PolicyApprovalLevel1")
   LeavePolicy2     LeavePolicy[]      @relation("PolicyApprovalLevel2")
   leaveApprovalLog LeaveApprovalLog[] @relation(name: "leave_actor")
+  Message          Message[]
+  ChatParticipant  ChatParticipant[]
+  MessageStatus    MessageStatus[]
 
   @@map("users")
 }
@@ -57,29 +60,42 @@ model Profile {
   user        User     @relation(fields: [userId], references: [id], name: "user_profile")
 
   // profileBranch ProfileBranch[]
-  status        LeaveStatus     @default(APPROVED)
-  employee      Employee?
-  branch        Branch[]
+  status   LeaveStatus @default(APPROVED)
+  employee Employee?
+  branch   Branch[]
 
   @@map("profiles")
 }
 
 model Faq {
-  id          String   @id @default(uuid())
-  question    String
-  answer      String
-  active Boolean @default(true)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id         String   @id @default(uuid())
+  question   String
+  answer     String
+  categoryId String?
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  category FaqCategory? @relation(fields: [categoryId], references: [id], name: "faq_category")
 
   @@map("faqs")
 }
 
-model EmployeeBranch {
-  branchId String @map("branch_id")
-  employeeId   String @map("employeeId")
+model FaqCategory {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  faq       Faq[]    @relation(name: "faq_category")
 
-  branch  Branch? @relation(fields: [branchId], references: [id])
+  @@map("faq_categories")
+}
+
+model EmployeeBranch {
+  branchId   String @map("branch_id")
+  employeeId String @map("employeeId")
+
+  branch   Branch?  @relation(fields: [branchId], references: [id])
   employee Employee @relation(fields: [employeeId], references: [id])
 
   @@id([branchId, employeeId])
@@ -110,10 +126,10 @@ model Employee {
   emergencyContact EmergencyContact?
   jobInformation   JobInformation?
   bankInformation  BankInformation?
-  profile          Profile           @relation(fields: [userId], references: [userId])
-  company          Company           @relation(fields: [companyId], references: [id])
-  department DepartmentEmployee[]
-  branch EmployeeBranch[]
+  profile          Profile              @relation(fields: [userId], references: [userId])
+  company          Company              @relation(fields: [companyId], references: [id])
+  department       DepartmentEmployee[]
+  branch           EmployeeBranch[]
 
   @@unique([userId, companyId])
   @@index([userId, companyId])
@@ -198,6 +214,7 @@ model Company {
   createdAt                DateTime  @default(now()) @map("created_at")
   updatedAt                DateTime  @updatedAt @map("updated_at")
   archived                 Boolean   @default(false)
+  status                   Boolean   @default(true)
 
   plan                      Plan?                      @relation(fields: [planId], references: [id], onDelete: Cascade)
   branch                    Branch[]
@@ -215,7 +232,9 @@ model Company {
   TaskStage                 TaskStage[]
   LeavePolicy               LeavePolicy[]
   rota                      Rota[]
-  form Form[]
+  form                      Form[]
+  BillingHistory            BillingHistory[]           @relation(name: "billing_history_company")
+  subscription Subscription[] @relation(name: "company_subscription")
 
   @@map("companies")
 }
@@ -510,85 +529,134 @@ model Branch {
   archived    Boolean  @default(false)
   managerId   String?
 
-  company       Company         @relation(fields: [companyId], references: [id])
-  country       Country         @relation(fields: [countryCode], references: [code])
-  manager       Profile?        @relation(fields: [managerId], references: [userId])
-  employees EmployeeBranch[]
-  LeavePolicy   LeavePolicy[]   @relation("PolicyBranches")
-  department    Department[]
+  company     Company          @relation(fields: [companyId], references: [id])
+  country     Country          @relation(fields: [countryCode], references: [code])
+  manager     Profile?         @relation(fields: [managerId], references: [userId])
+  employees   EmployeeBranch[]
+  LeavePolicy LeavePolicy[]    @relation("PolicyBranches")
+  department  Department[]
 
   @@index([companyId, countryCode])
   @@map("branches")
 }
 
 model Department {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  branchId    String   @map("branch_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  archived    Boolean  @default(false)
-  branch      Branch   @relation(fields: [branchId], references: [id])
+  id                 String               @id @default(uuid())
+  name               String
+  description        String?
+  branchId           String               @map("branch_id")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  archived           Boolean              @default(false)
+  branch             Branch               @relation(fields: [branchId], references: [id])
   departmentEmployee DepartmentEmployee[]
 
   @@map("departments")
 }
 
 model DepartmentEmployee {
-  id        String   @id @default(uuid())
+  id           String   @id @default(uuid())
   departmentId String
-  employeeId String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  archived  Boolean  @default(false)
+  employeeId   String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  archived     Boolean  @default(false)
 
-  employee Employee @relation(fields: [employeeId], references: [id])
+  employee   Employee   @relation(fields: [employeeId], references: [id])
   department Department @relation(fields: [departmentId], references: [id])
 
   @@map("department_employees")
 }
 
 model Plan {
-  id          String    @id @default(uuid())
-  name        String?   @unique
-  description String?
-  active      Boolean   @default(true)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  archived    Boolean   @default(false)
-  company     Company[]
-
-  planFeature PlanFeature[]
+  id                 String           @id @default(uuid())
+  name               String?          @unique
+  description        String?
+  currency           String           @default("£")
+  price              Float            @default(0)
+  billingPeriod      String           @default("month")
+  minimumUsers       Int              @default(0)
+  additionalUserCost Float            @default(0)
+  colorTheme         String?
+  buttonText         String?
+  badge              String?
+  active             Boolean          @default(true)
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  archived           Boolean          @default(false)
+  company            Company[]
+  features           Feature[]        @relation(name: "plan_features")
+  billingHistory     BillingHistory[] @relation(name: "billing_history_plan")
+  subscription       Subscription[]   @relation(name: "subscription_plan")
+  
 
   @@map("plans")
 }
 
 model Feature {
-  id          String        @id @default(uuid())
-  name        String?       @unique
-  active      Boolean       @default(true)
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
-  archived    Boolean       @default(false)
-  planFeature PlanFeature[]
+  id         Int      @id @default(autoincrement())
+  name       String
+  isIncluded Boolean  @default(false)
+  hasLimit   Boolean  @default(false)
+  limit      Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  archived   Boolean  @default(true)
+  planId     String
+  plan       Plan     @relation(fields: [planId], references: [id], name: "plan_features")
+  // PlanFeature PlanFeature[]
 
   @@map("features")
 }
 
-model PlanFeature {
-  planId    String @map("plan_id")
-  featureId String @map("feature_id")
+model Subscription {
+  id          Int        @id @default(autoincrement())
+  companyId   String  @unique
+  planId      String
+  status      planStatus
+  nextBilling DateTime
+  users       Int
+  totalAmount Float
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  archived    Boolean    @default(true)
 
-  maxLimit Int?    @default(1)
-  hasLimit Boolean @default(false)
+  plan    Plan    @relation(fields: [planId], references: [id], name: "subscription_plan")
+  company Company @relation(fields: [companyId], references: [id], name: "company_subscription")
 
-  plan    Plan    @relation(fields: [planId], references: [id])
-  feature Feature @relation(fields: [featureId], references: [id])
-
-  @@id([planId, featureId])
-  @@map("plan_features")
+  @@map("subscriptions")
 }
+
+model BillingHistory {
+  id        Int                  @id @default(autoincrement())
+  invoiceNo String               @unique
+  date      DateTime
+  amount    Float
+  status    BillingHistoryStatus
+  planId    String
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+  companyId String
+
+  plan    Plan    @relation(fields: [planId], references: [id], name: "billing_history_plan")
+  company Company @relation(fields: [companyId], references: [id], name: "billing_history_company")
+
+  @@map("billing_histories")
+}
+
+// model PlanFeature {
+//   planId    String @map("plan_id")
+//   featureId String @map("feature_id")
+
+//   maxLimit Int?    @default(1)
+//   hasLimit Boolean @default(false)
+
+//   plan    Plan    @relation(fields: [planId], references: [id])
+//   feature Feature @relation(fields: [featureId], references: [id])
+
+//   @@id([planId, featureId])
+//   @@map("plan_features")
+// }
 
 model Attendance {
   id        String           @id @default(uuid())
@@ -886,13 +954,13 @@ model JobRole {
 }
 
 model Form {
-  id          String       @id @default(uuid())
+  id          String         @id @default(uuid())
   title       String
   description String?
-  companyId String
+  companyId   String
   fields      FormField[]
   responses   FormResponse[]
-  createdAt   DateTime     @default(now())
+  createdAt   DateTime       @default(now())
 
   company Company @relation(fields: [companyId], references: [id])
 
@@ -900,26 +968,26 @@ model Form {
 }
 
 model FormField {
-  id          String   @id @default(uuid())
-  formId      String
-  type        FieldType
-  label       String
-  required    Boolean   @default(false)
-  options     String[]  
-  order       Int
+  id       String    @id @default(uuid())
+  formId   String
+  type     FieldType
+  label    String
+  required Boolean   @default(false)
+  options  String[]
+  order    Int
 
-  form        Form      @relation(fields: [formId], references: [id])
+  form Form @relation(fields: [formId], references: [id])
 
   @@map("form_fields")
 }
 
 model FormResponse {
-  id         String            @id @default(uuid())
-  formId     String
-  answers    Json              // store responses dynamically
-  submittedAt DateTime         @default(now())
+  id          String   @id @default(uuid())
+  formId      String
+  answers     Json // store responses dynamically
+  submittedAt DateTime @default(now())
 
-  form       Form              @relation(fields: [formId], references: [id])
+  form Form @relation(fields: [formId], references: [id])
 
   @@map("form_responses")
 }
@@ -943,7 +1011,6 @@ enum FieldType {
   FILE_UPLOAD
   SLIDER
 }
-
 
 enum RecurrenceType {
   DAILY
@@ -1116,4 +1183,85 @@ enum Priority {
 enum AccrualSchedule {
   MONTHLY
   ANNUALLY
+}
+
+enum planStatus {
+  ACTIVE
+  PENDING
+  EXPIRED
+  CANCELLED
+}
+
+enum BillingHistoryStatus {
+  PAID
+  FAILED
+}
+
+// Chat-related models
+model Chat {
+  id        String   @id @default(uuid())
+  name      String?  @map("name")
+  group     Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  messages     Message[]
+  participants ChatParticipant[]
+
+  @@map("chats")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  chatId    String   @map("chat_id")
+  senderId  String   @map("sender_id")
+  content   String
+  mediaType String   @default("text") @map("media_type")
+  extra     Json? // For additional metadata like file URLs, thumbnails, etc.
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  chat            Chat            @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender          User            @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  messageStatuses MessageStatus[]
+
+  @@index([chatId])
+  @@index([senderId])
+  @@map("messages")
+}
+
+model ChatParticipant {
+  chatId    String   @map("chat_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([chatId, userId])
+  @@index([chatId])
+  @@index([userId])
+  @@map("chat_participants")
+}
+
+model MessageStatus {
+  messageId String   @map("message_id")
+  userId    String   @map("user_id")
+  delivered Boolean  @default(false)
+  seen      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@map("message_statuses")
 }
