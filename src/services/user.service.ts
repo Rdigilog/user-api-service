@@ -453,7 +453,7 @@ export class UserService extends PrismaService {
       });
 
       const role = await this.role.findUnique({
-        where: { name: 'STAFF' },
+        where: { name: 'CAREGIVER' },
       });
       let user = await this.user.findUnique({
         where: { email: payload.email },
@@ -491,8 +491,8 @@ export class UserService extends PrismaService {
             user: { connect: { id: user.id } },
             role: {
               connectOrCreate: {
-                where: { name: payload.roleId },
-                create: { name: payload.roleId },
+                where: { id: role?.id },
+                create: { name: 'CAREGIVER' },
               },
             },
             company: {
@@ -518,7 +518,7 @@ export class UserService extends PrismaService {
                   create: {
                     jobInformation: {
                       create: {
-                        jobRole: jobRole
+                        jobRole: jobRole?.id
                           ? {
                               connect: {
                                 id: jobRole.id,
@@ -546,7 +546,7 @@ export class UserService extends PrismaService {
             },
             userRole: {
               create: {
-                role: { connect: { name: payload.roleId } },
+                role: { connect: { id: role?.id } },
                 company: { connect: { id: company.id } },
               },
             },
@@ -578,7 +578,7 @@ export class UserService extends PrismaService {
           email: payload.email,
           role: {
             connect: {
-              id: payload.roleId,
+              id: role?.id,
             },
           },
           memberId: this.utilsService.lisaUnique(),
