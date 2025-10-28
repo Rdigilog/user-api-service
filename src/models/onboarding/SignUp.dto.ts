@@ -231,8 +231,14 @@ export class InviteUserDTO extends EmailDTO {
   @IsString()
   memberId: string;
 
-  @IsOptional()
   @ApiPropertyOptional({ example: 'Doe' })
+  @IsOptional()
   @IsString()
   roleId: string;
+
+
+  @ApiPropertyOptional({ example: 'Doe' })
+  @IsOptional()
+  @IsString()
+  branchId: string;
 }

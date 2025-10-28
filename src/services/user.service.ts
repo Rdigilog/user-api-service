@@ -535,6 +535,11 @@ export class UserService extends PrismaService {
                         id: companyId,
                       },
                     },
+                    branch:payload.branchId ? {
+                      create:{
+                        branchId:payload.branchId
+                      }
+                    }:undefined
                   },
                 },
               },
@@ -563,6 +568,8 @@ export class UserService extends PrismaService {
         });
       }
 
+
+
       const invite = await this.invitation.create({
         data: {
           user: { connect: { id: user.id } },
@@ -574,7 +581,7 @@ export class UserService extends PrismaService {
               id: payload.roleId,
             },
           },
-          memberId: payload.memberId,
+          memberId: this.utilsService.lisaUnique(),
           inviteLink: this.utilsService.lisaUnique() || 'inviteLink',
         },
         include: {
@@ -585,20 +592,20 @@ export class UserService extends PrismaService {
           },
         },
       });
-      const inviteEmailData: InviteEmailFields = {
-        recipientName: user.profile?.firstName || '',
-        inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/register/?code=${invite.inviteLink}`,
-        companyName: company.name || '',
-        inviterName: invite.invitedByUser?.profile?.firstName || '',
-        roleName: role?.name || 'Employee',
-      };
-      const mailObject: SendMailDto = {
-        to: payload.email,
-        subject: mailSubjects.USER_INVITATION,
-        template: mailTemplates.USER_INVITATION,
-        content: inviteEmailData,
-      };
-      this.mailQueue.add('INVITATION', mailObject);
+      // const inviteEmailData: InviteEmailFields = {
+      //   recipientName: user.profile?.firstName || '',
+      //   inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/register/?code=${invite.inviteLink}`,
+      //   companyName: company.name || '',
+      //   inviterName: invite.invitedByUser?.profile?.firstName || '',
+      //   roleName: role?.name || 'Employee',
+      // };
+      // const mailObject: SendMailDto = {
+      //   to: payload.email,
+      //   subject: mailSubjects.USER_INVITATION,
+      //   template: mailTemplates.USER_INVITATION,
+      //   content: inviteEmailData,
+      // };
+      // this.mailQueue.add('INVITATION', mailObject);
       return { error: 0, body: 'Invite sent successfully' };
     } catch (e) {
       return this.responseService.errorHandler(e);
