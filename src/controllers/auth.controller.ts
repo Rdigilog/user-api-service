@@ -14,6 +14,8 @@ import { ConfigService } from '@nestjs/config';
 import { CONFIG_KEYS } from '../config/config.keys';
 import { ApiResponseDto } from 'src/models/responses/generic.dto';
 import { AuthResponseDto, TokenDataDto } from 'src/models/responses/Login.dto';
+import { AuthUser } from 'src/decorators/logged-in-user-decorator';
+import type { LoggedInUser } from 'src/models/types/user.types';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -161,11 +163,14 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth('access-token') // allow using access token with swagger()
   @Post('/company-details')
-  async addCompanyDetails(@Body() payload: CompanyDetailsDTO, @Request() req) {
+  async addCompanyDetails(
+    @Body() payload: CompanyDetailsDTO,
+    @AuthUser() user:LoggedInUser
+  ) {
     try {
       const result = await this.userService.addCompanyDetails(
         payload,
-        req.user.id,
+        user.userRole[0].companyId as string,
       );
       if (result.error == 1)
         return this.responseService.badRequest(result.body);

@@ -71,7 +71,7 @@ export class UtilsService {
   }
   lisaUnique() {
     try {
-      return process('IGC_').toUpperCase();
+      return process('RD').toUpperCase();
     } catch (e) {
       return null;
     }

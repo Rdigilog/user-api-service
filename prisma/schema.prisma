@@ -580,6 +580,7 @@ model Plan {
   colorTheme         String?
   buttonText         String?
   badge              String?
+  discount Float?
   active             Boolean          @default(true)
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime         @updatedAt @map("updated_at")
@@ -594,20 +595,20 @@ model Plan {
 }
 
 model Feature {
-  id         Int      @id @default(autoincrement())
+  id         String    @id @default(uuid())
   name       String
-  isIncluded Boolean  @default(false)
-  hasLimit   Boolean  @default(false)
+  isIncluded Boolean   @default(false) @map("is_included")
+  hasLimit   Boolean   @default(false) @map("has_limit")
   limit      Int?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  archived   Boolean  @default(true)
-  planId     String
-  plan       Plan     @relation(fields: [planId], references: [id], name: "plan_features")
-  // PlanFeature PlanFeature[]
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  active     Boolean   @default(true)
+  planId     String?   @map("plan_id")
+  plan       Plan?     @relation(fields: [planId], references: [id], name: "plan_features")
 
   @@map("features")
 }
+
 
 model Subscription {
   id          Int        @id @default(autoincrement())
@@ -1195,6 +1196,7 @@ enum planStatus {
 enum BillingHistoryStatus {
   PAID
   FAILED
+  PENDING
 }
 
 // Chat-related models

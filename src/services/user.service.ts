@@ -1,14 +1,27 @@
-
 import { Injectable } from '@nestjs/common';
 import { JobRole, Prisma } from '@prisma/client';
 
 import { Queue } from 'bullmq';
 import { PrismaService } from 'src/config/prisma.service';
-import { InjectMailQueue, InjectSMSQueue } from 'src/decorators/queue.decorator';
+import {
+  InjectMailQueue,
+  InjectSMSQueue,
+} from 'src/decorators/queue.decorator';
 import { mailSubjects, mailTemplates } from 'src/enums/subjects.enum';
-import { InviteEmailFields, SendMailDto } from 'src/models/notification/mail.dto';
-import { UpdateProfileDto, EmployeeDto } from 'src/models/onboarding/profile.dto';
-import { InitiateRegistrationDto, PhoneNumberDTO, CompanyDetailsDTO, InviteUserDTO } from 'src/models/onboarding/SignUp.dto';
+import {
+  InviteEmailFields,
+  SendMailDto,
+} from 'src/models/notification/mail.dto';
+import {
+  UpdateProfileDto,
+  EmployeeDto,
+} from 'src/models/onboarding/profile.dto';
+import {
+  InitiateRegistrationDto,
+  PhoneNumberDTO,
+  CompanyDetailsDTO,
+  InviteUserDTO,
+} from 'src/models/onboarding/SignUp.dto';
 import { FileUploadService } from 'src/utils/services/file-upload.service';
 import { OtpService } from 'src/utils/services/otp.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
@@ -16,7 +29,6 @@ import { UtilsService } from 'src/utils/services/utils.service';
 import { ConfigService } from '@nestjs/config';
 import { CONFIG_KEYS } from '../config/config.keys';
 import { InjectFileRemovalQueue } from 'src/queue/src/decorators/queue.decorator';
-
 
 @Injectable()
 export class UserService extends PrismaService {
@@ -30,7 +42,7 @@ export class UserService extends PrismaService {
     private readonly responseService: ResponsesService,
     private readonly fileUploadService: FileUploadService,
     private readonly prismaService: PrismaService,
-    private readonly userConfigService: ConfigService
+    private readonly userConfigService: ConfigService,
   ) {
     super(userConfigService);
   }
@@ -118,7 +130,7 @@ export class UserService extends PrismaService {
         filter.user = { type: role };
       }
 
-      console.log(JSON.stringify(filter))
+      console.log(JSON.stringify(filter));
 
       const result = await this.profile.findMany({
         where: filter,
@@ -242,9 +254,8 @@ export class UserService extends PrismaService {
 
   async addCompanyDetails(payload: CompanyDetailsDTO, companyId: string) {
     try {
-
-      await this.company.update({
-        where: { id:companyId },
+      const company = await this.company.update({
+        where: { id: companyId },
         data: {
           ...(payload.companyName && { name: payload.companyName }),
           ...(payload.totalEmployee && {
@@ -265,33 +276,54 @@ export class UserService extends PrismaService {
         },
       });
 
-      if(payload.planId){
-              const plan = await this.plan.findUniqueOrThrow({
-        where: { id: payload.planId },
-      });
-        await this.subscription.upsert({
-          where:{
-            companyId
+      if (payload.planId) {
+        const plan = await this.plan.findUniqueOrThrow({
+          where: { id: payload.planId },
+        });
+     const subscription = await this.subscription.upsert({
+          where: {
+            companyId,
           },
-          update:{},
-          create:{
-            plan:{
-              connect:{
-                id:payload.planId,
-              }
+          update: {},
+          create: {
+            plan: {
+              connect: {
+                id: payload.planId,
+              },
             },
-            status:'PENDING',
-            users:plan.minimumUsers,
-            nextBilling:this.utilsService.nextBilling(),
-            totalAmount:plan.minimumUsers * plan.price,
-            company:{
-              connect:{
-                id:companyId
-              }
-            }
-          }
-        })
-      }
+            status: 'PENDING',
+            users: plan.minimumUsers,
+            nextBilling: this.utilsService.nextBilling(),
+            totalAmount: plan.minimumUsers * plan.price,
+            company: {
+              connect: {
+                id: companyId,
+              },
+            },
+          },
+        });
+
+        // if (payload.planId != company.planId) {
+          await this.billingHistory.create({
+            data: {
+              company: {
+                connect: {
+                  id: companyId,
+                },
+              },
+              invoiceNo: this.utilsService.lisaUnique(),
+              plan: {
+                connect: {
+                  id: payload.planId,
+                },
+              },
+              amount: subscription.totalAmount,
+              status:'PENDING',
+              date:new Date()
+            },
+          });
+        }
+      // }
       return { error: 0, body: 'Company Details updated successfully' };
     } catch (e) {
       return this.responseService.errorHandler(e);
@@ -333,13 +365,13 @@ export class UserService extends PrismaService {
       const result = await this.user.update({
         where: { id },
         data: payload,
-        select:{
-          email:true, 
-          phoneNumber:true,
-          active:true,
-          verified:true,
-          phoneVerified:true,
-        }
+        select: {
+          email: true,
+          phoneNumber: true,
+          active: true,
+          verified: true,
+          phoneVerified: true,
+        },
       });
       return { error: 0, body: result };
     } catch (e) {
@@ -354,11 +386,11 @@ export class UserService extends PrismaService {
   ) {
     try {
       const profile = await this.profile.findFirst({
-        where: { userId }
-      })
+        where: { userId },
+      });
       let fileUrl = '';
       if (profilePicture) {
-        this.fileRemovalQueue.add('REMOVE_PROFILE_PIC', profile?.imageUrl)
+        this.fileRemovalQueue.add('REMOVE_PROFILE_PIC', profile?.imageUrl);
         const fileUploadResult =
           await this.fileUploadService.uploadPicture(profilePicture);
         // console.log(fileUploadResult)
@@ -440,11 +472,11 @@ export class UserService extends PrismaService {
           },
         },
       });
-      let jobRole:JobRole|null=null;
-      if(payload.roleId){
+      let jobRole: JobRole | null = null;
+      if (payload.roleId) {
         jobRole = await this.jobRole.findFirst({
-         where:{id:payload.roleId}
-       })
+          where: { id: payload.roleId },
+        });
       }
       if (user) {
         const { userRole } = user;
@@ -482,27 +514,29 @@ export class UserService extends PrismaService {
                 firstName: '',
                 lastName: '',
                 email: payload.email,
-                employee:{
-                  create:{
-                    jobInformation:{
-                      create:{
-                        jobRole: jobRole ? {
-                          connect:{
-                            id:jobRole.id
-                          }
-                        }:undefined
-                      }
+                employee: {
+                  create: {
+                    jobInformation: {
+                      create: {
+                        jobRole: jobRole
+                          ? {
+                              connect: {
+                                id: jobRole.id,
+                              },
+                            }
+                          : undefined,
+                      },
                     },
-                    emergencyContact:{
-                      create:{}
+                    emergencyContact: {
+                      create: {},
                     },
-                    company:{
-                      connect:{
-                        id:companyId
-                      }
-                    }
-                  }
-                }
+                    company: {
+                      connect: {
+                        id: companyId,
+                      },
+                    },
+                  },
+                },
               },
             },
             userRole: {
@@ -541,7 +575,7 @@ export class UserService extends PrismaService {
             },
           },
           memberId: payload.memberId,
-          inviteLink: this.utilsService.lisaUnique() || "inviteLink",
+          inviteLink: this.utilsService.lisaUnique() || 'inviteLink',
         },
         include: {
           invitedByUser: {
@@ -660,7 +694,7 @@ export class UserService extends PrismaService {
         roleName: invite?.role.name || 'Employee',
       };
       const mailObject: SendMailDto = {
-        to: invite?.user?.email || "",
+        to: invite?.user?.email || '',
         subject: mailSubjects.USER_INVITATION,
         template: mailTemplates.USER_INVITATION,
         content: inviteEmailData,
@@ -709,7 +743,7 @@ export class UserService extends PrismaService {
         template: mailTemplates.ACCOUNT_ACTIVATION,
         content: { code: otpCode.code, name: '' },
       };
-      console.log('mail payload', maidData)
+      console.log('mail payload', maidData);
       await this.mailQueue.add('SEND_OTP', maidData);
       return { error: 0, body: { token: otpCode.secret } };
     } catch (e) {
@@ -719,13 +753,13 @@ export class UserService extends PrismaService {
 
   async sendOtpPhone(phoneNumber: string) {
     try {
-      console.log('sending otp to ' + phoneNumber)
+      console.log('sending otp to ' + phoneNumber);
       const otpCode = this.otpService.secretOTP();
       const maidData = {
         to: phoneNumber,
         content: `Your One Time Password is  ${otpCode.code}`,
       };
-      console.log('mail payload', maidData)
+      console.log('mail payload', maidData);
       await this.smsQueue.add('SEND_OTP', maidData);
       return { error: 0, body: { token: otpCode.secret } };
     } catch (e) {
@@ -813,9 +847,9 @@ export class UserService extends PrismaService {
   async removeProfilePic(userId: string) {
     try {
       const profile = await this.profile.findFirst({
-        where: { userId }
-      })
-      this.fileRemovalQueue.add('REMOVE_PROFILE_PIC', profile?.imageUrl)
+        where: { userId },
+      });
+      this.fileRemovalQueue.add('REMOVE_PROFILE_PIC', profile?.imageUrl);
       const result = await this.profile.update({
         where: { userId },
         data: { imageUrl: null },
@@ -838,21 +872,21 @@ export class UserService extends PrismaService {
               bankInformation: true,
               department: {
                 select: {
-                  department: true
-                }
+                  department: true,
+                },
               },
               branch: {
                 select: {
-                  branch: true
-                }
-              }
-            }
-          }
-        }
-      })
-      return { error: 0, body: result }
+                  branch: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      return { error: 0, body: result };
     } catch (e) {
-      return this.responseService.errorHandler(e)
+      return this.responseService.errorHandler(e);
     }
   }
 }
