@@ -60,7 +60,7 @@ model Profile {
   user        User     @relation(fields: [userId], references: [id], name: "user_profile")
 
   // profileBranch ProfileBranch[]
-  status   LeaveStatus @default(APPROVED)
+  status   UserStatus @default(OFFLINE)
   employee Employee?
   branch   Branch[]
 
@@ -234,7 +234,7 @@ model Company {
   rota                      Rota[]
   form                      Form[]
   BillingHistory            BillingHistory[]           @relation(name: "billing_history_company")
-  subscription Subscription[] @relation(name: "company_subscription")
+  subscription              Subscription[]             @relation(name: "company_subscription")
 
   @@map("companies")
 }
@@ -580,7 +580,7 @@ model Plan {
   colorTheme         String?
   buttonText         String?
   badge              String?
-  discount Float?
+  discount           Float?
   active             Boolean          @default(true)
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime         @updatedAt @map("updated_at")
@@ -589,30 +589,28 @@ model Plan {
   features           Feature[]        @relation(name: "plan_features")
   billingHistory     BillingHistory[] @relation(name: "billing_history_plan")
   subscription       Subscription[]   @relation(name: "subscription_plan")
-  
 
   @@map("plans")
 }
 
 model Feature {
-  id         String    @id @default(uuid())
+  id         String   @id @default(uuid())
   name       String
-  isIncluded Boolean   @default(false) @map("is_included")
-  hasLimit   Boolean   @default(false) @map("has_limit")
+  isIncluded Boolean  @default(false) @map("is_included")
+  hasLimit   Boolean  @default(false) @map("has_limit")
   limit      Int?
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
-  active     Boolean   @default(true)
-  planId     String?   @map("plan_id")
-  plan       Plan?     @relation(fields: [planId], references: [id], name: "plan_features")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  active     Boolean  @default(true)
+  planId     String?  @map("plan_id")
+  plan       Plan?    @relation(fields: [planId], references: [id], name: "plan_features")
 
   @@map("features")
 }
 
-
 model Subscription {
   id          Int        @id @default(autoincrement())
-  companyId   String  @unique
+  companyId   String     @unique
   planId      String
   status      planStatus
   nextBilling DateTime
@@ -1199,6 +1197,12 @@ enum BillingHistoryStatus {
   PENDING
 }
 
+enum UserStatus {
+  ONLINE
+  OFFLINE
+}
+
+
 // Chat-related models
 model Chat {
   id        String   @id @default(uuid())
@@ -1215,29 +1219,36 @@ model Chat {
 }
 
 model Message {
-  id        String   @id @default(uuid())
-  chatId    String   @map("chat_id")
-  senderId  String   @map("sender_id")
-  content   String
-  mediaType String   @default("text") @map("media_type")
-  extra     Json? // For additional metadata like file URLs, thumbnails, etc.
-  deleted   Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(uuid())
+  chatId          String   @map("chat_id")
+  senderId        String   @map("sender_id")
+  parentMessageId String?  @map("parent_message_id")
+  batchId         String?  @map("batch_id")
+  content         String
+  mediaType       String   @default("text") @map("media_type")
+  extra           Json? // For additional metadata like file URLs, thumbnails, etc.
+  deleted         Boolean  @default(false)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relations
   chat            Chat            @relation(fields: [chatId], references: [id], onDelete: Cascade)
   sender          User            @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  parentMessage   Message?        @relation("MessageThreads", fields: [parentMessageId], references: [id], onDelete: Cascade)
+  threadMessages  Message[]       @relation("MessageThreads")
   messageStatuses MessageStatus[]
 
   @@index([chatId])
   @@index([senderId])
+  @@index([parentMessageId])
+  @@index([batchId])
   @@map("messages")
 }
 
 model ChatParticipant {
   chatId    String   @map("chat_id")
   userId    String   @map("user_id")
+  starred   Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
