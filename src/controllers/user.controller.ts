@@ -191,7 +191,6 @@ export class UserController {
       },
     },
   })
-  
   async updateProfile(
     @Body() payload: UpdateProfileDto,
     @UploadedFile() profilePicture: Express.Multer.File,

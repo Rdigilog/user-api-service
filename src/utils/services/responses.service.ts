@@ -32,28 +32,28 @@ export class ResponsesService {
   unauthorized(message: any) {
     return {
       statusCode: this.responseCodes['UNAUTHORIZED'],
-      message: this.responseMessages['UNAUTHORIZED'],
+      message: this.cast(message),
       data: this.cast(message),
     };
   }
   badRequest(message: any) {
     return {
       statusCode: this.responseCodes['INVALID_REQUEST'],
-      message: this.responseMessages['INVALID_REQUEST'],
+      message: this.cast(message),
       data: this.cast(message),
     };
   }
   notFound(message: any) {
     return {
       statusCode: this.responseCodes['INVALID_REQUEST'],
-      message: this.responseMessages['INVALID_REQUEST'],
+      message: this.cast(message),
       data: this.cast(message),
     };
   }
   exception(message: any) {
     return {
       statusCode: this.responseCodes['EXCEPTION'],
-      message: this.responseMessages['EXCEPTION'],
+      message: this.cast(message),
       data: this.cast(message),
     };
   }
