@@ -117,71 +117,97 @@ export class ResponsesService {
     return { totalItems, result, totalPages, currentPage };
   }
 
-  errorHandler(e: any) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      const messages: Record<string, string> = {
-        P2000: 'Input value too long for column.',
-        P2001: 'Record not found.',
-        P2002: 'Duplicate value violates unique constraint.',
-        P2003: 'Foreign key constraint failed.',
-        P2004: 'Database constraint failed.',
-        P2005: 'Invalid value stored for this field.',
-        P2006: 'Provided value is invalid.',
-        P2007: 'Data validation failed.',
-        P2008: 'Query parsing error.',
-        P2009: 'Query validation failed.',
-        P2010: 'Raw query execution failed.',
-        P2011: 'Null constraint violation.',
-        P2012: 'Missing required value.',
-        P2013: 'Missing required argument.',
-        P2014: 'Invalid relation between records.',
-        P2015: 'Related record not found.',
-        P2016: 'Query interpretation error.',
-        P2017: 'Relation records not connected.',
-        P2018: 'Required connected records not found.',
-        P2019: 'Input error.',
-        P2020: 'Value out of range.',
-        P2021: 'Table does not exist.',
-        P2022: 'Column does not exist.',
-        P2023: 'Inconsistent column data.',
-        P2024: 'Database operation timeout.',
-        P2025: 'Record not found.',
-        P2026: 'Unsupported feature.',
-        P2027: 'Multiple errors occurred.',
-        P2028: 'Transaction API error.',
-        P2029: 'Invalid request to query engine.',
-      };
 
-      const message =
-        messages[e.code] || e.message.split('\n').slice(-1)[0].trim();
-      return { error: 2, body: message };
-    }
+    errorHandler(e: any) {
+    const extractMessage = (msg: string) => {
+      // Remove newlines and excess spaces
+      msg = msg.replace(/\s+/g, ' ').trim();
 
-    if (e instanceof Prisma.PrismaClientValidationError) {
-      return {
-        error: 2,
-        body: 'Validation error: please check your query inputs.',
-      };
-    }
+      // Try to extract the part after "Value" or "Error:" if present
+      const match = msg.match(/(Value '.+?' not found.+?|Error:.+)/);
+      return match ? match[1] : msg;
+    };
 
-    if (e instanceof Prisma.PrismaClientInitializationError) {
-      return { error: 2, body: 'Failed to initialize Prisma client.' };
-    }
-
-    if (e instanceof Prisma.PrismaClientRustPanicError) {
-      return { error: 2, body: 'Internal Prisma engine error (Rust panic).' };
-    }
-
-    if (e instanceof Prisma.PrismaClientUnknownRequestError) {
-      return { error: 2, body: 'Unknown Prisma error occurred.' };
+    if (
+      e instanceof Prisma.PrismaClientKnownRequestError ||
+      e instanceof Prisma.PrismaClientUnknownRequestError ||
+      e instanceof Prisma.PrismaClientRustPanicError ||
+      e instanceof Prisma.PrismaClientInitializationError
+    ) {
+      return { error: 2, body: extractMessage(e.message) };
     }
 
     if (e instanceof Error) {
-      return { error: 2, body: e.message };
+      return { error: 2, body: extractMessage(e.message) };
     }
 
-    return { error: 2, body: String(e) };
+    return { error: 2, body: extractMessage(String(e)) };
   }
+  // errorHandler(e: any) {
+  //   if (e instanceof Prisma.PrismaClientKnownRequestError) {
+  //     const messages: Record<string, string> = {
+  //       P2000: 'Input value too long for column.',
+  //       P2001: 'Record not found.',
+  //       P2002: 'Duplicate value violates unique constraint.',
+  //       P2003: 'Foreign key constraint failed.',
+  //       P2004: 'Database constraint failed.',
+  //       P2005: 'Invalid value stored for this field.',
+  //       P2006: 'Provided value is invalid.',
+  //       P2007: 'Data validation failed.',
+  //       P2008: 'Query parsing error.',
+  //       P2009: 'Query validation failed.',
+  //       P2010: 'Raw query execution failed.',
+  //       P2011: 'Null constraint violation.',
+  //       P2012: 'Missing required value.',
+  //       P2013: 'Missing required argument.',
+  //       P2014: 'Invalid relation between records.',
+  //       P2015: 'Related record not found.',
+  //       P2016: 'Query interpretation error.',
+  //       P2017: 'Relation records not connected.',
+  //       P2018: 'Required connected records not found.',
+  //       P2019: 'Input error.',
+  //       P2020: 'Value out of range.',
+  //       P2021: 'Table does not exist.',
+  //       P2022: 'Column does not exist.',
+  //       P2023: 'Inconsistent column data.',
+  //       P2024: 'Database operation timeout.',
+  //       P2025: 'Record not found.',
+  //       P2026: 'Unsupported feature.',
+  //       P2027: 'Multiple errors occurred.',
+  //       P2028: 'Transaction API error.',
+  //       P2029: 'Invalid request to query engine.',
+  //     };
+
+  //     const message =
+  //       messages[e.code] || e.message.split('\n').slice(-1)[0].trim();
+  //     return { error: 2, body: message };
+  //   }
+
+  //   if (e instanceof Prisma.PrismaClientValidationError) {
+  //     return {
+  //       error: 2,
+  //       body: 'Validation error: please check your query inputs.',
+  //     };
+  //   }
+
+  //   if (e instanceof Prisma.PrismaClientInitializationError) {
+  //     return { error: 2, body: 'Failed to initialize Prisma client.' };
+  //   }
+
+  //   if (e instanceof Prisma.PrismaClientRustPanicError) {
+  //     return { error: 2, body: 'Internal Prisma engine error (Rust panic).' };
+  //   }
+
+  //   if (e instanceof Prisma.PrismaClientUnknownRequestError) {
+  //     return { error: 2, body: 'Unknown Prisma error occurred.' };
+  //   }
+
+  //   if (e instanceof Error) {
+  //     return { error: 2, body: e.message };
+  //   }
+
+  //   return { error: 2, body: String(e) };
+  // }
 }
 
 interface DecimalFormat {
