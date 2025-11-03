@@ -117,24 +117,32 @@ export class ResponsesService {
     return { totalItems, result, totalPages, currentPage };
   }
 
-  errorHandler(e: any) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      return { error: 2, body: e.message.split('\n').slice(-1)[0].trim() }; // Extracts only the meaningful error message
-    }
-    if (e instanceof Prisma.PrismaClientUnknownRequestError) {
-      return { error: 2, body: e.message.split('\n').slice(-1)[0].trim() }; // Extracts only the meaningful error message
-    }
-    if (e instanceof Prisma.PrismaClientRustPanicError) {
-      return { error: 2, body: e.message.split('\n').slice(-1)[0].trim() }; // Extracts only the meaningful error message
-    }
-    if (e instanceof Prisma.PrismaClientInitializationError) {
-      return { error: 2, body: e.message.split('\n').slice(-1)[0].trim() }; // Extracts only the meaningful error message
-    }
-    if (e instanceof Error) {
-      return { error: 2, body: e.message };
-    }
-    return { error: 2, body: e.message.split('\n').slice(-1)[0].trim() };
+errorHandler(e: any) {
+  const extractMessage = (msg: string) => {
+    // Remove newlines and excess spaces
+    msg = msg.replace(/\s+/g, ' ').trim();
+
+    // Try to extract the part after "Value" or "Error:" if present
+    const match = msg.match(/(Value '.+?' not found.+?|Error:.+)/);
+    return match ? match[1] : msg;
+  };
+
+  if (
+    e instanceof Prisma.PrismaClientKnownRequestError ||
+    e instanceof Prisma.PrismaClientUnknownRequestError ||
+    e instanceof Prisma.PrismaClientRustPanicError ||
+    e instanceof Prisma.PrismaClientInitializationError
+  ) {
+    return { error: 2, body: extractMessage(e.message) };
   }
+
+  if (e instanceof Error) {
+    return { error: 2, body: extractMessage(e.message) };
+  }
+
+  return { error: 2, body: extractMessage(String(e)) };
+}
+
 }
 
 interface DecimalFormat {

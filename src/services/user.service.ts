@@ -872,6 +872,19 @@ export class UserService extends PrismaService {
       const result = await this.profile.findUnique({
         where: { userId },
         include: {
+          user:{
+            select:{
+              id:true,
+              active:true,
+              verified:true,
+              phoneVerified:true,
+              userRole:{
+                select:{role:{
+                  select:{id:true, name:true}
+                }}
+              }
+            }
+          },
           employee: {
             include: {
               jobInformation: true,

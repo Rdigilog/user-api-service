@@ -45,7 +45,7 @@ export class AuthController {
   @Post('/signup')
   async create(@Body() payload: InitiateRegistrationDto) {
     try {
-      let result = {
+      let result:{error:number, body:any} = {
         error: 1,
         body: 'This signup option not functional yet',
       };
