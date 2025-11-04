@@ -926,4 +926,16 @@ export class UserService extends PrismaService {
       return this.responseService.errorHandler(e);
     }
   }
+
+  async archiveUser(userId:string){
+    try{
+      const result =await this.user.update({
+        where:{id:userId},
+        data:{deleted:true, deletedAt:new Date()}
+      })
+      return {error:0, body:"Archived successfully"}
+    }catch(e){
+      return this.responseService.errorHandler(e);
+    }
+  }
 }

@@ -35,7 +35,7 @@ export class PlanService extends PrismaService {
         take: limit,
       });
 
-      if (result.length) {
+      // if (result.length) {
         const totalItems = await this.plan.count({ where: filter });
         const paginatedPlan = this.responseService.pagingData(
           { result, totalItems },
@@ -43,8 +43,8 @@ export class PlanService extends PrismaService {
           limit,
         );
         return { error: 0, body: paginatedPlan };
-      }
-      return { error: 1, body: 'No Order found' };
+      // }
+      // return { error: 1, body: 'No Order found' };
     } catch (e) {
       console.error(e);
       return { error: 2, body: e.message };

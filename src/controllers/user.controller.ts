@@ -1,4 +1,3 @@
-
 import {
   Controller,
   Get,
@@ -27,7 +26,12 @@ import {
 import { AuthUser } from 'src/decorators/logged-in-user-decorator';
 import { RouteName } from 'src/decorators/route-name.decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
-import { UpdateProfileDto, EmployeeDto, ChangePassword, ChangeStatus } from 'src/models/onboarding/profile.dto';
+import {
+  UpdateProfileDto,
+  EmployeeDto,
+  ChangePassword,
+  ChangeStatus,
+} from 'src/models/onboarding/profile.dto';
 import { InviteUserDTO } from 'src/models/onboarding/SignUp.dto';
 import type { LoggedInUser } from 'src/models/types/user.types';
 import { UserService } from 'src/services/user.service';
@@ -122,14 +126,10 @@ export class UserController {
 
   @Get('/prifle')
   @ApiOperation({ summary: 'Fetch profile of login user' })
-  async userProfile(
-    @AuthUser() user:LoggedInUser,
-  ) {
-    console.log('login user',user)
+  async userProfile(@AuthUser() user: LoggedInUser) {
+    console.log('login user', user);
     try {
-      const result = await this.service.view(
-        user.id
-      );
+      const result = await this.service.view(user.id);
       if (result.error == 1)
         return this.responseService.badRequest(result.body);
       if (result.error == 2) return this.responseService.exception(result.body);
@@ -141,20 +141,33 @@ export class UserController {
 
   @Get('/:userId')
   async getUser(
-    @Param('userId') userId:string,
-    @AuthUser() user:LoggedInUser,
+    @Param('userId') userId: string,
+    @AuthUser() user: LoggedInUser,
   ) {
-    try{
-      const result = await this.service.view(
-        userId
-      )
-      if(result.error == 2)
-        return this.responseService.notFound('no user found')
+    try {
+      const result = await this.service.view(userId);
+      if (result.error == 2)
+        return this.responseService.notFound('no user found');
 
-      return this.responseService.success(result.body)
-    } catch(e){
-      return this.responseService.exception(e.message)
-    } 
+      return this.responseService.success(result.body);
+    } catch (e) {
+      return this.responseService.exception(e.message);
+    }
+  }
+
+  @Delete('/:userId')
+  async archivedUser(
+    @Param('userId') userId: string,
+    @AuthUser() user: LoggedInUser,
+  ) {
+    try {
+      const result = await this.service.archiveUser(userId);
+      if (result.error == 2)
+        return this.responseService.notFound('no user found');
+      return this.responseService.success(result.body);
+    } catch (e) {
+      return this.responseService.exception(e.message);
+    }
   }
 
   // @Patch()
@@ -169,8 +182,6 @@ export class UserController {
   //     return this.responseService.exception(e.message);
   //   }
   // }
-
-
 
   @Patch('/prifle')
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
@@ -194,7 +205,7 @@ export class UserController {
   async updateProfile(
     @Body() payload: UpdateProfileDto,
     @UploadedFile() profilePicture: Express.Multer.File,
-    @AuthUser() user:LoggedInUser,
+    @AuthUser() user: LoggedInUser,
   ) {
     try {
       const result = await this.service.updateProfile(
@@ -211,7 +222,47 @@ export class UserController {
     }
   }
 
+  @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
+  @UseInterceptors(FileInterceptor('profilePicture'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        firstName: { type: 'string', example: 'John' },
+        lastName: { type: 'string', example: 'Doe' },
+        email: { type: 'string', example: 'john@example.com' },
+        phoneNumber: { type: 'string', example: '+123456789' },
+        profilePicture: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @Patch('/prifle/:userId')
+  @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
+  async updateProfilewWithUserId(
+    @Body() payload: UpdateProfileDto,
+    @Param('userId') userId: string,
+    @UploadedFile() profilePicture: Express.Multer.File,
+  ) {
+    try {
+      const result = await this.service.updateProfile(
+        payload,
+        profilePicture,
+        userId,
+      );
+      if (result.error == 1)
+        return this.responseService.badRequest(result.body);
+      if (result.error == 2) return this.responseService.exception(result.body);
+      return this.responseService.success(result.body);
+    } catch (e) {
+      return this.responseService.exception(e.message);
+    }
+  }
+
+  @Patch('/employee/:userId')
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
   async updateProfileFull(
     @Body() payload: EmployeeDto,
@@ -235,8 +286,8 @@ export class UserController {
 
   @Patch('/change-password')
   async changePassword(
-    @AuthUser() loggedInUser:LoggedInUser, 
-    @Body() payload: ChangePassword
+    @AuthUser() loggedInUser: LoggedInUser,
+    @Body() payload: ChangePassword,
   ) {
     try {
       if (payload.newPassword != payload.confirmPassword) {
@@ -244,8 +295,8 @@ export class UserController {
       }
 
       const user = await this.service.findById(loggedInUser.id, true);
-      if(!user){
-        return {error:1, body:"No User found"}
+      if (!user) {
+        return { error: 1, body: 'No User found' };
       }
       const passwordMatch = await this.utilService.comparePassword(
         payload.password,
@@ -278,9 +329,12 @@ export class UserController {
     @Param('userId') userId: string,
   ) {
     try {
-      const result = await this.service.updateUser({
-        ...payload,
-      }, userId);
+      const result = await this.service.updateUser(
+        {
+          ...payload,
+        },
+        userId,
+      );
       if (result.error == 1)
         return this.responseService.badRequest(result.body);
       if (result.error == 2) return this.responseService.exception(result.body);
