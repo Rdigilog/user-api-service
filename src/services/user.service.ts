@@ -127,20 +127,29 @@ export class UserService extends PrismaService {
       }
 
       if (role) {
-        filter.user = { type: role };
+        filter.user = { userRole: { some: { role: { name: role } } } };
       }
-
-      console.log(JSON.stringify(filter));
 
       const result = await this.profile.findMany({
         where: filter,
         include: {
           user: {
             select: {
+              id: true,
               email: true,
               active: true,
               verified: true,
               phoneNumber: true,
+              userRole: {
+                select: {
+                  role: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -151,16 +160,16 @@ export class UserService extends PrismaService {
         take: limit,
       });
 
-      if (result.length) {
-        const totalItems = await this.profile.count({ where: filter });
-        const paginatedProduct = this.responseService.pagingData(
-          { result, totalItems },
-          page,
-          limit,
-        );
-        return { error: 0, body: paginatedProduct };
-      }
-      return { error: 1, body: 'No Employee(s) found' };
+      // if (result.length) {
+      const totalItems = await this.profile.count({ where: filter });
+      const paginatedProduct = this.responseService.pagingData(
+        { result, totalItems },
+        page,
+        limit,
+      );
+      return { error: 0, body: paginatedProduct };
+      // }
+      // return { error: 1, body: 'No Employee(s) found' };
     } catch (e) {
       console.error(e);
       return { error: 2, body: e.message };
@@ -215,9 +224,15 @@ export class UserService extends PrismaService {
               employee: {
                 create: {
                   companyId: company.id,
-                  bankInformation: {},
-                  jobInformation: {},
-                  emergencyContact: {},
+                  bankInformation: {
+                    create:{}
+                  },
+                  jobInformation: {
+                    create:{}
+                  },
+                  emergencyContact: {
+                    create:{}
+                  },
                 },
               },
             },
@@ -280,7 +295,7 @@ export class UserService extends PrismaService {
         const plan = await this.plan.findUniqueOrThrow({
           where: { id: payload.planId },
         });
-     const subscription = await this.subscription.upsert({
+        const subscription = await this.subscription.upsert({
           where: {
             companyId,
           },
@@ -304,25 +319,25 @@ export class UserService extends PrismaService {
         });
 
         // if (payload.planId != company.planId) {
-          await this.billingHistory.create({
-            data: {
-              company: {
-                connect: {
-                  id: companyId,
-                },
+        await this.billingHistory.create({
+          data: {
+            company: {
+              connect: {
+                id: companyId,
               },
-              invoiceNo: this.utilsService.lisaUnique(),
-              plan: {
-                connect: {
-                  id: payload.planId,
-                },
-              },
-              amount: subscription.totalAmount,
-              status:'PENDING',
-              date:new Date()
             },
-          });
-        }
+            invoiceNo: this.utilsService.lisaUnique(),
+            plan: {
+              connect: {
+                id: payload.planId,
+              },
+            },
+            amount: subscription.totalAmount,
+            status: 'PENDING',
+            date: new Date(),
+          },
+        });
+      }
       // }
       return { error: 0, body: 'Company Details updated successfully' };
     } catch (e) {
@@ -535,11 +550,13 @@ export class UserService extends PrismaService {
                         id: companyId,
                       },
                     },
-                    branch:payload.branchId ? {
-                      create:{
-                        branchId:payload.branchId
-                      }
-                    }:undefined
+                    branch: payload.branchId
+                      ? {
+                          create: {
+                            branchId: payload.branchId,
+                          },
+                        }
+                      : undefined,
                   },
                 },
               },
@@ -567,8 +584,6 @@ export class UserService extends PrismaService {
           },
         });
       }
-
-
 
       const invite = await this.invitation.create({
         data: {
@@ -872,18 +887,20 @@ export class UserService extends PrismaService {
       const result = await this.profile.findUnique({
         where: { userId },
         include: {
-          user:{
-            select:{
-              id:true,
-              active:true,
-              verified:true,
-              phoneVerified:true,
-              userRole:{
-                select:{role:{
-                  select:{id:true, name:true}
-                }}
-              }
-            }
+          user: {
+            select: {
+              id: true,
+              active: true,
+              verified: true,
+              phoneVerified: true,
+              userRole: {
+                select: {
+                  role: {
+                    select: { id: true, name: true },
+                  },
+                },
+              },
+            },
           },
           employee: {
             include: {

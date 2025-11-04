@@ -4,10 +4,18 @@ import {
   ApiBearerAuth,
   ApiQuery,
   ApiOperation,
+  ApiExtraModels,
+  ApiOkResponse,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { AuthUser } from 'src/decorators/logged-in-user-decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { UpdateSubscriptionUsersDto } from 'src/models/plans/plan.dto';
+import {
+  ApiResponseDto,
+  PaginatedResponse,
+} from 'src/models/responses/generic.dto';
+import { InvoiceDto, SubscriptionDto } from 'src/models/responses/subscription';
 import type { LoggedInUser } from 'src/models/types/user.types';
 import { SubscriptionService } from 'src/services/subscription.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
@@ -22,6 +30,32 @@ export class SubscriptionController {
     private readonly responseService: ResponsesService,
   ) {}
 
+  @ApiExtraModels(ApiResponseDto, InvoiceDto, PaginatedResponse)
+  @ApiOkResponse({
+    description: 'Billing History',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: {
+              allOf: [
+                { $ref: getSchemaPath(PaginatedResponse) },
+                {
+                  properties: {
+                    result: {
+                      type: 'array',
+                      items: { $ref: getSchemaPath(InvoiceDto) },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      ],
+    },
+  })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'size', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, type: String })
@@ -54,6 +88,19 @@ export class SubscriptionController {
     }
   }
 
+  @ApiOkResponse({
+    description: 'Company current subscription',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(SubscriptionDto) },
+          },
+        },
+      ],
+    },
+  })
   @Get()
   async companySubscription(@AuthUser() user: LoggedInUser) {
     try {
