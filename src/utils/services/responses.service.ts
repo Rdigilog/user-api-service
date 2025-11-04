@@ -117,31 +117,56 @@ export class ResponsesService {
     return { totalItems, result, totalPages, currentPage };
   }
 
-
-    errorHandler(e: any) {
+  errorHandler(e: any) {
     const extractMessage = (msg: string) => {
-      // Remove newlines and excess spaces
+      // Normalize whitespace
       msg = msg.replace(/\s+/g, ' ').trim();
 
-      // Try to extract the part after "Value" or "Error:" if present
-      const match = msg.match(/(Value '.+?' not found.+?|Error:.+)/);
-      return match ? match[1] : msg;
+      // 🧠 Try to capture only the meaningful Prisma error part
+      const prismaMatch = msg.match(
+        /Invalid\s+`prisma\.[\w.]+`.*?invocation:[\s\S]*?(Unknown argument .+?|Invalid value for argument .+?|Argument .+? is missing|Field .+? is required|Record .+? not found|Unique constraint failed on the fields: .+?|Foreign key constraint failed on the field: .+?)/i,
+      );
+
+      if (prismaMatch) return prismaMatch[1];
+
+      // Fallback for known Prisma error codes
+      const knownCodeMatch = msg.match(/Error code:\s*(P\d{4})/);
+      if (knownCodeMatch) return `Prisma error ${knownCodeMatch[1]}`;
+
+      // Fallback for generic JS Error messages
+      const genericMatch = msg.match(/Error:\s*(.+)/);
+      if (genericMatch) return genericMatch[1];
+
+      return msg;
     };
 
+    // Handle all Prisma-related errors
     if (
       e instanceof Prisma.PrismaClientKnownRequestError ||
       e instanceof Prisma.PrismaClientUnknownRequestError ||
       e instanceof Prisma.PrismaClientRustPanicError ||
-      e instanceof Prisma.PrismaClientInitializationError
+      e instanceof Prisma.PrismaClientInitializationError ||
+      e instanceof Prisma.PrismaClientValidationError
     ) {
-      return { error: 2, body: extractMessage(e.message) };
+      return {
+        error: 2,
+        body: extractMessage(e.message),
+      };
     }
 
+    // Handle generic JS errors
     if (e instanceof Error) {
-      return { error: 2, body: extractMessage(e.message) };
+      return {
+        error: 2,
+        body: extractMessage(e.message),
+      };
     }
 
-    return { error: 2, body: extractMessage(String(e)) };
+    // Handle anything else
+    return {
+      error: 2,
+      body: extractMessage(String(e)),
+    };
   }
   // errorHandler(e: any) {
   //   if (e instanceof Prisma.PrismaClientKnownRequestError) {
