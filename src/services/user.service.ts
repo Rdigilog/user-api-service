@@ -907,6 +907,12 @@ export class UserService extends PrismaService {
               jobInformation: true,
               emergencyContact: true,
               bankInformation: true,
+              company:{
+                select:{
+                  id:true,
+                  name:true,
+                }
+              },
               department: {
                 select: {
                   department: true,
