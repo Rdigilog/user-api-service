@@ -117,30 +117,61 @@ export class ResponsesService {
     return { totalItems, result, totalPages, currentPage };
   }
 
-  errorHandler(e: any) {
+ errorHandler(e: any) {
     const extractMessage = (msg: string) => {
-      // Normalize whitespace
-      msg = msg.replace(/\s+/g, ' ').trim();
+      // Normalize whitespace and remove the giant Prisma invocation block
+      msg = msg
+        .replace(/\s+/g, ' ')
+        .replace(/Invalid\s+`prisma\.[\s\S]*?invocation:\s*/gi, '')
+        .trim();
 
-      // 🧠 Try to capture only the meaningful Prisma error part
-      const prismaMatch = msg.match(
-        /Invalid\s+`prisma\.[\w.]+`.*?invocation:[\s\S]*?(Unknown argument .+?|Invalid value for argument .+?|Argument .+? is missing|Field .+? is required|Record .+? not found|Unique constraint failed on the fields: .+?|Foreign key constraint failed on the field: .+?)/i,
-      );
+      // Handle common Prisma patterns
+      const patterns = [
+        /Unknown argument `([^`]+)`.*?(?=\s|$)/i,
+        /Invalid value for argument `([^`]+)`.*?(?=\s|$)/i,
+        /Argument `([^`]+)` is missing/i,
+        /Field `([^`]+)` is required/i,
+        /Record (?:to update|to delete|not found).*?(?=\s|$)/i,
+        /Unique constraint failed on the fields: (.+?)(?=\s|$)/i,
+        /Foreign key constraint failed on the field: (.+?)(?=\s|$)/i,
+        /Did you mean `([^`]+)`\?/i,
+      ];
 
-      if (prismaMatch) return prismaMatch[1];
+      for (const p of patterns) {
+        const m = msg.match(p);
+        if (m) {
+          // Craft more human-friendly phrasing
+          if (p.source.includes('Unknown argument'))
+            return `Unknown field "${m[1]}" in your Prisma query.`;
+          if (p.source.includes('Invalid value for argument'))
+            return `Invalid value for field "${m[1]}".`;
+          if (p.source.includes('is missing'))
+            return `Missing required field "${m[1]}".`;
+          if (p.source.includes('Field'))
+            return `Field "${m[1]}" is required.`;
+          if (p.source.includes('Unique constraint'))
+            return `Duplicate value detected on fields: ${m[1]}.`;
+          if (p.source.includes('Foreign key constraint'))
+            return `Foreign key constraint failed on field: ${m[1]}.`;
+          if (p.source.includes('Did you mean'))
+            return `Unknown field used. Did you mean "${m[1]}"?`;
+          if (p.source.includes('Record'))
+            return `Record not found or relation missing.`;
+        }
+      }
 
-      // Fallback for known Prisma error codes
+      // Prisma known error code fallback
       const knownCodeMatch = msg.match(/Error code:\s*(P\d{4})/);
       if (knownCodeMatch) return `Prisma error ${knownCodeMatch[1]}`;
 
-      // Fallback for generic JS Error messages
+      // Handle generic JS error messages
       const genericMatch = msg.match(/Error:\s*(.+)/);
       if (genericMatch) return genericMatch[1];
 
       return msg;
     };
 
-    // Handle all Prisma-related errors
+    // Prisma-related errors
     if (
       e instanceof Prisma.PrismaClientKnownRequestError ||
       e instanceof Prisma.PrismaClientUnknownRequestError ||
@@ -154,7 +185,7 @@ export class ResponsesService {
       };
     }
 
-    // Handle generic JS errors
+    // JS errors
     if (e instanceof Error) {
       return {
         error: 2,
@@ -162,7 +193,7 @@ export class ResponsesService {
       };
     }
 
-    // Handle anything else
+    // Fallback
     return {
       error: 2,
       body: extractMessage(String(e)),
