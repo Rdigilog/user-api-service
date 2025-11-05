@@ -15,5 +15,5 @@ export enum mailSubjects {
   RESET_PASSWORD_SUCCESS = 'Password Reset',
   MFA_ACTIVATE = 'Multi Factor Activation',
   SERVICE_BOOKING = 'Service Booking',
-  USER_INVITATION = 'Invitation To AgriPeller',
+  USER_INVITATION = 'Invitation To DigiLog',
 }
