@@ -167,15 +167,15 @@ export class EmergencyContactDto {
 }
 
 export class JobInformationDto {
-  @ApiProperty({ description: 'uuid' })
-  @IsOptional()
-  @IsString()
-  id: string;
+  // @ApiProperty({ description: 'uuid' })
+  // @IsOptional()
+  // @IsString()
+  // id: string;
 
   @ApiPropertyOptional({ description: 'Member identifier' })
   @IsOptional()
   @IsString()
-  memberId?: string;
+  jobRoleId?: string;
 
   @ApiPropertyOptional({ description: 'Employment date in string format' })
   @IsOptional()
