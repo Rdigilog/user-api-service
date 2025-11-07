@@ -793,19 +793,56 @@ export class UserService extends PrismaService {
     payload: EmployeeDto,
     userId: string,
     companyId: string,
+    profilePicture: Express.Multer.File,
+    passportId: Express.Multer.File,
+    proofOfAddress: Express.Multer.File,
+    otherProofOfIdentification: Express.Multer.File[],
   ) {
     try {
+      let fileUrl = '';
+      let passportIdUrl = '';
+      let proofOfAddressUrl = '';
+      let otherProofOfIdentificationUrl: string[] = [];
+      if (profilePicture) {
+        const fileUploadResult =
+          await this.fileUploadService.uploadPicture(profilePicture);
+        fileUrl = fileUploadResult.url;
+      }
+      if (passportId) {
+        const fileUploadResult =
+          await this.fileUploadService.uploadPicture(passportId);
+        passportIdUrl = fileUploadResult.url;
+      }
+      if (proofOfAddress) {
+        const fileUploadResult =
+          await this.fileUploadService.uploadPicture(proofOfAddress);
+        proofOfAddressUrl = fileUploadResult.url;
+      }
+      if (otherProofOfIdentification.length) {
+        await Promise.all(
+          otherProofOfIdentification.map(async (file) => {
+            const fileUploadResult =
+              await this.fileUploadService.uploadPicture(profilePicture);
+            otherProofOfIdentificationUrl.push(fileUploadResult.url);
+          }),
+        );
+      }
       const employee: Prisma.EmployeeUpdateInput = {
         ...(payload.address && { address: payload.address }),
         ...(payload.phoneNumber && { phoneNumber: payload.phoneNumber }),
         ...(payload.maritalStatus && { maritalStatus: payload.maritalStatus }),
         ...(payload.bio && { bio: payload.bio }),
         ...(payload.interest && { interest: payload.interest }),
-        ...(payload.Gender && { Gender: payload.Gender }),
+        ...(payload.gender && { gender: payload.gender }),
         ...(payload.countryCode && { countryCode: payload.countryCode }),
         ...(payload.religion && { religion: payload.religion }),
         ...(payload.altPhoneNumber && {
           altPhoneNumber: payload.altPhoneNumber,
+        }),
+        ...(passportIdUrl && { passportId: passportIdUrl }),
+        ...(proofOfAddressUrl && { proofOfAddress: passportIdUrl }),
+        ...(otherProofOfIdentificationUrl.length && {
+          otherProofOfIdentification: otherProofOfIdentificationUrl,
         }),
         ...(payload.dateOfBirth && { dateOfBirth: payload.dateOfBirth }),
         ...(payload.bloodGroup && { bloodGroup: payload.bloodGroup }),
@@ -828,11 +865,24 @@ export class UserService extends PrismaService {
           emergencyContact: {
             upsert: {
               create: {
-                ...payload.emergencyContact,
+                name: payload.emergencyContact.name,
+                relationship: payload.emergencyContact.relationship,
+                phoneNumber: payload.emergencyContact.phoneNumber,
+                address: payload.emergencyContact.address,
               },
               update: {
-                ...payload.emergencyContact,
+                name: payload.emergencyContact.name,
+                relationship: payload.emergencyContact.relationship,
+                phoneNumber: payload.emergencyContact.phoneNumber,
+                address: payload.emergencyContact.address,
               },
+            },
+          },
+        }),
+        ...(fileUrl && {
+          profile: {
+            update: {
+              imageUrl: fileUrl,
             },
           },
         }),
@@ -849,17 +899,42 @@ export class UserService extends PrismaService {
             },
           },
         }),
+
+        ...(payload.branchIds?.length && {
+          branch: {
+            deleteMany: {},
+            createMany: {
+              data: payload.branchIds.map((id) => {
+                return { branchId: id };
+              }),
+            },
+          },
+        }),
+
+        ...(payload.departmentIds?.length && {
+          department: {
+            createMany: {
+              data: payload.departmentIds.map((id) => ({ departmentId: id })),
+            },
+          },
+        }),
       };
+
       const result = await this.employee.upsert({
         where: {
           userId_companyId: {
-            companyId,
             userId,
+            companyId,
           },
         },
         update: employee,
-        create: employee as any,
+        create: {
+          ...employee,
+          profile: { connect: { userId: userId } },
+          company: { connect: { id: companyId } },
+        } as any,
       });
+
       return { error: 0, body: result };
     } catch (e) {
       return this.responseService.errorHandler(e);

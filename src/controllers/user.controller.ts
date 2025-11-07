@@ -12,16 +12,19 @@ import {
   UseInterceptors,
   Headers,
   Delete,
+  UploadedFiles,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiExtraModels,
   ApiHeader,
   ApiOperation,
   ApiQuery,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { AuthUser } from 'src/decorators/logged-in-user-decorator';
 import { RouteName } from 'src/decorators/route-name.decorator';
@@ -264,25 +267,76 @@ export class UserController {
 
   @Patch('/employee/:userId')
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
-  async updateProfileFull(
+  @ApiExtraModels(EmployeeDto)
+  @RouteName('settings.company.update')
+  @UseInterceptors(FileInterceptor('profilePicture'))
+  @UseInterceptors(FileInterceptor('passportId'))
+  @UseInterceptors(FileInterceptor('proofOfAddress'))
+  @UseInterceptors(FileInterceptor('otherProofOfIdentification'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(EmployeeDto) }, // pull in DTO schema
+        {
+          type: 'object',
+          properties: {
+            profilePicture: { type: 'string', format: 'binary' },
+            passportId: { type: 'string', format: 'binary' },
+            proofOfAddress: { type: 'string', format: 'binary' },
+            otherProofOfIdentification: { type: 'string', format: 'binary' },
+          },
+        },
+      ],
+    },
+  })
+  async updateEmployeeInfo(
     @Body() payload: EmployeeDto,
-    @Param('userId') userId: string,
     @AuthUser() user: LoggedInUser,
+    @UploadedFile() profilePicture: Express.Multer.File,
+    @UploadedFile() passportId: Express.Multer.File,
+    @UploadedFile() proofOfAddress: Express.Multer.File,
+    @UploadedFiles() otherProofOfIdentification: Express.Multer.File[],
+    @Param('userId') id: string,
   ) {
     try {
+      const { userRole } = user;
       const result = await this.service.updateJobInformation(
         payload,
-        userId,
-        user.userRole[0].companyId as string,
+        id,
+        userRole[0].companyId as string,
+        profilePicture,
+        passportId,
+        proofOfAddress,
+        otherProofOfIdentification
       );
-      if (result.error == 1)
-        return this.responseService.badRequest(result.body);
-      if (result.error == 2) return this.responseService.exception(result.body);
+      if (result.error === 2) {
+        return this.responseService.exception(result.body);
+      }
       return this.responseService.success(result.body);
     } catch (e) {
       return this.responseService.exception(e.message);
     }
   }
+  // async updateProfileFull(
+  //   @Body() payload: EmployeeDto,
+  //   @Param('userId') userId: string,
+  //   @AuthUser() user: LoggedInUser,
+  // ) {
+  //   try {
+  //     const result = await this.service.updateJobInformation(
+  //       payload,
+  //       userId,
+  //       user.userRole[0].companyId as string,
+  //     );
+  //     if (result.error == 1)
+  //       return this.responseService.badRequest(result.body);
+  //     if (result.error == 2) return this.responseService.exception(result.body);
+  //     return this.responseService.success(result.body);
+  //   } catch (e) {
+  //     return this.responseService.exception(e.message);
+  //   }
+  // }
 
   @Patch('/change-password')
   async changePassword(

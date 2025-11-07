@@ -1,9 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  BillingCycle,
   BloodGroup,
   Gender,
   MaritalStatus,
   Relationship,
+  ScreenshotFrequency,
+  TrackingType,
   WorkType,
 } from '@prisma/client';
 import { Type } from 'class-transformer';
@@ -16,6 +19,8 @@ import {
   IsEnum,
   IsBoolean,
   ValidateNested,
+  IsArray,
+  IsNumber,
 } from 'class-validator';
 
 export class UserDTO {
@@ -139,20 +144,40 @@ export class ChangeStatus {
   active: boolean;
 }
 
-export class EmergencyContactDto {
-  @ApiProperty({ description: 'uuid' })
+export class CreateEmployeeDto {
+  @ApiProperty({ description: 'Full name of the employee' })
+  @IsString()
+  name!: string;
+
+  @ApiPropertyOptional({ description: 'Email address of the employee' })
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @ApiPropertyOptional({ description: 'Phone number of the employee' })
   @IsOptional()
   @IsString()
-  id: string;
+  phoneNumber?: string;
 
+  @ApiProperty({ description: 'Branch ID the employee belongs to' })
+  @IsString()
+  branchId!: string;
+}
+
+export interface FileJobDto {
+  file: Express.Multer.File;
+  fieldName: string;
+}
+
+export class EmergencyContactDto {
   @ApiPropertyOptional({ description: 'Name of the emergency contact' })
   @IsOptional()
   @IsString()
   name?: string;
 
-  @ApiPropertyOptional({ description: 'Relationship with the user' })
+  @ApiPropertyOptional({ description: 'Relationship with the employee' })
   @IsOptional()
-  @IsString()
+  @IsEnum(Relationship)
   relationship?: Relationship;
 
   @ApiPropertyOptional({ description: 'Address of the emergency contact' })
@@ -164,55 +189,88 @@ export class EmergencyContactDto {
   @IsOptional()
   @IsString()
   countryCode?: string;
+
+  @ApiPropertyOptional({ description: 'Phone number of the emergency contact' })
+  @IsOptional()
+  @IsString()
+  phoneNumber?: string;
 }
 
 export class JobInformationDto {
-  // @ApiProperty({ description: 'uuid' })
-  // @IsOptional()
-  // @IsString()
-  // id: string;
-
   @ApiPropertyOptional({ description: 'Member identifier' })
+  @IsOptional()
+  @IsString()
+  memberId?: string;
+
+  @ApiPropertyOptional({ description: 'Job role ID' })
   @IsOptional()
   @IsString()
   jobRoleId?: string;
 
-  @ApiPropertyOptional({ description: 'Employment date in string format' })
+  @ApiPropertyOptional({ description: 'Currency code' })
+  @IsOptional()
+  @IsString()
+  currencyCode?: string;
+
+  @ApiPropertyOptional({ description: 'Pay rate per hour' })
+  @IsOptional()
+  @IsNumber()
+  payRatePerHour?: number;
+
+  @ApiPropertyOptional({ description: 'Work status' })
+  @IsOptional()
+  @IsString()
+  workStatus?: string;
+
+  @ApiPropertyOptional({ description: 'Days of work (array of weekdays)' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  workDays?: string[];
+
+  @ApiPropertyOptional({ description: 'Break time string' })
+  @IsOptional()
+  @IsString()
+  breakTime?: string;
+
+  @ApiPropertyOptional({
+    description: 'Employment date in string format (YYYY-MM-DD)',
+  })
   @IsOptional()
   @IsString()
   employmentDate?: string;
 
-  @ApiPropertyOptional({ description: 'Type of work (enum in DB)' })
+  @ApiPropertyOptional({ enum: WorkType, description: 'Work type' })
   @IsOptional()
-  @IsString()
+  @IsEnum(WorkType)
   workType?: WorkType;
 
-  @ApiProperty({ description: 'Job location' })
+  @ApiPropertyOptional({ description: 'Job location' })
+  @IsOptional()
   @IsString()
-  location: string;
+  location?: string;
 }
 
 export class BankInformationDto {
-  @ApiProperty({ description: 'uuid' })
+  @ApiPropertyOptional({ description: 'Bank account number' })
   @IsOptional()
   @IsString()
-  id: string;
+  accountNumber?: string;
 
-  @ApiProperty({ description: 'Bank account number' })
+  @ApiPropertyOptional({ description: 'IFSC / IFS code of the bank' })
+  @IsOptional()
   @IsString()
-  accountNumber: string;
+  ifsCode?: string;
 
-  @ApiProperty({ description: 'IFSC / IFS code of the bank' })
+  @ApiPropertyOptional({ description: 'Bank name' })
+  @IsOptional()
   @IsString()
-  ifsCode: string;
+  bankName?: string;
 
-  @ApiProperty({ description: 'Bank name' })
+  @ApiPropertyOptional({ description: 'Branch name of the bank' })
+  @IsOptional()
   @IsString()
-  bankName: string;
-
-  @ApiProperty({ description: 'Branch name of the bank' })
-  @IsString()
-  branchName: string;
+  branchName?: string;
 }
 
 export class EmployeeDto {
@@ -231,6 +289,7 @@ export class EmployeeDto {
     description: 'Marital status of the employee',
   })
   @IsOptional()
+  @IsEnum(MaritalStatus)
   maritalStatus?: MaritalStatus;
 
   @ApiPropertyOptional({ description: 'Short biography of the employee' })
@@ -245,12 +304,8 @@ export class EmployeeDto {
 
   @ApiPropertyOptional({ enum: Gender, description: 'Gender of the employee' })
   @IsOptional()
-  Gender?: Gender;
-
-  @ApiPropertyOptional({ description: 'Country dialing code' })
-  @IsOptional()
-  @IsString()
-  countryCode?: string;
+  @IsEnum(Gender)
+  gender?: Gender;
 
   @ApiPropertyOptional({ description: 'Religion of the employee' })
   @IsOptional()
@@ -274,12 +329,106 @@ export class EmployeeDto {
     description: 'Blood group of the employee',
   })
   @IsOptional()
+  @IsEnum(BloodGroup)
   bloodGroup?: BloodGroup;
 
   @ApiPropertyOptional({ description: 'Known allergies' })
   @IsOptional()
   @IsString()
   allergy?: string;
+
+  @ApiPropertyOptional({ description: 'Country dialing code' })
+  @IsOptional()
+  @IsString()
+  countryCode?: string;
+
+  @ApiPropertyOptional({ description: 'Timezone of the employee' })
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+
+  @ApiPropertyOptional({ description: 'Currency code of the employee' })
+  @IsOptional()
+  @IsString()
+  currencyCode?: string;
+
+  @ApiPropertyOptional({ description: 'Pay rate (default 0)' })
+  @IsOptional()
+  @IsNumber()
+  payRate?: number;
+
+  @ApiPropertyOptional({ enum: BillingCycle, description: 'Billing period' })
+  @IsOptional()
+  @IsEnum(BillingCycle)
+  period?: BillingCycle;
+
+  @ApiPropertyOptional({ description: 'Annual leave days' })
+  @IsOptional()
+  @IsNumber()
+  annualLeave?: number;
+
+  @ApiPropertyOptional({ description: 'Bank holidays' })
+  @IsOptional()
+  @IsNumber()
+  bankHoliday?: number;
+
+  @ApiPropertyOptional({ description: 'Work hours' })
+  @IsOptional()
+  @IsNumber()
+  hours?: number;
+
+  @ApiPropertyOptional({ description: 'Break time' })
+  @IsOptional()
+  @IsString()
+  breakTime?: string;
+
+  @ApiPropertyOptional({
+    enum: ScreenshotFrequency,
+    description: 'Screenshot frequency',
+  })
+  @IsOptional()
+  @IsEnum(ScreenshotFrequency)
+  screenshotFrequency?: ScreenshotFrequency;
+
+  @ApiPropertyOptional({
+    description: 'Screenshot interval in minutes',
+  })
+  @IsOptional()
+  @IsNumber()
+  screenshotIntervalMinutes?: number;
+
+  @ApiPropertyOptional({
+    enum: TrackingType,
+    description: 'App tracking type (OFF, APPS_ONLY, URLS_ONLY, BOTH)',
+  })
+  @IsOptional()
+  @IsEnum(TrackingType)
+  appTrackingType?: TrackingType;
+
+  @ApiPropertyOptional({
+    description: 'Notify user when screenshot is taken',
+  })
+  @IsOptional()
+  @IsBoolean()
+  appScrennshotNotification?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Array of branch IDs employee belongs to',
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  branchIds?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Array of department IDs employee belongs to',
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  departmentIds?: string[];
 
   @ApiPropertyOptional({ type: () => JobInformationDto })
   @IsOptional()
