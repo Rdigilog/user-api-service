@@ -459,9 +459,10 @@ export class UserService extends PrismaService {
       return this.responseService.errorHandler(e);
     }
   }
-
+  
   async invite(payload: InviteUserDTO, companyId: string, invitedBy: string) {
     try {
+      const plainPassword = this.utilsService.randomString()
       const currentTime = new Date();
       const company = await this.company.findUniqueOrThrow({
         where: { id: companyId },
@@ -518,12 +519,14 @@ export class UserService extends PrismaService {
           },
         });
       } else {
+        const hasnedPassword = await this.utilsService.hashPassword(plainPassword, 10)
         user = await this.user.create({
           data: {
             email: payload.email,
             verified: false,
             active: false,
             deleted: false,
+            password:hasnedPassword,
             profile: {
               create: {
                 firstName: '',
@@ -613,6 +616,7 @@ export class UserService extends PrismaService {
         companyName: company.name || '',
         inviterName: invite.invitedByUser?.profile?.firstName || '',
         roleName: role?.name || 'Employee',
+        plainPassword:plainPassword
       };
       const mailObject: SendMailDto = {
         to: payload.email,
@@ -678,7 +682,8 @@ export class UserService extends PrismaService {
 
   async reinvite(inviteLink: string, companyId: string) {
     try {
-      const currentTime = new Date();
+      // const currentTime = new Date();
+            const plainPassword = this.utilsService.randomString()
       const company = await this.company.findUniqueOrThrow({
         where: { id: companyId },
       });
@@ -714,6 +719,7 @@ export class UserService extends PrismaService {
         companyName: company.name || '',
         inviterName: invite?.invitedByUser?.profile?.firstName || '',
         roleName: invite?.role.name || 'Employee',
+        plainPassword:plainPassword
       };
       const mailObject: SendMailDto = {
         to: invite?.user?.email || '',

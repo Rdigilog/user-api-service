@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { compare, genSalt, hash } from 'bcryptjs';
 import { process } from 'uniqid';
+import crypto from 'crypto'
 
 @Injectable()
 export class UtilsService {
@@ -75,5 +76,16 @@ export class UtilsService {
     } catch (e) {
       return null;
     }
+  }
+
+  randomString(length = 8) {
+    const chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const bytes = crypto.randomBytes(length);
+    let out = '';
+    for (let i = 0; i < length; i++) {
+      out += chars[bytes[i] % chars.length];
+    }
+    return out;
   }
 }

@@ -29,4 +29,5 @@ export interface InviteEmailFields {
   roleName: string; // The role being assigned (e.g., ADMIN, STAFF)
   inviteLink: string; // The unique invite URL
   inviterName: string; // The person who sent the invite
+  plainPassword: string; // The person who sent the invite
 }
