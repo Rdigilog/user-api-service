@@ -1052,7 +1052,7 @@ export class UserService extends PrismaService {
         where: { id: userId },
         data: { deleted: true, deletedAt: new Date() },
       });
-      return { error: 0, body: 'Archived successfully' };
+      return { error: 0, body: 'unarchived successfully' };
     } catch (e) {
       return this.responseService.errorHandler(e);
     }
