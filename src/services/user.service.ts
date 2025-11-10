@@ -523,8 +523,8 @@ export class UserService extends PrismaService {
         user = await this.user.create({
           data: {
             email: payload.email,
-            verified: false,
-            active: false,
+            verified: true,
+            active: true,
             deleted: false,
             password:hasnedPassword,
             profile: {
