@@ -117,61 +117,90 @@ export class ResponsesService {
     return { totalItems, result, totalPages, currentPage };
   }
 
- errorHandler(e: any) {
-    const extractMessage = (msg: string) => {
-      // Normalize whitespace and remove the giant Prisma invocation block
+  errorHandler(e: any) {
+    const extractMessage = (msg: string): string => {
+      if (!msg) return 'An unexpected error occurred.';
+
+      // Normalize Prisma's noisy output
       msg = msg
         .replace(/\s+/g, ' ')
         .replace(/Invalid\s+`prisma\.[\s\S]*?invocation:\s*/gi, '')
+        .replace(/at\s+.+?PrismaClient\..+/, '') // remove stack bits
         .trim();
 
-      // Handle common Prisma patterns
-      const patterns = [
-        /Unknown argument `([^`]+)`.*?(?=\s|$)/i,
-        /Invalid value for argument `([^`]+)`.*?(?=\s|$)/i,
-        /Argument `([^`]+)` is missing/i,
-        /Field `([^`]+)` is required/i,
-        /Record (?:to update|to delete|not found).*?(?=\s|$)/i,
-        /Unique constraint failed on the fields: (.+?)(?=\s|$)/i,
-        /Foreign key constraint failed on the field: (.+?)(?=\s|$)/i,
-        /Did you mean `([^`]+)`\?/i,
+      // Common known Prisma error fragments → friendly phrases
+      const patterns: {
+        regex: RegExp;
+        message: (m: RegExpMatchArray) => string;
+      }[] = [
+        {
+          regex: /Unknown argument `([^`]+)`/i,
+          message: (m) => `Unknown field "${m[1]}" in your Prisma query.`,
+        },
+        {
+          regex: /Invalid value for argument `([^`]+)`.*?Expected ([\w]+)/i,
+          message: (m) =>
+            `Invalid value for field "${m[1]}". Expected ${m[2]}.`,
+        },
+        {
+          regex: /Invalid value for argument `([^`]+)`/i,
+          message: (m) => `Invalid value provided for field "${m[1]}".`,
+        },
+        {
+          regex: /Did you mean `([^`]+)`\?/i,
+          message: (m) => `Unknown field used. Did you mean "${m[1]}"?`,
+        },
+        {
+          regex: /Argument `([^`]+)` is missing/i,
+          message: (m) => `Missing required field "${m[1]}".`,
+        },
+        {
+          regex: /Argument `([^`]+)` must not be null/i,
+          message: (m) => `Field "${m[1]}" cannot be null.`,
+        },
+        {
+          regex: /Field `([^`]+)` is required/i,
+          message: (m) => `Field "${m[1]}" is required.`,
+        },
+        {
+          regex: /Record to (update|delete) not found/i,
+          message: () =>
+            `Record not found. Check if it exists before updating or deleting.`,
+        },
+        {
+          regex:
+            /depends on one or more records that were required but not found/i,
+          message: () =>
+            `Operation failed because a related record was not found.`,
+        },
+        {
+          regex: /Unique constraint failed on the fields?: (.+?)(?=\s|$)/i,
+          message: (m) => `Duplicate value detected on field(s): ${m[1]}.`,
+        },
+        {
+          regex: /Foreign key constraint failed on the field: (.+?)(?=\s|$)/i,
+          message: (m) => `Foreign key constraint failed on field: ${m[1]}.`,
+        },
       ];
 
-      for (const p of patterns) {
-        const m = msg.match(p);
-        if (m) {
-          // Craft more human-friendly phrasing
-          if (p.source.includes('Unknown argument'))
-            return `Unknown field "${m[1]}" in your Prisma query.`;
-          if (p.source.includes('Invalid value for argument'))
-            return `Invalid value for field "${m[1]}".`;
-          if (p.source.includes('is missing'))
-            return `Missing required field "${m[1]}".`;
-          if (p.source.includes('Field'))
-            return `Field "${m[1]}" is required.`;
-          if (p.source.includes('Unique constraint'))
-            return `Duplicate value detected on fields: ${m[1]}.`;
-          if (p.source.includes('Foreign key constraint'))
-            return `Foreign key constraint failed on field: ${m[1]}.`;
-          if (p.source.includes('Did you mean'))
-            return `Unknown field used. Did you mean "${m[1]}"?`;
-          if (p.source.includes('Record'))
-            return `Record not found or relation missing.`;
-        }
+      for (const { regex, message } of patterns) {
+        const match = msg.match(regex);
+        if (match) return message(match);
       }
 
-      // Prisma known error code fallback
-      const knownCodeMatch = msg.match(/Error code:\s*(P\d{4})/);
-      if (knownCodeMatch) return `Prisma error ${knownCodeMatch[1]}`;
+      // Prisma code fallback (Pxxxx)
+      const codeMatch = msg.match(/P\d{4}/);
+      if (codeMatch) return `Database error (${codeMatch[0]}).`;
 
-      // Handle generic JS error messages
-      const genericMatch = msg.match(/Error:\s*(.+)/);
-      if (genericMatch) return genericMatch[1];
+      // Catch nested cause messages like "Error: Argument ... must not be null"
+      const causeMatch = msg.match(/Error:\s*(.+)/i);
+      if (causeMatch) return causeMatch[1].trim();
 
-      return msg;
+      // Fallback generic
+      return msg || 'Unknown database error.';
     };
 
-    // Prisma-related errors
+    // Handle Prisma known error classes
     if (
       e instanceof Prisma.PrismaClientKnownRequestError ||
       e instanceof Prisma.PrismaClientUnknownRequestError ||
@@ -179,25 +208,15 @@ export class ResponsesService {
       e instanceof Prisma.PrismaClientInitializationError ||
       e instanceof Prisma.PrismaClientValidationError
     ) {
-      return {
-        error: 2,
-        body: extractMessage(e.message),
-      };
+      return { error: 2, body: extractMessage(e.message) };
     }
 
-    // JS errors
-    if (e instanceof Error) {
-      return {
-        error: 2,
-        body: extractMessage(e.message),
-      };
-    }
+    // NestJS / JS generic errors
+    if (e instanceof Error)
+      return { error: 2, body: extractMessage(e.message) };
 
-    // Fallback
-    return {
-      error: 2,
-      body: extractMessage(String(e)),
-    };
+    // Fallback (string, object, etc.)
+    return { error: 2, body: extractMessage(String(e)) };
   }
   // errorHandler(e: any) {
   //   if (e instanceof Prisma.PrismaClientKnownRequestError) {
