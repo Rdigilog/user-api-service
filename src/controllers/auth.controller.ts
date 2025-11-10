@@ -205,14 +205,14 @@ export class AuthController {
           requestBody.username,
         );
       } catch (e) {
-        console.log(e);
+        // console.log(e);
         return this.responseService.unauthorized('invalid username/password')
       }
       if (!result) {
         return this.responseService.unauthorized('Invalid username/password');
       }
       if (!result.active) {
-        return this.responseService.unauthorized('Account not activated yet');
+        return this.responseService.unauthorized('Account not active');
       }
       if (result.deleted) {
         return this.responseService.unauthorized('No Records found');

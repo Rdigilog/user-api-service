@@ -225,13 +225,13 @@ export class UserService extends PrismaService {
                 create: {
                   companyId: company.id,
                   bankInformation: {
-                    create:{}
+                    create: {},
                   },
                   jobInformation: {
-                    create:{}
+                    create: {},
                   },
                   emergencyContact: {
-                    create:{}
+                    create: {},
                   },
                 },
               },
@@ -459,10 +459,10 @@ export class UserService extends PrismaService {
       return this.responseService.errorHandler(e);
     }
   }
-  
+
   async invite(payload: InviteUserDTO, companyId: string, invitedBy: string) {
     try {
-      const plainPassword = this.utilsService.randomString()
+      const plainPassword = this.utilsService.randomString();
       const currentTime = new Date();
       const company = await this.company.findUniqueOrThrow({
         where: { id: companyId },
@@ -519,14 +519,17 @@ export class UserService extends PrismaService {
           },
         });
       } else {
-        const hasnedPassword = await this.utilsService.hashPassword(plainPassword, 10)
+        const hasnedPassword = await this.utilsService.hashPassword(
+          plainPassword,
+          10,
+        );
         user = await this.user.create({
           data: {
             email: payload.email,
             verified: true,
             active: true,
             deleted: false,
-            password:hasnedPassword,
+            password: hasnedPassword,
             profile: {
               create: {
                 firstName: '',
@@ -616,7 +619,7 @@ export class UserService extends PrismaService {
         companyName: company.name || '',
         inviterName: invite.invitedByUser?.profile?.firstName || '',
         roleName: role?.name || 'Employee',
-        plainPassword:plainPassword
+        plainPassword: plainPassword,
       };
       const mailObject: SendMailDto = {
         to: payload.email,
@@ -683,7 +686,7 @@ export class UserService extends PrismaService {
   async reinvite(inviteLink: string, companyId: string) {
     try {
       // const currentTime = new Date();
-            const plainPassword = this.utilsService.randomString()
+      const plainPassword = this.utilsService.randomString();
       const company = await this.company.findUniqueOrThrow({
         where: { id: companyId },
       });
@@ -719,7 +722,7 @@ export class UserService extends PrismaService {
         companyName: company.name || '',
         inviterName: invite?.invitedByUser?.profile?.firstName || '',
         roleName: invite?.role.name || 'Employee',
-        plainPassword:plainPassword
+        plainPassword: plainPassword,
       };
       const mailObject: SendMailDto = {
         to: invite?.user?.email || '',
@@ -988,11 +991,11 @@ export class UserService extends PrismaService {
               jobInformation: true,
               emergencyContact: true,
               bankInformation: true,
-              company:{
-                select:{
-                  id:true,
-                  name:true,
-                }
+              company: {
+                select: {
+                  id: true,
+                  name: true,
+                },
               },
               department: {
                 select: {
@@ -1014,14 +1017,43 @@ export class UserService extends PrismaService {
     }
   }
 
-  async archiveUser(userId:string){
-    try{
-      const result =await this.user.update({
-        where:{id:userId},
-        data:{deleted:true, deletedAt:new Date()}
-      })
-      return {error:0, body:"Archived successfully"}
-    }catch(e){
+  async archiveUser(userId: string) {
+    try {
+      const user = await this.user.findFirst({
+        where: { id: userId },
+      });
+      if (!user) {
+        return { error: 1, body: 'No Record found' };
+      }
+      if (user.deleted) {
+        return { error: 1, body: 'Account is already archived' };
+      }
+      const result = await this.user.update({
+        where: { id: userId },
+        data: { deleted: true, deletedAt: new Date() },
+      });
+      return { error: 0, body: 'Archived successfully' };
+    } catch (e) {
+      return this.responseService.errorHandler(e);
+    }
+  }
+  async unarchiveUser(userId: string) {
+    try {
+      const user = await this.user.findFirst({
+        where: { id: userId },
+      });
+      if (!user) {
+        return { error: 1, body: 'No Record found' };
+      }
+      if (!user.deleted) {
+        return { error: 1, body: 'Account is not archived' };
+      }
+      const result = await this.user.update({
+        where: { id: userId },
+        data: { deleted: true, deletedAt: new Date() },
+      });
+      return { error: 0, body: 'Archived successfully' };
+    } catch (e) {
       return this.responseService.errorHandler(e);
     }
   }

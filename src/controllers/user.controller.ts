@@ -172,6 +172,20 @@ export class UserController {
       return this.responseService.exception(e.message);
     }
   }
+  @Patch('/:userId/unarchive')
+  async unarchiveUser(
+    @Param('userId') userId: string,
+    @AuthUser() user: LoggedInUser,
+  ) {
+    try {
+      const result = await this.service.unarchiveUser(userId);
+      if (result.error == 2)
+        return this.responseService.notFound('no user found');
+      return this.responseService.success(result.body);
+    } catch (e) {
+      return this.responseService.exception(e.message);
+    }
+  }
 
   // @Patch()
   // async updateUser(@Body() payload: UserDTO, @Request() req) {
