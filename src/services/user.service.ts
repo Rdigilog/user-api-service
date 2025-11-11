@@ -986,6 +986,7 @@ export class UserService extends PrismaService {
               active: true,
               verified: true,
               phoneVerified: true,
+              deleted:true,
               userRole: {
                 select: {
                   role: {
