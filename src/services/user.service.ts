@@ -36,12 +36,10 @@ export class UserService extends PrismaService {
     @InjectMailQueue() private mailQueue: Queue,
     @InjectSMSQueue() private smsQueue: Queue,
     @InjectFileRemovalQueue() private fileRemovalQueue: Queue,
-    // @InjectFileQueue() private fileQueue: Queue,
     private readonly utilsService: UtilsService,
     private readonly otpService: OtpService,
     private readonly responseService: ResponsesService,
     private readonly fileUploadService: FileUploadService,
-    private readonly prismaService: PrismaService,
     private readonly userConfigService: ConfigService,
   ) {
     super(userConfigService);
