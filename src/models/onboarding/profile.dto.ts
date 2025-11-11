@@ -7,6 +7,7 @@ import {
   Relationship,
   ScreenshotFrequency,
   TrackingType,
+  UserStatus,
   WorkType,
 } from '@prisma/client';
 import { Type } from 'class-transformer';
@@ -54,10 +55,14 @@ export class UpdateProfileDto {
   @IsString()
   phoneNumber?: string;
 
-  // @ApiPropertyOptional()
-  // @IsOptional()
-  // @IsString()
-  // employeeId?: string;
+  @ApiPropertyOptional({
+    description: 'Current status of the user',
+    enum: UserStatus,
+    example: UserStatus.ONLINE, // 👈 Example shown in Swagger
+  })
+  @IsOptional()
+  @IsEnum(UserStatus)
+  status?: UserStatus;
 
   // @ApiPropertyOptional()
   // @IsOptional()

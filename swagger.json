@@ -439,34 +439,6 @@
         ]
       }
     },
-    "/user/api/v1/user/{userId}": {
-      "get": {
-        "operationId": "UserController_getUser",
-        "parameters": [
-          {
-            "name": "userId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
     "/user/api/v1/user/prifle": {
       "get": {
         "operationId": "UserController_userProfile",
@@ -537,9 +509,91 @@
         ]
       }
     },
-    "/user/api/v1/user/prifle/{userId}": {
+    "/user/api/v1/user/{userId}": {
+      "get": {
+        "operationId": "UserController_getUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      },
+      "delete": {
+        "operationId": "UserController_archivedUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/api/v1/user/{userId}/unarchive": {
       "patch": {
-        "operationId": "UserController_updateProfileFull",
+        "operationId": "UserController_unarchiveUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/api/v1/user/profile/{userId}": {
+      "patch": {
+        "operationId": "UserController_updateProfilewWithUserId",
         "parameters": [
           {
             "name": "userId",
@@ -553,9 +607,95 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/EmployeeDto"
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "example": "John"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "example": "Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                  },
+                  "phoneNumber": {
+                    "type": "string",
+                    "example": "+123456789"
+                  },
+                  "profilePicture": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update profile (with optional profile picture)",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/api/v1/user/employee/{userId}": {
+      "patch": {
+        "operationId": "UserController_updateEmployeeInfo",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EmployeeDto"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "profilePicture": {
+                        "type": "string",
+                        "format": "binary"
+                      },
+                      "passportId": {
+                        "type": "string",
+                        "format": "binary"
+                      },
+                      "proofOfAddress": {
+                        "type": "string",
+                        "format": "binary"
+                      },
+                      "otherProofOfIdentification": {
+                        "type": "string",
+                        "format": "binary"
+                      }
+                    }
+                  }
+                ]
               }
             }
           }
@@ -1058,6 +1198,184 @@
           "Base"
         ]
       }
+    },
+    "/user/api/v1/subscription/billing-history": {
+      "get": {
+        "operationId": "SubscriptionController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortDirection",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Billing History",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "allOf": [
+                            {
+                              "$ref": "#/components/schemas/PaginatedResponse"
+                            },
+                            {
+                              "properties": {
+                                "result": {
+                                  "type": "array",
+                                  "items": {
+                                    "$ref": "#/components/schemas/InvoiceDto"
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Subscriptions"
+        ]
+      }
+    },
+    "/user/api/v1/subscription": {
+      "get": {
+        "operationId": "SubscriptionController_companySubscription",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Company current subscription",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/SubscriptionDto"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Subscriptions"
+        ]
+      },
+      "patch": {
+        "description": "This endpoint updates the total number of users assigned to a specific company. The value must be an integer greater than or equal to zero.",
+        "operationId": "SubscriptionController_updateUserSubscription",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubscriptionUsersDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update a company total number of users for subscription",
+        "tags": [
+          "Subscriptions"
+        ]
+      }
+    },
+    "/user/api/v1/job-role": {
+      "get": {
+        "operationId": "JobRoleController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List all job roles with pagination and search",
+        "tags": [
+          "Job Role"
+        ]
+      }
     }
   },
   "info": {
@@ -1472,46 +1790,71 @@
       "JobInformationDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "description": "uuid"
-          },
           "memberId": {
             "type": "string",
             "description": "Member identifier"
           },
+          "jobRoleId": {
+            "type": "string",
+            "description": "Job role ID"
+          },
+          "currencyCode": {
+            "type": "string",
+            "description": "Currency code"
+          },
+          "payRatePerHour": {
+            "type": "number",
+            "description": "Pay rate per hour"
+          },
+          "workStatus": {
+            "type": "string",
+            "description": "Work status"
+          },
+          "workDays": {
+            "description": "Days of work (array of weekdays)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "breakTime": {
+            "type": "string",
+            "description": "Break time string"
+          },
           "employmentDate": {
             "type": "string",
-            "description": "Employment date in string format"
+            "description": "Employment date in string format (YYYY-MM-DD)"
           },
           "workType": {
             "type": "string",
-            "description": "Type of work (enum in DB)"
+            "enum": [
+              "REMOTE",
+              "ON_SITE",
+              "HYBRID",
+              "CONTRACT",
+              "FREELANCE",
+              "INTERNSHIP",
+              "PART_TIME",
+              "FULL_TIME"
+            ],
+            "description": "Work type"
           },
           "location": {
             "type": "string",
             "description": "Job location"
           }
-        },
-        "required": [
-          "id",
-          "location"
-        ]
+        }
       },
       "EmergencyContactDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "description": "uuid"
-          },
           "name": {
             "type": "string",
             "description": "Name of the emergency contact"
           },
           "relationship": {
             "type": "string",
-            "description": "Relationship with the user"
+            "description": "Relationship with the employee"
           },
           "address": {
             "type": "string",
@@ -1520,19 +1863,16 @@
           "countryCode": {
             "type": "string",
             "description": "Country code of the contact"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Phone number of the emergency contact"
           }
-        },
-        "required": [
-          "id"
-        ]
+        }
       },
       "BankInformationDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "description": "uuid"
-          },
           "accountNumber": {
             "type": "string",
             "description": "Bank account number"
@@ -1549,14 +1889,7 @@
             "type": "string",
             "description": "Branch name of the bank"
           }
-        },
-        "required": [
-          "id",
-          "accountNumber",
-          "ifsCode",
-          "bankName",
-          "branchName"
-        ]
+        }
       },
       "EmployeeDto": {
         "type": "object",
@@ -1585,17 +1918,13 @@
             "type": "string",
             "description": "Employee interests"
           },
-          "Gender": {
+          "gender": {
             "type": "string",
             "enum": [
               "MALE",
               "FEMALE"
             ],
             "description": "Gender of the employee"
-          },
-          "countryCode": {
-            "type": "string",
-            "description": "Country dialing code"
           },
           "religion": {
             "type": "string",
@@ -1626,6 +1955,91 @@
           "allergy": {
             "type": "string",
             "description": "Known allergies"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "Country dialing code"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Timezone of the employee"
+          },
+          "currencyCode": {
+            "type": "string",
+            "description": "Currency code of the employee"
+          },
+          "payRate": {
+            "type": "number",
+            "description": "Pay rate (default 0)"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "PER_HOUR",
+              "PER_DAY",
+              "PER_WEEK",
+              "PER_MONTH",
+              "PER_YEAR"
+            ],
+            "description": "Billing period"
+          },
+          "annualLeave": {
+            "type": "number",
+            "description": "Annual leave days"
+          },
+          "bankHoliday": {
+            "type": "number",
+            "description": "Bank holidays"
+          },
+          "hours": {
+            "type": "number",
+            "description": "Work hours"
+          },
+          "breakTime": {
+            "type": "string",
+            "description": "Break time"
+          },
+          "screenshotFrequency": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "ONE_X",
+              "TWO_X",
+              "THREE_X"
+            ],
+            "description": "Screenshot frequency"
+          },
+          "screenshotIntervalMinutes": {
+            "type": "number",
+            "description": "Screenshot interval in minutes"
+          },
+          "appTrackingType": {
+            "type": "string",
+            "enum": [
+              "OFF",
+              "APPS_ONLY",
+              "URLS_ONLY",
+              "BOTH"
+            ],
+            "description": "App tracking type (OFF, APPS_ONLY, URLS_ONLY, BOTH)"
+          },
+          "appScrennshotNotification": {
+            "type": "boolean",
+            "description": "Notify user when screenshot is taken"
+          },
+          "branchIds": {
+            "description": "Array of branch IDs employee belongs to",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "departmentIds": {
+            "description": "Array of department IDs employee belongs to",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "jobInformation": {
             "$ref": "#/components/schemas/JobInformationDto"
@@ -1684,8 +2098,222 @@
           "roleId": {
             "type": "string",
             "example": "Doe"
+          },
+          "branchId": {
+            "type": "string",
+            "example": "Doe"
           }
         }
+      },
+      "PlanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "6d3147cd-c872-4a3c-85b8-74b510b954de"
+          },
+          "name": {
+            "type": "string",
+            "example": "digiCare"
+          },
+          "description": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "example": "£"
+          },
+          "price": {
+            "type": "number",
+            "example": 0
+          },
+          "billingPeriod": {
+            "type": "string",
+            "example": "month"
+          },
+          "minimumUsers": {
+            "type": "number",
+            "example": 0
+          },
+          "additionalUserCost": {
+            "type": "number",
+            "example": 0
+          },
+          "colorTheme": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          },
+          "buttonText": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          },
+          "badge": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          },
+          "discount": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          },
+          "active": {
+            "type": "boolean",
+            "example": true
+          },
+          "archived": {
+            "type": "boolean",
+            "example": false
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-10-14T09:05:24.076Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-10-14T09:05:24.076Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "currency",
+          "price",
+          "billingPeriod",
+          "minimumUsers",
+          "additionalUserCost",
+          "colorTheme",
+          "buttonText",
+          "badge",
+          "discount",
+          "active",
+          "archived",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CompanyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "The Rabbi Tech"
+          },
+          "email": {
+            "type": "string",
+            "example": "tipson664@gmail.com"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "2348067843337"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "phoneNumber"
+        ]
+      },
+      "InvoiceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "invoiceNo": {
+            "type": "string",
+            "example": "RDFJSMHAFOL19"
+          },
+          "date": {
+            "type": "string",
+            "example": "2025-10-28T10:38:32.829Z"
+          },
+          "amount": {
+            "type": "number",
+            "example": 0
+          },
+          "status": {
+            "type": "string",
+            "example": "PENDING"
+          },
+          "planId": {
+            "type": "string",
+            "example": "6d3147cd-c872-4a3c-85b8-74b510b954de"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2025-10-28T10:38:32.831Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2025-10-28T10:38:32.831Z"
+          },
+          "companyId": {
+            "type": "string",
+            "example": "1ba0e7a8-7198-446c-ae17-7eecaa898338"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/PlanDto"
+          },
+          "company": {
+            "$ref": "#/components/schemas/CompanyDto"
+          }
+        },
+        "required": [
+          "id",
+          "invoiceNo",
+          "date",
+          "amount",
+          "status",
+          "planId",
+          "createdAt",
+          "updatedAt",
+          "companyId",
+          "plan",
+          "company"
+        ]
+      },
+      "PaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "number",
+            "example": 1
+          },
+          "totalPages": {
+            "type": "number",
+            "example": 1
+          },
+          "currentPage": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "totalItems",
+          "totalPages",
+          "currentPage"
+        ]
+      },
+      "UpdateSubscriptionUsersDto": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "number",
+            "description": "Number of users allowed or assigned",
+            "example": 10,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "users"
+        ]
       }
     }
   }

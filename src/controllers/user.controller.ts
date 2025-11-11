@@ -258,7 +258,7 @@ export class UserController {
       },
     },
   })
-  @Patch('/prifle/:userId')
+  @Patch('/profile/:userId')
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
   async updateProfilewWithUserId(
     @Body() payload: UpdateProfileDto,

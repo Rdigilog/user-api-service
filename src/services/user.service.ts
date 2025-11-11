@@ -71,12 +71,12 @@ export class UserService extends PrismaService {
         include: {
           user: {
             select: {
-              id:true,
+              id: true,
               email: true,
               active: true,
               verified: true,
               phoneNumber: true,
-              deleted:true,
+              deleted: true,
               userRole: {
                 select: {
                   role: {
@@ -430,6 +430,9 @@ export class UserService extends PrismaService {
           phoneNumber: payload.phoneNumber,
         }),
         ...(fileUrl && { imageUrl: fileUrl }),
+        ...(payload.status && {
+          status: payload.status,
+        }),
         // ...(payload.employeeId !== undefined && {
         //   employeeId: payload.employeeId,
         // }),
@@ -460,7 +463,7 @@ export class UserService extends PrismaService {
         where: { userId },
         data: {
           ...data,
-          status: 'PENDING',
+          // status: '',
         },
       });
       return { error: 0, body: result };
@@ -986,7 +989,7 @@ export class UserService extends PrismaService {
               active: true,
               verified: true,
               phoneVerified: true,
-              deleted:true,
+              deleted: true,
               userRole: {
                 select: {
                   role: {

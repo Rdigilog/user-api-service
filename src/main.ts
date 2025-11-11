@@ -43,11 +43,11 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  // writeFileSync(join(process.cwd(), 'swagger.json'), JSON.stringify(document, null, 2));
-  // const swaggerFile = join(process.cwd(), 'swagger.json');
-  // app.getHttpAdapter().get('/user/swagger-json', (req, res: Response) => {
-  //   res.sendFile(swaggerFile);
-  // });
+  writeFileSync(join(process.cwd(), 'swagger.json'), JSON.stringify(document, null, 2));
+  const swaggerFile = join(process.cwd(), 'swagger.json');
+  app.getHttpAdapter().get('/user/swagger-json', (req, res: Response) => {
+    res.sendFile(swaggerFile);
+  });
   SwaggerModule.setup('user/api/docs', app, document);
   await app.listen(configService.get<number>(CONFIG_KEYS.PORT) ?? 3001);
 }
