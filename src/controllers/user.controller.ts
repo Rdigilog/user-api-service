@@ -172,6 +172,7 @@ export class UserController {
       return this.responseService.exception(e.message);
     }
   }
+  
   @Patch('/:userId/unarchive')
   async unarchiveUser(
     @Param('userId') userId: string,
