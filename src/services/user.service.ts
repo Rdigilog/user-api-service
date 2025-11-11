@@ -71,12 +71,21 @@ export class UserService extends PrismaService {
         include: {
           user: {
             select: {
+              id:true,
               email: true,
               active: true,
               verified: true,
               phoneNumber: true,
+              deleted:true,
               userRole: {
-                select: { role: true },
+                select: {
+                  role: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
+                },
               },
             },
           },
@@ -1050,7 +1059,7 @@ export class UserService extends PrismaService {
       }
       const result = await this.user.update({
         where: { id: userId },
-        data: { deleted: true, deletedAt: new Date() },
+        data: { deleted: false, deletedAt: new Date() },
       });
       return { error: 0, body: 'unarchived successfully' };
     } catch (e) {
