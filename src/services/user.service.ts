@@ -867,7 +867,6 @@ export class UserService extends PrismaService {
         ...(payload.bloodGroup && { bloodGroup: payload.bloodGroup }),
         ...(payload.allergy && { allergy: payload.allergy }),
 
-     
         // ...(payload.jobInformation && {
         //   jobInformation: {
         //     connectOrCreate: {
@@ -877,7 +876,6 @@ export class UserService extends PrismaService {
         //     update: { ...payload.jobInformation },
         //   },
         // }),
-
 
         // ...(payload.emergencyContact && {
         //   emergencyContact: {
@@ -889,13 +887,11 @@ export class UserService extends PrismaService {
         //   },
         // }),
 
-
         // ...(fileUrl && {
         //   profile: {
         //     update: { imageUrl: fileUrl },
         //   },
         // }),
-
 
         // ...(payload.bankInformation && {
         //   bankInformation: {
@@ -907,7 +903,6 @@ export class UserService extends PrismaService {
         //   },
         // }),
 
-
         // ...(payload.branchIds?.length && {
         //   branch: {
         //     deleteMany: {},
@@ -916,7 +911,6 @@ export class UserService extends PrismaService {
         //     },
         //   },
         // }),
-
 
         // ...(payload.departmentIds?.length && {
         //   department: {
@@ -928,16 +922,68 @@ export class UserService extends PrismaService {
         // }),
       };
 
+      if (payload.jobInformation) {
+        const { jobRoleId, ...rest } = payload.jobInformation;
+        await this.jobInformation.upsert({
+          where: { employeeId: id },
+          update: payload.jobInformation,
+          create: {
+            ...rest,
+            jobRole: jobRoleId
+              ? {
+                  connect: {
+                    id: jobRoleId,
+                  },
+                }
+              : undefined,
+            employee: {
+              connect: {
+                id: userId,
+              },
+            },
+          },
+        });
+      }
+
+      if (payload.emergencyContact) {
+        await this.emergencyContact.upsert({
+          where: { employeeId: userId },
+          update: payload.emergencyContact,
+          create: {
+            ...payload.emergencyContact,
+            employee: {
+              connect: {
+                id: userId,
+              },
+            },
+          },
+        });
+      }
 
       const result = await this.employee.update({
         where: {
-          id:userId
+          id: userId,
           // userId_companyId: {
           //   userId,
           //   companyId,
           // },
         },
         data: employee,
+        include: {
+          jobInformation: {
+            include: {
+              jobRole: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+          bankInformation: true,
+          emergencyContact: true,
+          branch: true,
+        },
         // create: {
         //   ...employee as any,
         //   profile: { connect: { userId } },
