@@ -24,7 +24,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiExtraModels,
-  ApiHeader,
+  // ApiHeader,
   ApiOperation,
   ApiQuery,
   ApiTags,
@@ -47,8 +47,8 @@ import { UtilsService } from 'src/utils/services/utils.service';
 
 @ApiTags('User')
 @Controller('user')
-// @ApiBearerAuth('access-stoken') // allow using access token with swagger()
-// @UseGuards(AuthGuard)
+@ApiBearerAuth('access-stoken') // allow using access token with swagger()
+@UseGuards(AuthGuard)
 export class UserController {
   constructor(
     private readonly service: UserService,

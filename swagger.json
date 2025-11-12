@@ -429,6 +429,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "tags": [
           "User"
         ]
@@ -443,6 +448,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "summary": "Fetch profile of login user",
         "tags": [
           "User"
@@ -488,6 +498,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "summary": "Update profile (with optional profile picture)",
         "tags": [
           "User"
@@ -512,6 +527,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "tags": [
           "User"
         ]
@@ -533,6 +553,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "tags": [
           "User"
         ]
@@ -556,6 +581,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "tags": [
           "User"
         ]
@@ -611,6 +641,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "summary": "Update profile (with optional profile picture)",
         "tags": [
           "User"
@@ -673,6 +708,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "summary": "Update profile (with optional profile picture)",
         "tags": [
           "User"
@@ -698,6 +738,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "tags": [
           "User"
         ]
@@ -731,6 +776,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "tags": [
           "User"
         ]
@@ -755,6 +805,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "tags": [
           "User"
         ]
@@ -816,6 +871,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "tags": [
           "User"
         ]
@@ -847,6 +907,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "tags": [
           "User"
         ]
@@ -861,6 +926,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "access-stoken": []
+          }
+        ],
         "tags": [
           "User"
         ]
