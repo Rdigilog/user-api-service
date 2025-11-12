@@ -290,6 +290,32 @@ export class EmployeeDto {
   @IsString()
   phoneNumber?: string;
 
+
+  @ApiPropertyOptional({ description: 'Phone number of the employee' })
+  @IsOptional()
+  @IsString()
+   profilePicture : string
+
+  @ApiPropertyOptional({ description: 'Phone number of the employee' })
+  @IsOptional()
+  @IsString()
+  passportId:string
+
+  @ApiPropertyOptional({ description: 'Phone number of the employee' })
+  @IsOptional()
+  @IsString()
+  proofOfAddress: string
+
+  @ApiPropertyOptional({
+    description: 'Array of branch IDs employee belongs to',
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  otherProofOfIdentification?: string[];
+
+
   @ApiPropertyOptional({
     enum: MaritalStatus,
     description: 'Marital status of the employee',

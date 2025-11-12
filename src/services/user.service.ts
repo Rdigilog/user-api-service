@@ -811,41 +811,37 @@ export class UserService extends PrismaService {
   async updateJobInformation(
     payload: EmployeeDto,
     userId: string,
-    companyId: string,
-    profilePicture?: Express.Multer.File,
-    passportId?: Express.Multer.File,
-    proofOfAddress?: Express.Multer.File,
-    otherProofOfIdentification?: Express.Multer.File[],
+    companyId: string
   ) {
     try {
       let fileUrl = '';
       let passportIdUrl = '';
       let proofOfAddressUrl = '';
       let otherProofOfIdentificationUrl: string[] = [];
-      if (profilePicture) {
-        const fileUploadResult =
-          await this.fileUploadService.uploadPicture(profilePicture);
-        fileUrl = fileUploadResult.url;
-      }
-      if (passportId) {
-        const fileUploadResult =
-          await this.fileUploadService.uploadPicture(passportId);
-        passportIdUrl = fileUploadResult.url;
-      }
-      if (proofOfAddress) {
-        const fileUploadResult =
-          await this.fileUploadService.uploadPicture(proofOfAddress);
-        proofOfAddressUrl = fileUploadResult.url;
-      }
-      if (otherProofOfIdentification?.length) {
-        await Promise.all(
-          otherProofOfIdentification.map(async (file) => {
-            const fileUploadResult =
-              await this.fileUploadService.uploadPicture(file);
-            otherProofOfIdentificationUrl.push(fileUploadResult.url);
-          }),
-        );
-      }
+      // if (profilePicture) {
+      //   const fileUploadResult =
+      //     await this.fileUploadService.uploadPicture(profilePicture);
+      //   fileUrl = fileUploadResult.url;
+      // }
+      // if (passportId) {
+      //   const fileUploadResult =
+      //     await this.fileUploadService.uploadPicture(passportId);
+      //   passportIdUrl = fileUploadResult.url;
+      // }
+      // if (proofOfAddress) {
+      //   const fileUploadResult =
+      //     await this.fileUploadService.uploadPicture(proofOfAddress);
+      //   proofOfAddressUrl = fileUploadResult.url;
+      // }
+      // if (otherProofOfIdentification?.length) {
+      //   await Promise.all(
+      //     otherProofOfIdentification.map(async (file) => {
+      //       const fileUploadResult =
+      //         await this.fileUploadService.uploadPicture(file);
+      //       otherProofOfIdentificationUrl.push(fileUploadResult.url);
+      //     }),
+      //   );
+      // }
       const employee: Prisma.EmployeeUpdateInput = {
         ...(payload.address && { address: payload.address }),
         ...(payload.phoneNumber && { phoneNumber: payload.phoneNumber }),
@@ -858,10 +854,10 @@ export class UserService extends PrismaService {
         ...(payload.altPhoneNumber && {
           altPhoneNumber: payload.altPhoneNumber,
         }),
-        ...(passportIdUrl && { passportId: passportIdUrl }),
-        ...(proofOfAddressUrl && { proofOfAddress: proofOfAddressUrl }),
-        ...(otherProofOfIdentificationUrl.length && {
-          otherProofOfIdentification: otherProofOfIdentificationUrl,
+        ...(payload.passportId && { passportId: payload.passportId }),
+        ...(payload.proofOfAddress && { proofOfAddress: payload.proofOfAddress }),
+        ...(payload.otherProofOfIdentification?.length && {
+          otherProofOfIdentification: payload.otherProofOfIdentification,
         }),
         ...(payload.dateOfBirth && { dateOfBirth: payload.dateOfBirth }),
         ...(payload.bloodGroup && { bloodGroup: payload.bloodGroup }),
@@ -921,6 +917,15 @@ export class UserService extends PrismaService {
         //   },
         // }),
       };
+
+
+      // if(payload.profilePicture){
+      //   await this.profile.update({
+      //     where:{
+      //       employee:{}
+      //     }
+      //   })
+      // }
 
       if (payload.jobInformation) {
         const { jobRoleId, ...rest } = payload.jobInformation;

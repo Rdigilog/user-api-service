@@ -668,37 +668,9 @@
         "requestBody": {
           "required": true,
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/EmployeeDto"
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "profilePicture": {
-                        "type": "string",
-                        "format": "binary"
-                      },
-                      "passportId": {
-                        "type": "string",
-                        "format": "binary"
-                      },
-                      "proofOfAddress": {
-                        "type": "string",
-                        "format": "binary"
-                      },
-                      "otherProofOfIdentification": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "format": "binary"
-                        }
-                      }
-                    }
-                  }
-                ]
+                "$ref": "#/components/schemas/EmployeeDto"
               }
             }
           }
@@ -1904,6 +1876,25 @@
           "phoneNumber": {
             "type": "string",
             "description": "Phone number of the employee"
+          },
+          "profilePicture": {
+            "type": "string",
+            "description": "Phone number of the employee"
+          },
+          "passportId": {
+            "type": "string",
+            "description": "Phone number of the employee"
+          },
+          "proofOfAddress": {
+            "type": "string",
+            "description": "Phone number of the employee"
+          },
+          "otherProofOfIdentification": {
+            "description": "Array of branch IDs employee belongs to",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "maritalStatus": {
             "type": "string",

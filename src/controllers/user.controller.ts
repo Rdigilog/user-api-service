@@ -288,44 +288,44 @@ export class UserController {
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
   @ApiExtraModels(EmployeeDto)
   @RouteName('settings.company.update')
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'profilePicture', maxCount: 1 },
-      { name: 'passportId', maxCount: 1 },
-      { name: 'proofOfAddress', maxCount: 1 },
-      { name: 'otherProofOfIdentification', maxCount: 10 }, // array of files
-    ]),
-  )
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      allOf: [
-        { $ref: getSchemaPath(EmployeeDto) },
-        {
-          type: 'object',
-          properties: {
-            profilePicture: { type: 'string', format: 'binary' },
-            passportId: { type: 'string', format: 'binary' },
-            proofOfAddress: { type: 'string', format: 'binary' },
-            otherProofOfIdentification: {
-              type: 'array',
-              items: { type: 'string', format: 'binary' },
-            },
-          },
-        },
-      ],
-    },
-  })
+  // @UseInterceptors(
+  //   FileFieldsInterceptor([
+  //     { name: 'profilePicture', maxCount: 1 },
+  //     { name: 'passportId', maxCount: 1 },
+  //     { name: 'proofOfAddress', maxCount: 1 },
+  //     { name: 'otherProofOfIdentification', maxCount: 10 }, // array of files
+  //   ]),
+  // )
+  // @ApiConsumes('multipart/form-data')
+  // @ApiBody({
+  //   schema: {
+  //     allOf: [
+  //       { $ref: getSchemaPath(EmployeeDto) },
+  //       {
+  //         type: 'object',
+  //         properties: {
+  //           profilePicture: { type: 'string', format: 'binary' },
+  //           passportId: { type: 'string', format: 'binary' },
+  //           proofOfAddress: { type: 'string', format: 'binary' },
+  //           otherProofOfIdentification: {
+  //             type: 'array',
+  //             items: { type: 'string', format: 'binary' },
+  //           },
+  //         },
+  //       },
+  //     ],
+  //   },
+  // })
   async updateEmployeeInfo(
     @Body() payload: EmployeeDto,
     @AuthUser() user: LoggedInUser,
-    @UploadedFiles()
-    files: {
-      profilePicture?: Express.Multer.File[];
-      passportId?: Express.Multer.File[];
-      proofOfAddress?: Express.Multer.File[];
-      otherProofOfIdentification?: Express.Multer.File[];
-    },
+    // @UploadedFiles()
+    // files: {
+    //   profilePicture?: Express.Multer.File[];
+    //   passportId?: Express.Multer.File[];
+    //   proofOfAddress?: Express.Multer.File[];
+    //   otherProofOfIdentification?: Express.Multer.File[];
+    // },
     @Param('id') id: string,
   ) {
     try {
@@ -336,19 +336,15 @@ export class UserController {
       // Logger.log(files.otherProofOfIdentification)
       // return this.responseService.success(payload)
 
-      const profilePicture = files.profilePicture?.[0];
-      const passportId = files.passportId?.[0];
-      const proofOfAddress = files.proofOfAddress?.[0];
-      const otherProofOfIdentification = files.otherProofOfIdentification || [];
+      // const profilePicture = files.profilePicture?.[0];
+      // const passportId = files.passportId?.[0];
+      // const proofOfAddress = files.proofOfAddress?.[0];
+      // const otherProofOfIdentification = files.otherProofOfIdentification || [];
 
       const result = await this.service.updateJobInformation(
         payload,
         id,
         userRole[0].companyId as string,
-        profilePicture,
-        passportId,
-        proofOfAddress,
-        otherProofOfIdentification,
       );
 
       if (result.error === 2) {
