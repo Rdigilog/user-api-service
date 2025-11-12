@@ -429,11 +429,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "tags": [
           "User"
         ]
@@ -448,11 +443,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "summary": "Fetch profile of login user",
         "tags": [
           "User"
@@ -498,11 +488,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "summary": "Update profile (with optional profile picture)",
         "tags": [
           "User"
@@ -527,11 +512,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "tags": [
           "User"
         ]
@@ -553,11 +533,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "tags": [
           "User"
         ]
@@ -581,11 +556,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "tags": [
           "User"
         ]
@@ -641,11 +611,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "summary": "Update profile (with optional profile picture)",
         "tags": [
           "User"
@@ -690,8 +655,11 @@
                         "format": "binary"
                       },
                       "otherProofOfIdentification": {
-                        "type": "string",
-                        "format": "binary"
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "binary"
+                        }
                       }
                     }
                   }
@@ -705,11 +673,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "summary": "Update profile (with optional profile picture)",
         "tags": [
           "User"
@@ -735,11 +698,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "tags": [
           "User"
         ]
@@ -773,11 +731,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "tags": [
           "User"
         ]
@@ -802,11 +755,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "tags": [
           "User"
         ]
@@ -868,11 +816,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "tags": [
           "User"
         ]
@@ -904,11 +847,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "tags": [
           "User"
         ]
@@ -923,11 +861,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
         "tags": [
           "User"
         ]

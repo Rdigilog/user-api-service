@@ -812,10 +812,10 @@ export class UserService extends PrismaService {
     payload: EmployeeDto,
     userId: string,
     companyId: string,
-    profilePicture: Express.Multer.File,
-    passportId: Express.Multer.File,
-    proofOfAddress: Express.Multer.File,
-    otherProofOfIdentification: Express.Multer.File[],
+    profilePicture?: Express.Multer.File,
+    passportId?: Express.Multer.File,
+    proofOfAddress?: Express.Multer.File,
+    otherProofOfIdentification?: Express.Multer.File[],
   ) {
     try {
       let fileUrl = '';
@@ -837,11 +837,11 @@ export class UserService extends PrismaService {
           await this.fileUploadService.uploadPicture(proofOfAddress);
         proofOfAddressUrl = fileUploadResult.url;
       }
-      if (otherProofOfIdentification.length) {
+      if (otherProofOfIdentification?.length) {
         await Promise.all(
           otherProofOfIdentification.map(async (file) => {
             const fileUploadResult =
-              await this.fileUploadService.uploadPicture(profilePicture);
+              await this.fileUploadService.uploadPicture(file);
             otherProofOfIdentificationUrl.push(fileUploadResult.url);
           }),
         );

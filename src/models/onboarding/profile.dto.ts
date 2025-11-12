@@ -219,7 +219,7 @@ export class JobInformationDto {
 
   @ApiPropertyOptional({ description: 'Pay rate per hour' })
   @IsOptional()
-  @IsNumber()
+  // @IsNumber()
   payRatePerHour?: number;
 
   @ApiPropertyOptional({ description: 'Work status' })
@@ -359,7 +359,7 @@ export class EmployeeDto {
 
   @ApiPropertyOptional({ description: 'Pay rate (default 0)' })
   @IsOptional()
-  @IsNumber()
+  // @IsNumber()
   payRate?: number;
 
   @ApiPropertyOptional({ enum: BillingCycle, description: 'Billing period' })
@@ -369,17 +369,17 @@ export class EmployeeDto {
 
   @ApiPropertyOptional({ description: 'Annual leave days' })
   @IsOptional()
-  @IsNumber()
+  // @IsNumber()
   annualLeave?: number;
 
   @ApiPropertyOptional({ description: 'Bank holidays' })
   @IsOptional()
-  @IsNumber()
+  // @IsNumber()
   bankHoliday?: number;
 
   @ApiPropertyOptional({ description: 'Work hours' })
   @IsOptional()
-  @IsNumber()
+  // @IsNumber()
   hours?: number;
 
   @ApiPropertyOptional({ description: 'Break time' })
@@ -399,7 +399,7 @@ export class EmployeeDto {
     description: 'Screenshot interval in minutes',
   })
   @IsOptional()
-  @IsNumber()
+  // @IsNumber()
   screenshotIntervalMinutes?: number;
 
   @ApiPropertyOptional({
@@ -414,7 +414,7 @@ export class EmployeeDto {
     description: 'Notify user when screenshot is taken',
   })
   @IsOptional()
-  @IsBoolean()
+  // @IsBoolean()
   appScrennshotNotification?: boolean;
 
   @ApiPropertyOptional({

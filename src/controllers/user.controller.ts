@@ -13,8 +13,12 @@ import {
   Headers,
   Delete,
   UploadedFiles,
+  Logger,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -43,8 +47,8 @@ import { UtilsService } from 'src/utils/services/utils.service';
 
 @ApiTags('User')
 @Controller('user')
-@ApiBearerAuth('access-token') // allow using access token with swagger()
-@UseGuards(AuthGuard)
+// @ApiBearerAuth('access-stoken') // allow using access token with swagger()
+// @UseGuards(AuthGuard)
 export class UserController {
   constructor(
     private readonly service: UserService,
@@ -172,7 +176,7 @@ export class UserController {
       return this.responseService.exception(e.message);
     }
   }
-  
+
   @Patch('/:userId/unarchive')
   async unarchiveUser(
     @Param('userId') userId: string,
@@ -284,22 +288,29 @@ export class UserController {
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
   @ApiExtraModels(EmployeeDto)
   @RouteName('settings.company.update')
-  @UseInterceptors(FileInterceptor('profilePicture'))
-  @UseInterceptors(FileInterceptor('passportId'))
-  @UseInterceptors(FileInterceptor('proofOfAddress'))
-  @UseInterceptors(FileInterceptor('otherProofOfIdentification'))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'profilePicture', maxCount: 1 },
+      { name: 'passportId', maxCount: 1 },
+      { name: 'proofOfAddress', maxCount: 1 },
+      { name: 'otherProofOfIdentification', maxCount: 10 }, // array of files
+    ]),
+  )
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       allOf: [
-        { $ref: getSchemaPath(EmployeeDto) }, // pull in DTO schema
+        { $ref: getSchemaPath(EmployeeDto) },
         {
           type: 'object',
           properties: {
             profilePicture: { type: 'string', format: 'binary' },
             passportId: { type: 'string', format: 'binary' },
             proofOfAddress: { type: 'string', format: 'binary' },
-            otherProofOfIdentification: { type: 'string', format: 'binary' },
+            otherProofOfIdentification: {
+              type: 'array',
+              items: { type: 'string', format: 'binary' },
+            },
           },
         },
       ],
@@ -308,14 +319,28 @@ export class UserController {
   async updateEmployeeInfo(
     @Body() payload: EmployeeDto,
     @AuthUser() user: LoggedInUser,
-    @UploadedFile() profilePicture: Express.Multer.File,
-    @UploadedFile() passportId: Express.Multer.File,
-    @UploadedFile() proofOfAddress: Express.Multer.File,
-    @UploadedFiles() otherProofOfIdentification: Express.Multer.File[],
+    @UploadedFiles()
+    files: {
+      profilePicture?: Express.Multer.File[];
+      passportId?: Express.Multer.File[];
+      proofOfAddress?: Express.Multer.File[];
+      otherProofOfIdentification?: Express.Multer.File[];
+    },
     @Param('userId') id: string,
   ) {
     try {
       const { userRole } = user;
+      // Logger.log(files.profilePicture)
+      // Logger.log(files.passportId)
+      // Logger.log(files.proofOfAddress)
+      // Logger.log(files.otherProofOfIdentification)
+      // return this.responseService.success(payload)
+
+      const profilePicture = files.profilePicture?.[0];
+      const passportId = files.passportId?.[0];
+      const proofOfAddress = files.proofOfAddress?.[0];
+      const otherProofOfIdentification = files.otherProofOfIdentification || [];
+
       const result = await this.service.updateJobInformation(
         payload,
         id,
@@ -323,11 +348,13 @@ export class UserController {
         profilePicture,
         passportId,
         proofOfAddress,
-        otherProofOfIdentification
+        otherProofOfIdentification,
       );
+
       if (result.error === 2) {
         return this.responseService.exception(result.body);
       }
+
       return this.responseService.success(result.body);
     } catch (e) {
       return this.responseService.exception(e.message);
