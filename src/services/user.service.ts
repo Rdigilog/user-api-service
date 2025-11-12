@@ -925,7 +925,7 @@ export class UserService extends PrismaService {
       if (payload.jobInformation) {
         const { jobRoleId, ...rest } = payload.jobInformation;
         await this.jobInformation.upsert({
-          where: { employeeId: id },
+          where: { employeeId: userId },
           update: payload.jobInformation,
           create: {
             ...rest,
