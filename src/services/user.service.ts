@@ -867,7 +867,7 @@ export class UserService extends PrismaService {
         ...(payload.bloodGroup && { bloodGroup: payload.bloodGroup }),
         ...(payload.allergy && { allergy: payload.allergy }),
 
-        // ✅ jobInformation — use connectOrCreate instead of upsert
+     
         ...(payload.jobInformation && {
           jobInformation: {
             connectOrCreate: {
@@ -878,7 +878,7 @@ export class UserService extends PrismaService {
           },
         }),
 
-        // ✅ emergencyContact — use connectOrCreate instead of upsert
+
         ...(payload.emergencyContact && {
           emergencyContact: {
             connectOrCreate: {
@@ -889,14 +889,14 @@ export class UserService extends PrismaService {
           },
         }),
 
-        // ✅ update profile image if exists
+
         ...(fileUrl && {
           profile: {
             update: { imageUrl: fileUrl },
           },
         }),
 
-        // ✅ bankInformation — connectOrCreate
+
         ...(payload.bankInformation && {
           bankInformation: {
             connectOrCreate: {
@@ -907,7 +907,7 @@ export class UserService extends PrismaService {
           },
         }),
 
-        // ✅ handle branches
+
         ...(payload.branchIds?.length && {
           branch: {
             deleteMany: {},
@@ -917,7 +917,7 @@ export class UserService extends PrismaService {
           },
         }),
 
-        // ✅ handle departments
+
         ...(payload.departmentIds?.length && {
           department: {
             deleteMany: {},
@@ -928,7 +928,7 @@ export class UserService extends PrismaService {
         }),
       };
 
-      // ✅ main upsert for the Employee
+
       const result = await this.employee.upsert({
         where: {
           userId_companyId: {
