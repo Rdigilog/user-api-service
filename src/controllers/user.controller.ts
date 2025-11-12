@@ -284,7 +284,7 @@ export class UserController {
     }
   }
 
-  @Patch('/employee/:userId')
+  @Patch('/employee/:id')
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
   @ApiExtraModels(EmployeeDto)
   @RouteName('settings.company.update')
@@ -326,7 +326,7 @@ export class UserController {
       proofOfAddress?: Express.Multer.File[];
       otherProofOfIdentification?: Express.Multer.File[];
     },
-    @Param('userId') id: string,
+    @Param('id') id: string,
   ) {
     try {
       const { userRole } = user;
