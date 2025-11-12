@@ -868,80 +868,80 @@ export class UserService extends PrismaService {
         ...(payload.allergy && { allergy: payload.allergy }),
 
      
-        ...(payload.jobInformation && {
-          jobInformation: {
-            connectOrCreate: {
-              where: { employeeId: userId }, // assuming jobInformation has employeeId FK
-              create: { ...payload.jobInformation },
-            },
-            update: { ...payload.jobInformation },
-          },
-        }),
+        // ...(payload.jobInformation && {
+        //   jobInformation: {
+        //     connectOrCreate: {
+        //       where: { employeeId: userId }, // assuming jobInformation has employeeId FK
+        //       create: { ...payload.jobInformation },
+        //     },
+        //     update: { ...payload.jobInformation },
+        //   },
+        // }),
 
 
-        ...(payload.emergencyContact && {
-          emergencyContact: {
-            connectOrCreate: {
-              where: { employeeId: userId },
-              create: { ...payload.emergencyContact },
-            },
-            update: { ...payload.emergencyContact },
-          },
-        }),
+        // ...(payload.emergencyContact && {
+        //   emergencyContact: {
+        //     connectOrCreate: {
+        //       where: { employeeId: userId },
+        //       create: { ...payload.emergencyContact },
+        //     },
+        //     update: { ...payload.emergencyContact },
+        //   },
+        // }),
 
 
-        ...(fileUrl && {
-          profile: {
-            update: { imageUrl: fileUrl },
-          },
-        }),
+        // ...(fileUrl && {
+        //   profile: {
+        //     update: { imageUrl: fileUrl },
+        //   },
+        // }),
 
 
-        ...(payload.bankInformation && {
-          bankInformation: {
-            connectOrCreate: {
-              where: { employeeId: userId },
-              create: { ...payload.bankInformation },
-            },
-            update: { ...payload.bankInformation },
-          },
-        }),
+        // ...(payload.bankInformation && {
+        //   bankInformation: {
+        //     connectOrCreate: {
+        //       where: { employeeId: userId },
+        //       create: { ...payload.bankInformation },
+        //     },
+        //     update: { ...payload.bankInformation },
+        //   },
+        // }),
 
 
-        ...(payload.branchIds?.length && {
-          branch: {
-            deleteMany: {},
-            createMany: {
-              data: payload.branchIds.map((id) => ({ branchId: id })),
-            },
-          },
-        }),
+        // ...(payload.branchIds?.length && {
+        //   branch: {
+        //     deleteMany: {},
+        //     createMany: {
+        //       data: payload.branchIds.map((id) => ({ branchId: id })),
+        //     },
+        //   },
+        // }),
 
 
-        ...(payload.departmentIds?.length && {
-          department: {
-            deleteMany: {},
-            createMany: {
-              data: payload.departmentIds.map((id) => ({ departmentId: id })),
-            },
-          },
-        }),
+        // ...(payload.departmentIds?.length && {
+        //   department: {
+        //     deleteMany: {},
+        //     createMany: {
+        //       data: payload.departmentIds.map((id) => ({ departmentId: id })),
+        //     },
+        //   },
+        // }),
       };
 
 
-      const result = await this.employee.upsert({
+      const result = await this.employee.update({
         where: {
           userId_companyId: {
             userId,
             companyId,
           },
         },
-        update: employee,
-        create: {
-          ...employee as any,
-          profile: { connect: { userId } },
-          company: { connect: { id: companyId } },
-        },
+        data: employee,
+        // create: {
+        //   ...employee as any,
+        //   profile: { connect: { userId } },
+        //   company: { connect: { id: companyId } },
+        // },
       });
 
       return { error: 0, body: result };
