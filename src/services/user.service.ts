@@ -867,71 +867,60 @@ export class UserService extends PrismaService {
         ...(payload.bloodGroup && { bloodGroup: payload.bloodGroup }),
         ...(payload.allergy && { allergy: payload.allergy }),
 
+        // ✅ jobInformation — use connectOrCreate instead of upsert
         ...(payload.jobInformation && {
           jobInformation: {
-            upsert: {
-              create: {
-                ...payload.jobInformation,
-              },
-              update: {
-                ...payload.jobInformation,
-              },
+            connectOrCreate: {
+              where: { employeeId: userId }, // assuming jobInformation has employeeId FK
+              create: { ...payload.jobInformation },
             },
+            update: { ...payload.jobInformation },
           },
         }),
 
+        // ✅ emergencyContact — use connectOrCreate instead of upsert
         ...(payload.emergencyContact && {
           emergencyContact: {
-            upsert: {
-              create: {
-                name: payload.emergencyContact.name,
-                relationship: payload.emergencyContact.relationship,
-                phoneNumber: payload.emergencyContact.phoneNumber,
-                address: payload.emergencyContact.address,
-              },
-              update: {
-                name: payload.emergencyContact.name,
-                relationship: payload.emergencyContact.relationship,
-                phoneNumber: payload.emergencyContact.phoneNumber,
-                address: payload.emergencyContact.address,
-              },
+            connectOrCreate: {
+              where: { employeeId: userId },
+              create: { ...payload.emergencyContact },
             },
+            update: { ...payload.emergencyContact },
           },
         }),
+
+        // ✅ update profile image if exists
         ...(fileUrl && {
           profile: {
-            update: {
-              imageUrl: fileUrl,
-            },
+            update: { imageUrl: fileUrl },
           },
         }),
 
+        // ✅ bankInformation — connectOrCreate
         ...(payload.bankInformation && {
           bankInformation: {
-            upsert: {
-              create: {
-                ...payload.bankInformation,
-              },
-              update: {
-                ...payload.bankInformation,
-              },
+            connectOrCreate: {
+              where: { employeeId: userId },
+              create: { ...payload.bankInformation },
             },
+            update: { ...payload.bankInformation },
           },
         }),
 
+        // ✅ handle branches
         ...(payload.branchIds?.length && {
           branch: {
             deleteMany: {},
             createMany: {
-              data: payload.branchIds.map((id) => {
-                return { branchId: id };
-              }),
+              data: payload.branchIds.map((id) => ({ branchId: id })),
             },
           },
         }),
 
+        // ✅ handle departments
         ...(payload.departmentIds?.length && {
           department: {
+            deleteMany: {},
             createMany: {
               data: payload.departmentIds.map((id) => ({ departmentId: id })),
             },
@@ -939,6 +928,7 @@ export class UserService extends PrismaService {
         }),
       };
 
+      // ✅ main upsert for the Employee
       const result = await this.employee.upsert({
         where: {
           userId_companyId: {
@@ -948,10 +938,10 @@ export class UserService extends PrismaService {
         },
         update: employee,
         create: {
-          ...employee,
-          profile: { connect: { userId: userId } },
+          ...employee as any,
+          profile: { connect: { userId } },
           company: { connect: { id: companyId } },
-        } as any,
+        },
       });
 
       return { error: 0, body: result };
