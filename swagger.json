@@ -652,12 +652,12 @@
         ]
       }
     },
-    "/user/api/v1/user/employee/{userId}": {
+    "/user/api/v1/user/employee/{id}": {
       "patch": {
         "operationId": "UserController_updateEmployeeInfo",
         "parameters": [
           {
-            "name": "userId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
