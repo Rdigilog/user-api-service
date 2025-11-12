@@ -464,31 +464,9 @@
         "requestBody": {
           "required": true,
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "firstName": {
-                    "type": "string",
-                    "example": "John"
-                  },
-                  "lastName": {
-                    "type": "string",
-                    "example": "Doe"
-                  },
-                  "email": {
-                    "type": "string",
-                    "example": "john@example.com"
-                  },
-                  "phoneNumber": {
-                    "type": "string",
-                    "example": "+123456789"
-                  },
-                  "profilePicture": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
+                "$ref": "#/components/schemas/UpdateProfileDto"
               }
             }
           }
@@ -607,31 +585,9 @@
         "requestBody": {
           "required": true,
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "firstName": {
-                    "type": "string",
-                    "example": "John"
-                  },
-                  "lastName": {
-                    "type": "string",
-                    "example": "Doe"
-                  },
-                  "email": {
-                    "type": "string",
-                    "example": "john@example.com"
-                  },
-                  "phoneNumber": {
-                    "type": "string",
-                    "example": "+123456789"
-                  },
-                  "profilePicture": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
+                "$ref": "#/components/schemas/UpdateProfileDto"
               }
             }
           }
@@ -1761,6 +1717,35 @@
           "token",
           "password"
         ]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastname": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current status of the user",
+            "enum": [
+              "ONLINE",
+              "OFFLINE"
+            ],
+            "example": "ONLINE"
+          }
+        }
       },
       "JobInformationDto": {
         "type": "object",

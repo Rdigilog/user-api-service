@@ -403,21 +403,21 @@ export class UserService extends PrismaService {
 
   async updateProfile(
     payload: UpdateProfileDto,
-    profilePicture: Express.Multer.File,
+    // profilePicture: Express.Multer.File,
     userId: string,
   ) {
     try {
       const profile = await this.profile.findFirst({
         where: { userId },
       });
-      let fileUrl = '';
-      if (profilePicture) {
-        this.fileRemovalQueue.add('REMOVE_PROFILE_PIC', profile?.imageUrl);
-        const fileUploadResult =
-          await this.fileUploadService.uploadPicture(profilePicture);
-        // console.log(fileUploadResult)
-        fileUrl = fileUploadResult.url;
-      }
+      // let fileUrl = '';
+      // if (profilePicture) {
+      //   this.fileRemovalQueue.add('REMOVE_PROFILE_PIC', profile?.imageUrl);
+      //   const fileUploadResult =
+      //     await this.fileUploadService.uploadPicture(profilePicture);
+      //   // console.log(fileUploadResult)
+      //   fileUrl = fileUploadResult.url;
+      // }
       const data: any = {
         ...(payload.firstName !== undefined && {
           firstName: payload.firstName,
@@ -427,7 +427,7 @@ export class UserService extends PrismaService {
         ...(payload.phoneNumber !== undefined && {
           phoneNumber: payload.phoneNumber,
         }),
-        ...(fileUrl && { imageUrl: fileUrl }),
+        ...(payload.imageUrl && { imageUrl: payload.imageUrl }),
         ...(payload.status && {
           status: payload.status,
         }),

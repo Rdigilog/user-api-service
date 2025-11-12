@@ -207,23 +207,23 @@ export class UserController {
 
   @Patch('/prifle')
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
-  @UseInterceptors(FileInterceptor('profilePicture'))
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        firstName: { type: 'string', example: 'John' },
-        lastName: { type: 'string', example: 'Doe' },
-        email: { type: 'string', example: 'john@example.com' },
-        phoneNumber: { type: 'string', example: '+123456789' },
-        profilePicture: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
+  // @UseInterceptors(FileInterceptor('profilePicture'))
+  // @ApiConsumes('multipart/form-data')
+  // @ApiBody({
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       firstName: { type: 'string', example: 'John' },
+  //       lastName: { type: 'string', example: 'Doe' },
+  //       email: { type: 'string', example: 'john@example.com' },
+  //       phoneNumber: { type: 'string', example: '+123456789' },
+  //       profilePicture: {
+  //         type: 'string',
+  //         format: 'binary',
+  //       },
+  //     },
+  //   },
+  // })
   async updateProfile(
     @Body() payload: UpdateProfileDto,
     @UploadedFile() profilePicture: Express.Multer.File,
@@ -232,7 +232,7 @@ export class UserController {
     try {
       const result = await this.service.updateProfile(
         payload,
-        profilePicture,
+        // profilePicture,
         user.id,
       );
       if (result.error == 1)
@@ -245,34 +245,34 @@ export class UserController {
   }
 
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
-  @UseInterceptors(FileInterceptor('profilePicture'))
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        firstName: { type: 'string', example: 'John' },
-        lastName: { type: 'string', example: 'Doe' },
-        email: { type: 'string', example: 'john@example.com' },
-        phoneNumber: { type: 'string', example: '+123456789' },
-        profilePicture: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
+  // @UseInterceptors(FileInterceptor('profilePicture'))
+  // @ApiConsumes('multipart/form-data')
+  // @ApiBody({
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       firstName: { type: 'string', example: 'John' },
+  //       lastName: { type: 'string', example: 'Doe' },
+  //       email: { type: 'string', example: 'john@example.com' },
+  //       phoneNumber: { type: 'string', example: '+123456789' },
+  //       profilePicture: {
+  //         type: 'string',
+  //         format: 'binary',
+  //       },
+  //     },
+  //   },
+  // })
   @Patch('/profile/:userId')
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
   async updateProfilewWithUserId(
     @Body() payload: UpdateProfileDto,
     @Param('userId') userId: string,
-    @UploadedFile() profilePicture: Express.Multer.File,
+    // @UploadedFile() profilePicture: Express.Multer.File,
   ) {
     try {
       const result = await this.service.updateProfile(
         payload,
-        profilePicture,
+        // profilePicture,
         userId,
       );
       if (result.error == 1)
