@@ -931,10 +931,11 @@ export class UserService extends PrismaService {
 
       const result = await this.employee.update({
         where: {
-          userId_companyId: {
-            userId,
-            companyId,
-          },
+          id:userId
+          // userId_companyId: {
+          //   userId,
+          //   companyId,
+          // },
         },
         data: employee,
         // create: {
