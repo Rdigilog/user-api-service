@@ -10,7 +10,7 @@ import {
   UserStatus,
   WorkType,
 } from '@prisma/client';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsOptional,
   IsString,
@@ -219,6 +219,7 @@ export class JobInformationDto {
 
   @ApiPropertyOptional({ description: 'Pay rate per hour' })
   @IsOptional()
+   @Type(() => Number)
   // @IsNumber()
   payRatePerHour?: number;
 
@@ -359,6 +360,7 @@ export class EmployeeDto {
 
   @ApiPropertyOptional({ description: 'Pay rate (default 0)' })
   @IsOptional()
+    @Type(() => Number)
   // @IsNumber()
   payRate?: number;
 
@@ -370,16 +372,19 @@ export class EmployeeDto {
   @ApiPropertyOptional({ description: 'Annual leave days' })
   @IsOptional()
   // @IsNumber()
+  @Type(() => Number)
   annualLeave?: number;
 
   @ApiPropertyOptional({ description: 'Bank holidays' })
   @IsOptional()
   // @IsNumber()
+  @Type(() => Number)
   bankHoliday?: number;
 
   @ApiPropertyOptional({ description: 'Work hours' })
   @IsOptional()
   // @IsNumber()
+  @Type(() => Number)
   hours?: number;
 
   @ApiPropertyOptional({ description: 'Break time' })
@@ -400,6 +405,7 @@ export class EmployeeDto {
   })
   @IsOptional()
   // @IsNumber()
+  @Type(() => Number)
   screenshotIntervalMinutes?: number;
 
   @ApiPropertyOptional({
@@ -412,6 +418,11 @@ export class EmployeeDto {
 
   @ApiPropertyOptional({
     description: 'Notify user when screenshot is taken',
+  })
+  @Transform(({ value }) => {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value.toLowerCase() === 'true';
+    return false;
   })
   @IsOptional()
   // @IsBoolean()

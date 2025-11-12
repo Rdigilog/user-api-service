@@ -859,7 +859,7 @@ export class UserService extends PrismaService {
           altPhoneNumber: payload.altPhoneNumber,
         }),
         ...(passportIdUrl && { passportId: passportIdUrl }),
-        ...(proofOfAddressUrl && { proofOfAddress: passportIdUrl }),
+        ...(proofOfAddressUrl && { proofOfAddress: proofOfAddressUrl }),
         ...(otherProofOfIdentificationUrl.length && {
           otherProofOfIdentification: otherProofOfIdentificationUrl,
         }),

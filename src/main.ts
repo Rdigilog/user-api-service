@@ -24,7 +24,14 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.setGlobalPrefix('user/api/v1');
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist:true,
+      // forbidNonWhitelisted: true,
+      // transformOptions: { enableImplicitConversion: true },
+    }),
+  );
   app.enableCors();
   const config = new DocumentBuilder()
     .setTitle('DigiLog User API Documentation')
