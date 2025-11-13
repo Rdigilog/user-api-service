@@ -56,44 +56,6 @@ export class UserController {
     private readonly utilService: UtilsService,
   ) {}
 
-  // @ApiQuery({ name: 'page', required: false, type: Number })
-  // @ApiQuery({ name: 'size', required: false, type: Number })
-  // @ApiQuery({ name: 'search', required: false, type: String })
-  // @ApiQuery({ name: 'sortDirection', required: false, type: String })
-  // @ApiQuery({ name: 'sortBy', required: false, type: String })
-  // @ApiQuery({ name: 'role', required: false, type: String })
-  // @Get('/list')
-  // async list(
-  //   @Query('page') page: number = 1,
-  //   @Query('size') size: number = 50,
-  //   @Query('search') search?: string,
-  //   @Query('sortDirection') sortDirection?: 'asc' | 'desc',
-  //   @Query('sortBy') sortBy?: string,
-  //   @Query('role') role?: string,
-  // ) {
-  //   try {
-  //     const result = await this.service.list(
-  //       page,
-  //       size,
-  //       search,
-  //       sortBy,
-  //       sortDirection,
-  //       role,
-  //     );
-  //     if (result.error == 2) {
-  //       return this.responseService.exception(result.body);
-  //     }
-  //     return this.responseService.success(result.body);
-  //   } catch (e) {
-  //     return this.responseService.exception(e.message);
-  //   }
-  // }
-
-  // @ApiHeader({
-  //   name: 'X-Company-id',
-  //   description: 'A Company tenant Id',
-  //   required: true,
-  // })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'size', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, type: String })
@@ -192,30 +154,15 @@ export class UserController {
     }
   }
 
-  // @Patch()
-  // async updateUser(@Body() payload: UserDTO, @Request() req) {
-  //   try {
-  //     const result = await this.service.updateUser(payload, req.user.id);
-  //     if (result.error == 1)
-  //       return this.responseService.badRequest(result.body);
-  //     if (result.error == 2) return this.responseService.exception(result.body);
-  //     return this.responseService.success(result.body);
-  //   } catch (e) {
-  //     return this.responseService.exception(e.message);
-  //   }
-  // }
-
   @Patch('/profile')
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
   async updateProfile(
     @Body() payload: UpdateProfileDto,
-    // @UploadedFile() profilePicture: Express.Multer.File,
     @AuthUser() user: LoggedInUser,
   ) {
     try {
       const result = await this.service.updateProfile(
         payload,
-        // profilePicture,
         user.id,
       );
       if (result.error == 1)
@@ -228,34 +175,15 @@ export class UserController {
   }
 
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
-  // @UseInterceptors(FileInterceptor('profilePicture'))
-  // @ApiConsumes('multipart/form-data')
-  // @ApiBody({
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       firstName: { type: 'string', example: 'John' },
-  //       lastName: { type: 'string', example: 'Doe' },
-  //       email: { type: 'string', example: 'john@example.com' },
-  //       phoneNumber: { type: 'string', example: '+123456789' },
-  //       profilePicture: {
-  //         type: 'string',
-  //         format: 'binary',
-  //       },
-  //     },
-  //   },
-  // })
   @Patch('/profile/:userId')
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
   async updateProfilewWithUserId(
     @Body() payload: UpdateProfileDto,
     @Param('userId') userId: string,
-    // @UploadedFile() profilePicture: Express.Multer.File,
   ) {
     try {
       const result = await this.service.updateProfile(
         payload,
-        // profilePicture,
         userId,
       );
       if (result.error == 1)
@@ -271,59 +199,13 @@ export class UserController {
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
   @ApiExtraModels(EmployeeDto)
   @RouteName('settings.company.update')
-  // @UseInterceptors(
-  //   FileFieldsInterceptor([
-  //     { name: 'profilePicture', maxCount: 1 },
-  //     { name: 'passportId', maxCount: 1 },
-  //     { name: 'proofOfAddress', maxCount: 1 },
-  //     { name: 'otherProofOfIdentification', maxCount: 10 }, // array of files
-  //   ]),
-  // )
-  // @ApiConsumes('multipart/form-data')
-  // @ApiBody({
-  //   schema: {
-  //     allOf: [
-  //       { $ref: getSchemaPath(EmployeeDto) },
-  //       {
-  //         type: 'object',
-  //         properties: {
-  //           profilePicture: { type: 'string', format: 'binary' },
-  //           passportId: { type: 'string', format: 'binary' },
-  //           proofOfAddress: { type: 'string', format: 'binary' },
-  //           otherProofOfIdentification: {
-  //             type: 'array',
-  //             items: { type: 'string', format: 'binary' },
-  //           },
-  //         },
-  //       },
-  //     ],
-  //   },
-  // })
   async updateEmployeeInfo(
     @Body() payload: EmployeeDto,
     @AuthUser() user: LoggedInUser,
-    // @UploadedFiles()
-    // files: {
-    //   profilePicture?: Express.Multer.File[];
-    //   passportId?: Express.Multer.File[];
-    //   proofOfAddress?: Express.Multer.File[];
-    //   otherProofOfIdentification?: Express.Multer.File[];
-    // },
     @Param('id') id: string,
   ) {
     try {
       const { userRole } = user;
-      // Logger.log(files.profilePicture)
-      // Logger.log(files.passportId)
-      // Logger.log(files.proofOfAddress)
-      // Logger.log(files.otherProofOfIdentification)
-      // return this.responseService.success(payload)
-
-      // const profilePicture = files.profilePicture?.[0];
-      // const passportId = files.passportId?.[0];
-      // const proofOfAddress = files.proofOfAddress?.[0];
-      // const otherProofOfIdentification = files.otherProofOfIdentification || [];
-
       const result = await this.service.updateJobInformation(
         payload,
         id,

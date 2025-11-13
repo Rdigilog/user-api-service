@@ -403,7 +403,6 @@ export class UserService extends PrismaService {
 
   async updateProfile(
     payload: UpdateProfileDto,
-    // profilePicture: Express.Multer.File,
     userId: string,
   ) {
     try {
