@@ -131,7 +131,7 @@ export class UserController {
     }
   }
 
-  @Get('/prifle')
+  @Get('/profile')
   @ApiOperation({ summary: 'Fetch profile of login user' })
   async userProfile(@AuthUser() user: LoggedInUser) {
     console.log('login user', user);
@@ -205,7 +205,7 @@ export class UserController {
   //   }
   // }
 
-  @Patch('/prifle')
+  @Patch('/profile')
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
   // @UseInterceptors(FileInterceptor('profilePicture'))
   // @ApiConsumes('multipart/form-data')
