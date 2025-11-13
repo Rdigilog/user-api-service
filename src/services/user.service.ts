@@ -409,7 +409,7 @@ export class UserService extends PrismaService {
       Logger.log('request payload to update user');
       Logger.log(payload);
       const result = await this.profile.update({
-        where: { userId },
+        where: { userId:userId },
         data: {
           ...payload,
         },
