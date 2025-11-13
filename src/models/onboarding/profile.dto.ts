@@ -43,7 +43,7 @@ export class UpdateProfileDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  lastname?: string;
+  lastName?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
