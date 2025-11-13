@@ -207,26 +207,9 @@ export class UserController {
 
   @Patch('/profile')
   @ApiOperation({ summary: 'Update profile (with optional profile picture)' })
-  // @UseInterceptors(FileInterceptor('profilePicture'))
-  // @ApiConsumes('multipart/form-data')
-  // @ApiBody({
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       firstName: { type: 'string', example: 'John' },
-  //       lastName: { type: 'string', example: 'Doe' },
-  //       email: { type: 'string', example: 'john@example.com' },
-  //       phoneNumber: { type: 'string', example: '+123456789' },
-  //       profilePicture: {
-  //         type: 'string',
-  //         format: 'binary',
-  //       },
-  //     },
-  //   },
-  // })
   async updateProfile(
     @Body() payload: UpdateProfileDto,
-    @UploadedFile() profilePicture: Express.Multer.File,
+    // @UploadedFile() profilePicture: Express.Multer.File,
     @AuthUser() user: LoggedInUser,
   ) {
     try {

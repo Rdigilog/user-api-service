@@ -407,61 +407,10 @@ export class UserService extends PrismaService {
     userId: string,
   ) {
     try {
-      const profile = await this.profile.findFirst({
-        where: { userId },
-      });
-      // let fileUrl = '';
-      // if (profilePicture) {
-      //   this.fileRemovalQueue.add('REMOVE_PROFILE_PIC', profile?.imageUrl);
-      //   const fileUploadResult =
-      //     await this.fileUploadService.uploadPicture(profilePicture);
-      //   // console.log(fileUploadResult)
-      //   fileUrl = fileUploadResult.url;
-      // }
-      const data: any = {
-        ...(payload.firstName !== undefined && {
-          firstName: payload.firstName,
-        }),
-        ...(payload.lastname !== undefined && { lastName: payload.lastname }),
-        ...(payload.email !== undefined && { email: payload.email }),
-        ...(payload.phoneNumber !== undefined && {
-          phoneNumber: payload.phoneNumber,
-        }),
-        ...(payload.imageUrl && { imageUrl: payload.imageUrl }),
-        ...(payload.status && {
-          status: payload.status,
-        }),
-        // ...(payload.employeeId !== undefined && {
-        //   employeeId: payload.employeeId,
-        // }),
-        // ...(payload.address !== undefined && { address: payload.address }),
-        // ...(payload.maritalStatus !== undefined && {
-        //   maritalStatus: payload.maritalStatus,
-        // }),
-        // ...(payload.bio !== undefined && { bio: payload.bio }),
-        // ...(payload.interest !== undefined && { interest: payload.interest }),
-        // ...(payload.Gender !== undefined && { Gender: payload.Gender }),
-        // ...(payload.countryCode !== undefined && {
-        //   countryCode: payload.countryCode,
-        // }),
-        // ...(payload.religion !== undefined && { religion: payload.religion }),
-        // ...(payload.altPhoneNumber !== undefined && {
-        //   altPhoneNumber: payload.altPhoneNumber,
-        // }),
-        // ...(payload.dateOfBirth !== undefined && {
-        //   dateOfBirth: payload.dateOfBirth,
-        // }),
-        // ...(payload.bloodGroup !== undefined && {
-        //   bloodGroup: payload.bloodGroup,
-        // }),
-        // ...(payload.allergy !== undefined && { allergy: payload.allergy }),
-      };
-
       const result = await this.profile.update({
         where: { userId },
         data: {
-          ...data,
-          // status: '',
+          ...payload,
         },
       });
       return { error: 0, body: result };
@@ -811,7 +760,7 @@ export class UserService extends PrismaService {
   async updateJobInformation(
     payload: EmployeeDto,
     userId: string,
-    companyId: string
+    companyId: string,
   ) {
     try {
       let fileUrl = '';
@@ -855,7 +804,9 @@ export class UserService extends PrismaService {
           altPhoneNumber: payload.altPhoneNumber,
         }),
         ...(payload.passportId && { passportId: payload.passportId }),
-        ...(payload.proofOfAddress && { proofOfAddress: payload.proofOfAddress }),
+        ...(payload.proofOfAddress && {
+          proofOfAddress: payload.proofOfAddress,
+        }),
         ...(payload.otherProofOfIdentification?.length && {
           otherProofOfIdentification: payload.otherProofOfIdentification,
         }),
@@ -917,7 +868,6 @@ export class UserService extends PrismaService {
         //   },
         // }),
       };
-
 
       // if(payload.profilePicture){
       //   await this.profile.update({
