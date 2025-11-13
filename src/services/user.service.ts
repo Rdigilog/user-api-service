@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JobRole, Prisma } from '@prisma/client';
 
 import { Queue } from 'bullmq';
@@ -407,12 +407,16 @@ export class UserService extends PrismaService {
     userId: string,
   ) {
     try {
+      Logger.log('request payload to update user');
+      Logger.log(payload);
       const result = await this.profile.update({
         where: { userId },
         data: {
           ...payload,
         },
       });
+      Logger.log('updated record');
+      Logger.log(result);
       return { error: 0, body: result };
     } catch (e) {
       return this.responseService.errorHandler(e);
