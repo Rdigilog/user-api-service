@@ -428,7 +428,7 @@ export class UserService extends PrismaService {
       });
 
       const role = await this.role.findUnique({
-        where: { name: 'CAREGIVER' },
+        where: { name: 'EMPLOYEE' },
       });
       let user = await this.user.findUnique({
         where: { email: payload.email },
@@ -467,7 +467,7 @@ export class UserService extends PrismaService {
             role: {
               connectOrCreate: {
                 where: { id: role?.id },
-                create: { name: 'CAREGIVER' },
+                create: { name: 'EMPLOYEE' },
               },
             },
             company: {
@@ -477,6 +477,45 @@ export class UserService extends PrismaService {
             },
           },
         });
+
+        const invite = await this.invitation.create({
+          data: {
+            user: { connect: { id: user.id } },
+            company: { connect: { id: company.id } },
+            invitedByUser: { connect: { id: invitedBy } },
+            email: payload.email,
+            role: {
+              connect: {
+                id: role?.id,
+              },
+            },
+            memberId: this.utilsService.lisaUnique(),
+            inviteLink: this.utilsService.lisaUnique() || 'inviteLink',
+          },
+          include: {
+            invitedByUser: {
+              select: {
+                profile: { select: { firstName: true, lastName: true } },
+              },
+            },
+          },
+        });
+
+        const inviteEmailData: InviteEmailFields = {
+          recipientName: user.profile?.firstName || '',
+          inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/register/?code=${invite.inviteLink}`,
+          companyName: company.name || '',
+          inviterName: invite.invitedByUser?.profile?.firstName || '',
+          roleName: role?.name || 'Employee',
+          plainPassword: 'You can login with your already existing password',
+        };
+        const mailObject: SendMailDto = {
+          to: payload.email,
+          subject: mailSubjects.USER_INVITATION,
+          template: mailTemplates.USER_INVITATION,
+          content: inviteEmailData,
+        };
+        this.mailQueue.add('INVITATION', mailObject);
       } else {
         const hasnedPassword = await this.utilsService.hashPassword(
           plainPassword,
@@ -548,45 +587,47 @@ export class UserService extends PrismaService {
             },
           },
         });
+
+        const invite = await this.invitation.create({
+          data: {
+            user: { connect: { id: user.id } },
+            company: { connect: { id: company.id } },
+            invitedByUser: { connect: { id: invitedBy } },
+            email: payload.email,
+            role: {
+              connect: {
+                id: role?.id,
+              },
+            },
+            memberId: this.utilsService.lisaUnique(),
+            inviteLink: this.utilsService.lisaUnique() || 'inviteLink',
+          },
+          include: {
+            invitedByUser: {
+              select: {
+                profile: { select: { firstName: true, lastName: true } },
+              },
+            },
+          },
+        });
+
+        const inviteEmailData: InviteEmailFields = {
+          recipientName: user.profile?.firstName || '',
+          inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/register/?code=${invite.inviteLink}`,
+          companyName: company.name || '',
+          inviterName: invite.invitedByUser?.profile?.firstName || '',
+          roleName: role?.name || 'Employee',
+          plainPassword: plainPassword,
+        };
+        const mailObject: SendMailDto = {
+          to: payload.email,
+          subject: mailSubjects.USER_INVITATION,
+          template: mailTemplates.USER_INVITATION,
+          content: inviteEmailData,
+        };
+        this.mailQueue.add('INVITATION', mailObject);
       }
 
-      const invite = await this.invitation.create({
-        data: {
-          user: { connect: { id: user.id } },
-          company: { connect: { id: company.id } },
-          invitedByUser: { connect: { id: invitedBy } },
-          email: payload.email,
-          role: {
-            connect: {
-              id: role?.id,
-            },
-          },
-          memberId: this.utilsService.lisaUnique(),
-          inviteLink: this.utilsService.lisaUnique() || 'inviteLink',
-        },
-        include: {
-          invitedByUser: {
-            select: {
-              profile: { select: { firstName: true, lastName: true } },
-            },
-          },
-        },
-      });
-      const inviteEmailData: InviteEmailFields = {
-        recipientName: user.profile?.firstName || '',
-        inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/register/?code=${invite.inviteLink}`,
-        companyName: company.name || '',
-        inviterName: invite.invitedByUser?.profile?.firstName || '',
-        roleName: role?.name || 'Employee',
-        plainPassword: plainPassword,
-      };
-      const mailObject: SendMailDto = {
-        to: payload.email,
-        subject: mailSubjects.USER_INVITATION,
-        template: mailTemplates.USER_INVITATION,
-        content: inviteEmailData,
-      };
-      this.mailQueue.add('INVITATION', mailObject);
       return { error: 0, body: 'Invite sent successfully' };
     } catch (e) {
       return this.responseService.errorHandler(e);
@@ -600,7 +641,6 @@ export class UserService extends PrismaService {
     search: string = '',
     sortBy: string = 'updatedAt',
     sortDirection: 'asc' | 'desc' = 'desc',
-    role?: string,
   ) {
     try {
       const { offset, limit } = this.responseService.pagination(page, size);
@@ -883,7 +923,7 @@ export class UserService extends PrismaService {
           where: { employeeId: id },
           update: {
             ...payload.jobInformation,
-            jobRoleId:jobRoleId && jobRoleId != '' ? jobRoleId : undefined,
+            jobRoleId: jobRoleId && jobRoleId != '' ? jobRoleId : undefined,
           },
           create: {
             ...rest,
