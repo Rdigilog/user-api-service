@@ -881,16 +881,20 @@ export class UserService extends PrismaService {
         const { jobRoleId, ...rest } = payload.jobInformation;
         await this.jobInformation.upsert({
           where: { employeeId: id },
-          update: payload.jobInformation,
+          update: {
+            ...payload.jobInformation,
+            jobRoleId:jobRoleId && jobRoleId != '' ? jobRoleId : undefined,
+          },
           create: {
             ...rest,
-            jobRole: jobRoleId && jobRoleId != ""
-              ? {
-                  connect: {
-                    id: jobRoleId,
-                  },
-                }
-              : undefined,
+            jobRole:
+              jobRoleId && jobRoleId != ''
+                ? {
+                    connect: {
+                      id: jobRoleId,
+                    },
+                  }
+                : undefined,
             employee: {
               connect: {
                 id: id,
