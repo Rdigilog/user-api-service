@@ -401,15 +401,12 @@ export class UserService extends PrismaService {
     }
   }
 
-  async updateProfile(
-    payload: UpdateProfileDto,
-    userId: string,
-  ) {
+  async updateProfile(payload: UpdateProfileDto, userId: string) {
     try {
       Logger.log('request payload to update user');
       Logger.log(payload);
       const result = await this.profile.update({
-        where: { userId:userId },
+        where: { userId: userId },
         data: {
           ...payload,
         },
@@ -762,14 +759,14 @@ export class UserService extends PrismaService {
 
   async updateJobInformation(
     payload: EmployeeDto,
-    userId: string,
+    id: string,
     companyId: string,
   ) {
     try {
-      let fileUrl = '';
-      let passportIdUrl = '';
-      let proofOfAddressUrl = '';
-      let otherProofOfIdentificationUrl: string[] = [];
+      // let fileUrl = '';
+      // let passportIdUrl = '';
+      // let proofOfAddressUrl = '';
+      // let otherProofOfIdentificationUrl: string[] = [];
       // if (profilePicture) {
       //   const fileUploadResult =
       //     await this.fileUploadService.uploadPicture(profilePicture);
@@ -883,11 +880,11 @@ export class UserService extends PrismaService {
       if (payload.jobInformation) {
         const { jobRoleId, ...rest } = payload.jobInformation;
         await this.jobInformation.upsert({
-          where: { employeeId: userId },
+          where: { employeeId: id },
           update: payload.jobInformation,
           create: {
             ...rest,
-            jobRole: jobRoleId
+            jobRole: jobRoleId && jobRoleId != ""
               ? {
                   connect: {
                     id: jobRoleId,
@@ -896,7 +893,7 @@ export class UserService extends PrismaService {
               : undefined,
             employee: {
               connect: {
-                id: userId,
+                id: id,
               },
             },
           },
@@ -905,13 +902,28 @@ export class UserService extends PrismaService {
 
       if (payload.emergencyContact) {
         await this.emergencyContact.upsert({
-          where: { employeeId: userId },
+          where: { employeeId: id },
           update: payload.emergencyContact,
           create: {
             ...payload.emergencyContact,
             employee: {
               connect: {
-                id: userId,
+                id: id,
+              },
+            },
+          },
+        });
+      }
+
+      if (payload.bankInformation) {
+        await this.bankInformation.upsert({
+          where: { employeeId: id },
+          update: payload.bankInformation,
+          create: {
+            ...payload.bankInformation,
+            employee: {
+              connect: {
+                id,
               },
             },
           },
@@ -920,7 +932,7 @@ export class UserService extends PrismaService {
 
       const result = await this.employee.update({
         where: {
-          id: userId,
+          id: id,
           // userId_companyId: {
           //   userId,
           //   companyId,
@@ -948,6 +960,13 @@ export class UserService extends PrismaService {
         //   company: { connect: { id: companyId } },
         // },
       });
+
+      if (payload.profilePicture) {
+        await this.profile.updateMany({
+          where: { employee: { id } },
+          data: { imageUrl: payload.profilePicture },
+        });
+      }
 
       return { error: 0, body: result };
     } catch (e) {
