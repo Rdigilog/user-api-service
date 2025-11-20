@@ -36,9 +36,15 @@ model User {
   // TaskStageLog     TaskStageLog[]
 
   // leaveApprovalLog LeaveApprovalLog[] @relation(name: "leave_actor")
-  Message         Message[]
-  ChatParticipant ChatParticipant[]
-  MessageStatus   MessageStatus[]
+  Message                Message[]
+  ChatParticipant        ChatParticipant[]
+  MessageStatus          MessageStatus[]
+  MentionsReceived       MessageMention[]       @relation("MessageMentionMentionedUser")
+  MentionsAuthored       MessageMention[]       @relation("MessageMentionAuthoredBy")
+  messageReactions       MessageReaction[]
+  announcementsCreated   Announcement[]         @relation("AnnouncementCreatedBy")
+  announcementsUpdated   Announcement[]         @relation("AnnouncementUpdatedBy")
+  announcementDeliveries AnnouncementDelivery[]
 
   @@map("users")
 }
@@ -120,6 +126,8 @@ model Employee {
   currencyCode               String?                    @map("currency_code")
   payRate                    Float                      @default(0) @map("pay_rate")
   period                     BillingCycle               @default(PER_HOUR)
+  inviteAccepted             Boolean                    @default(false) @map("invite_accepted")
+  inviteLink String? @unique @map("invite_link")
   passportId                 String?
   proofOfAddress             String?
   otherProofOfIdentification String[]
@@ -145,11 +153,14 @@ model Employee {
   leave                      Leave[]
   taskStageLog               TaskStageLog[]
   leaveApprovalLog           LeaveApprovalLog[]         @relation(name: "leave_actor")
-  rota                       Rota[]
+  schedules                  RotaSchedule[]
   attendance                 Attendance[]
   note                       Note[]
   activityTrackingEmployee   ActivityTrackingEmployee[]
   employeeDocument           employeeDocoment[]         @relation(name: "employee_documents")
+  rota                       Rota[]
+  EmployeeSchedule           EmployeeSchedule[]
+  EmployeeScheduleRequest    EmployeeScheduleRequest[]
 
   @@unique([userId, companyId])
   @@index([userId, companyId])
@@ -227,7 +238,7 @@ model Company {
   address                  String?
   taxId                    String?   @map("tax_id")
   timezone                 String?
-  workingDays              WEEKDAY[] @map("working_days")
+  weeklyOff                WEEKDAY[] @map("working_days")
   industry                 String?
   memberTimezone           Boolean   @default(false) @map("member_timezone")
   employeeWorkingDayChoice Boolean   @default(false) @map("employee_workingday_choice")
@@ -244,6 +255,7 @@ model Company {
   emergencyContact         Boolean   @default(false) @map("emergency_contact")
   jobDetails               Boolean   @default(false) @map("job_details")
   bankingInfo              Boolean   @default(false) @map("banking_info")
+  dateFormat               String?
   identityInfo             Boolean   @default(false) @map("identity_info")
   permissionByRole         Boolean   @default(false) @map("permission_by_role")
   receiveAllNotification   Boolean   @default(false)
@@ -661,12 +673,13 @@ model Branch {
   archived    Boolean  @default(false)
   managerId   String?
 
-  company     Company          @relation(fields: [companyId], references: [id])
-  country     Country          @relation(fields: [countryCode], references: [code])
-  manager     Employee?        @relation(fields: [managerId], references: [userId])
-  employees   EmployeeBranch[]
-  LeavePolicy LeavePolicy[]    @relation("PolicyBranches")
-  department  Department[]
+  company       Company          @relation(fields: [companyId], references: [id])
+  country       Country          @relation(fields: [countryCode], references: [code])
+  manager       Employee?        @relation(fields: [managerId], references: [id])
+  employees     EmployeeBranch[]
+  LeavePolicy   LeavePolicy[]    @relation("PolicyBranches")
+  department    Department[]
+  rotaSchedules RotaSchedule[]
 
   @@index([companyId, countryCode])
   @@map("branches")
@@ -1017,28 +1030,73 @@ model Celebration {
 }
 
 model Rota {
-  id             String     @id @default(uuid())
-  date           DateTime
-  startTime      DateTime   @map("start_time")
-  endTime        DateTime   @map("end_time")
-  notes          String?
-  shiftType      ShiftType  @map("shift_type")
-  companyId      String
-  job            String?
-  jobColor       String     @map("job_color")
-  location       String?
-  userClaimShift Boolean    @default(false) @map("user_clain_shift")
-  isRecurring    Boolean    @default(false) @map("is_recurring")
-  employees      Employee[]
-  status         Status     @default(APPROVED)
-
-  company Company @relation(fields: [companyId], references: [id])
+  id        String  @id @default(uuid())
+  title     String
+  companyId String
+  status    Status  @default(APPROVED)
+  company   Company @relation(fields: [companyId], references: [id])
+  createdBy String?
 
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @updatedAt @map("updated_at")
   rotaApprovalLog RotaApprovalLog[]
+  admin           Employee?         @relation(fields: [createdBy], references: [id])
+  rotaSchedules   RotaSchedule[]    @relation(name: "rota_schedules")
 
   @@map("rotas")
+}
+
+model RotaSchedule {
+  id             String     @id @default(uuid())
+  scheduleTitle  String?
+  weeklyPeriod   WEEKDAY[]
+  effectiveDate  DateTime
+  notes          String?
+  shiftType      ShiftType  @map("shift_type")
+  jobRoles       JobRole[]
+  branches       Branch[]
+  rotaId         String?
+  userClaimShift Boolean    @default(false) @map("user_clain_shift")
+  employees      Employee[]
+  rota           Rota?      @relation(name: "rota_schedules", fields: [rotaId], references: [id])
+
+  createdAt               DateTime                  @default(now()) @map("created_at")
+  updatedAt               DateTime                  @updatedAt @map("updated_at")
+  employeeSchedule        EmployeeSchedule[]
+  employeeScheduleRequest EmployeeScheduleRequest[]
+
+  @@map("rota_schedules")
+}
+
+model EmployeeSchedule {
+  employeeId     String       @map("user_id")
+  rotaScheduleId String       @map("rota_schedule_id")
+  startTime      String       @map("start_time")
+  endTime        String       @map("end_time")
+  rotaSchedule   RotaSchedule @relation(fields: [rotaScheduleId], references: [id], onDelete: Cascade)
+  employee       Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@id([rotaScheduleId, employeeId])
+  @@map("employee_schedules")
+}
+
+model EmployeeScheduleRequest {
+  id             String   @id @default(uuid())
+  employeeId     String   @map("user_id")
+  rotaScheduleId String   @map("rota_schedule_id")
+  startDate      DateTime @map("start_date") @db.Date
+  endDate        DateTime @map("end_date") @db.Date
+  startTime      String   @map("start_time")
+  endTime        String   @map("end_time")
+  reason         String?
+  status         Status   @default(PENDING)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+  rotaSchedule RotaSchedule @relation(fields: [rotaScheduleId], references: [id])
+
+  @@map("employee_schedule_requests")
 }
 
 model RotaApprovalLog {
@@ -1092,6 +1150,7 @@ model JobRole {
   members        LeavePolicy[]    @relation("PolicyJobRoles") //jobRoles
 
   MemberNotificationRecipient MemberNotificationRecipient[]
+  rotaSchedules               RotaSchedule[]
 
   @@map("job_roles")
 }
@@ -1133,6 +1192,175 @@ model FormResponse {
   form Form @relation(fields: [formId], references: [id])
 
   @@map("form_responses")
+}
+
+// Announcement-related models
+model Announcement {
+  id            String    @id @default(uuid())
+  companyId     String    @map("company_id")
+  type          String
+  title         String
+  description   String?
+  attachments   Json?     @map("attachments")
+  publishMode   String    @default("immediate") @map("publish_mode")
+  status        String    @default("draft")
+  deliverAt     DateTime? @map("deliver_at")
+  publishedAt   DateTime? @map("published_at")
+  isDraft       Boolean   @default(true) @map("is_draft")
+  deleted       Boolean   @default(false)
+  branchIds     Json?     @map("branch_ids")
+  departmentIds Json?     @map("department_ids")
+  employeeIds   Json?     @map("employee_ids")
+  createdById   String    @map("created_by_id")
+  updatedById   String?   @map("updated_by_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  createdBy  User                   @relation("AnnouncementCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  updatedBy  User?                  @relation("AnnouncementUpdatedBy", fields: [updatedById], references: [id], onDelete: Cascade)
+  deliveries AnnouncementDelivery[]
+
+  @@index([companyId, status])
+  @@index([companyId, isDraft])
+  @@map("announcements")
+}
+
+model AnnouncementDelivery {
+  id             String    @id @default(uuid())
+  announcementId String    @map("announcement_id")
+  userId         String    @map("user_id")
+  delivered      Boolean   @default(false)
+  deliveredAt    DateTime? @map("delivered_at")
+  channel        String?   @map("channel")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId])
+  @@index([userId, delivered])
+  @@map("announcement_deliveries")
+}
+
+// Chat-related models
+model Chat {
+  id        String   @id @default(uuid())
+  name      String?  @map("name")
+  group     Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  messages     Message[]
+  participants ChatParticipant[]
+
+  @@map("chats")
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  chatId          String   @map("chat_id")
+  senderId        String   @map("sender_id")
+  parentMessageId String?  @map("parent_message_id")
+  batchId         String?  @map("batch_id")
+  content         String
+  mediaType       String   @default("text") @map("media_type")
+  extra           Json? // For additional metadata like file URLs, thumbnails, etc.
+  deleted         Boolean  @default(false)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  chat            Chat              @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender          User              @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  parentMessage   Message?          @relation("MessageThreads", fields: [parentMessageId], references: [id], onDelete: Cascade)
+  threadMessages  Message[]         @relation("MessageThreads")
+  messageStatuses MessageStatus[]
+  mentions        MessageMention[]
+  reactions       MessageReaction[]
+
+  @@index([chatId])
+  @@index([senderId])
+  @@index([parentMessageId])
+  @@index([batchId])
+  @@map("messages")
+}
+
+model ChatParticipant {
+  chatId    String   @map("chat_id")
+  userId    String   @map("user_id")
+  starred   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([chatId, userId])
+  @@index([chatId])
+  @@index([userId])
+  @@map("chat_participants")
+}
+
+model MessageStatus {
+  messageId String   @map("message_id")
+  userId    String   @map("user_id")
+  delivered Boolean  @default(false)
+  seen      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@map("message_statuses")
+}
+
+model MessageMention {
+  id              String   @id @default(uuid())
+  messageId       String   @map("message_id")
+  mentionedUserId String   @map("mentioned_user_id")
+  mentionedById   String   @map("mentioned_by_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  message       Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  mentionedUser User    @relation("MessageMentionMentionedUser", fields: [mentionedUserId], references: [id], onDelete: Cascade)
+  mentionedBy   User    @relation("MessageMentionAuthoredBy", fields: [mentionedById], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, mentionedUserId])
+  @@map("message_mentions")
+}
+
+model MessageReaction {
+  id        String   @id @default(uuid())
+  messageId String   @map("message_id")
+  userId    String   @map("user_id")
+  reaction  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, reaction])
+  @@map("message_reactions")
+}
+
+model checklist {
+  id        String   @id @default(uuid())
+  items     String[]
+  companyId String   @map("company_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("checklists")
 }
 
 /// Enum for field types
@@ -1395,80 +1623,4 @@ enum TaskStages {
   IN_PROGRESS
   IN_REVIEW
   COMPLETED
-}
-
-// Chat-related models
-model Chat {
-  id        String   @id @default(uuid())
-  name      String?  @map("name")
-  group     Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  messages     Message[]
-  participants ChatParticipant[]
-
-  @@map("chats")
-}
-
-model Message {
-  id              String   @id @default(uuid())
-  chatId          String   @map("chat_id")
-  senderId        String   @map("sender_id")
-  parentMessageId String?  @map("parent_message_id")
-  batchId         String?  @map("batch_id")
-  content         String
-  mediaType       String   @default("text") @map("media_type")
-  extra           Json? // For additional metadata like file URLs, thumbnails, etc.
-  deleted         Boolean  @default(false)
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  chat            Chat            @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  sender          User            @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  parentMessage   Message?        @relation("MessageThreads", fields: [parentMessageId], references: [id], onDelete: Cascade)
-  threadMessages  Message[]       @relation("MessageThreads")
-  messageStatuses MessageStatus[]
-
-  @@index([chatId])
-  @@index([senderId])
-  @@index([parentMessageId])
-  @@index([batchId])
-  @@map("messages")
-}
-
-model ChatParticipant {
-  chatId    String   @map("chat_id")
-  userId    String   @map("user_id")
-  starred   Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
-
-  // Relations
-  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([chatId, userId])
-  @@index([chatId])
-  @@index([userId])
-  @@map("chat_participants")
-}
-
-model MessageStatus {
-  messageId String   @map("message_id")
-  userId    String   @map("user_id")
-  delivered Boolean  @default(false)
-  seen      Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([messageId, userId])
-  @@index([messageId])
-  @@index([userId])
-  @@map("message_statuses")
 }

@@ -448,6 +448,8 @@ export class UserService extends PrismaService {
         },
       });
       let jobRole: JobRole | null = null;
+
+      const  inviteLink = this.utilsService.lisaUnique();
       if (payload.roleId) {
         jobRole = await this.jobRole.findFirst({
           where: { id: payload.roleId },
@@ -480,6 +482,7 @@ export class UserService extends PrismaService {
 
         await this.employee.create({
           data: {
+            inviteLink,
             profile: { connect: { userId: user.id } },
             company: { connect: { id: companyId } },
             jobInformation: {
@@ -515,7 +518,7 @@ export class UserService extends PrismaService {
               },
             },
             memberId: this.utilsService.lisaUnique(),
-            inviteLink: this.utilsService.lisaUnique() || 'inviteLink',
+            inviteLink,
           },
           include: {
             invitedByUser: {
@@ -560,6 +563,7 @@ export class UserService extends PrismaService {
                 email: payload.email,
                 employee: {
                   create: {
+                    inviteLink,
                     jobInformation: {
                       create: {
                         jobRole: jobRole?.id
@@ -630,7 +634,7 @@ export class UserService extends PrismaService {
               },
             },
             memberId: this.utilsService.lisaUnique(),
-            inviteLink: this.utilsService.lisaUnique() || 'inviteLink',
+            inviteLink,
           },
           include: {
             invitedByUser: {
@@ -1136,7 +1140,7 @@ export class UserService extends PrismaService {
       return this.responseService.errorHandler(e);
     }
   }
-  
+
   async unarchiveUser(userId: string) {
     try {
       const user = await this.user.findFirst({
