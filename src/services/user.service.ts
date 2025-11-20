@@ -1091,7 +1091,16 @@ export class UserService extends PrismaService {
           },
           employee: {
             include: {
-              jobInformation: true,
+              jobInformation: {
+                include:{
+                  jobRole:{
+                    select:{
+                      id:true,
+                      name:true,
+                    }
+                  }
+                }
+              },
               emergencyContact: true,
               bankInformation: true,
               company: {
