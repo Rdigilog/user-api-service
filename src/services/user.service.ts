@@ -449,8 +449,8 @@ export class UserService extends PrismaService {
       });
       let jobRole: JobRole | null = null;
 
-      const  inviteLink = this.utilsService.lisaUnique();
-     const memberId =  this.utilsService.lisaUnique()
+      const inviteLink = this.utilsService.lisaUnique();
+      const memberId = this.utilsService.lisaUnique();
       if (payload.roleId) {
         jobRole = await this.jobRole.findFirst({
           where: { id: payload.roleId },
@@ -484,7 +484,7 @@ export class UserService extends PrismaService {
         await this.employee.create({
           data: {
             inviteLink,
-            employeeCode:memberId,
+            employeeCode: memberId,
             profile: { connect: { userId: user.id } },
             company: { connect: { id: companyId } },
             jobInformation: {
@@ -533,13 +533,14 @@ export class UserService extends PrismaService {
 
         const inviteEmailData: InviteEmailFields = {
           recipientName: user.profile?.firstName || '',
+          recipientEmail: payload.email,
           inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/register/?code=${invite.inviteLink}`,
           companyName: company.name || '',
           inviterName: invite.invitedByUser?.profile?.firstName || '',
           roleName: role?.name || 'Employee',
-          plainPassword: 'You can login with your already existing password',
+          plainPassword: '',
         };
-        
+
         const mailObject: SendMailDto = {
           to: payload.email,
           subject: mailSubjects.USER_INVITATION,
@@ -567,7 +568,7 @@ export class UserService extends PrismaService {
                 employee: {
                   create: {
                     inviteLink,
-                    employeeCode:memberId,
+                    employeeCode: memberId,
                     jobInformation: {
                       create: {
                         jobRole: jobRole?.id
@@ -651,6 +652,7 @@ export class UserService extends PrismaService {
 
         const inviteEmailData: InviteEmailFields = {
           recipientName: user.profile?.firstName || '',
+          recipientEmail: payload.email,
           inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/register/?code=${invite.inviteLink}`,
           companyName: company.name || '',
           inviterName: invite.invitedByUser?.profile?.firstName || '',
@@ -755,11 +757,12 @@ export class UserService extends PrismaService {
       });
       const inviteEmailData: InviteEmailFields = {
         recipientName: invite?.user?.profile?.firstName || '',
+        recipientEmail:invite?.email || '',
         inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/register/?code=${invite?.inviteLink}`,
         companyName: company.name || '',
         inviterName: invite?.invitedByUser?.profile?.firstName || '',
         roleName: invite?.role.name || 'Employee',
-        plainPassword: plainPassword,
+        plainPassword: '',
       };
       const mailObject: SendMailDto = {
         to: invite?.user?.email || '',
@@ -1096,14 +1099,14 @@ export class UserService extends PrismaService {
           employee: {
             include: {
               jobInformation: {
-                include:{
-                  jobRole:{
-                    select:{
-                      id:true,
-                      name:true,
-                    }
-                  }
-                }
+                include: {
+                  jobRole: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
+                },
               },
               emergencyContact: true,
               bankInformation: true,

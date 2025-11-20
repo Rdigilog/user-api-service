@@ -25,6 +25,7 @@ export interface EmailDynamicFields {
 
 export interface InviteEmailFields {
   recipientName: string; // The full name of the invitee
+  recipientEmail: string; // The full name of the invitee
   companyName: string; // The company the invite is tied to
   roleName: string; // The role being assigned (e.g., ADMIN, STAFF)
   inviteLink: string; // The unique invite URL
