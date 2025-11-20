@@ -478,6 +478,28 @@ export class UserService extends PrismaService {
           },
         });
 
+        await this.employee.create({
+          data: {
+            profile: { connect: { userId: user.id } },
+            company: { connect: { id: companyId } },
+            jobInformation:{
+              create:{
+                jobRole:jobRole && jobRole.id ? {
+                  connect:{
+                    id:jobRole.id
+                  }
+                } : undefined
+              }
+            },
+            bankInformation:{
+              create:{}
+            },
+            emergencyContact:{
+              create:{}
+            },
+          },
+        });
+
         const invite = await this.invitation.create({
           data: {
             user: { connect: { id: user.id } },
