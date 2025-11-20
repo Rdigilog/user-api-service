@@ -321,7 +321,7 @@ export class UserController {
   }
 
   @RouteName('user.invite.retry')
-  @Post('/re-invite//:inviteLink')
+  @Post('/re-invite/:inviteLink')
   async reInviteUser(
     @Headers('X-Company-id') companyId: string, // single header
     @Param('inviteLink') inviteLink: string,
