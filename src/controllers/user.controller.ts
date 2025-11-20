@@ -367,7 +367,7 @@ export class UserController {
         search,
         sortBy,
         sortDirection,
-        role,
+        // role,
       );
       if (result.error == 2) {
         return this.responseService.exception(result.body);
