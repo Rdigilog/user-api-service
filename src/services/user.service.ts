@@ -482,20 +482,23 @@ export class UserService extends PrismaService {
           data: {
             profile: { connect: { userId: user.id } },
             company: { connect: { id: companyId } },
-            jobInformation:{
-              create:{
-                jobRole:jobRole && jobRole.id ? {
-                  connect:{
-                    id:jobRole.id
-                  }
-                } : undefined
-              }
+            jobInformation: {
+              create: {
+                jobRole:
+                  jobRole && jobRole.id
+                    ? {
+                        connect: {
+                          id: jobRole.id,
+                        },
+                      }
+                    : undefined,
+              },
             },
-            bankInformation:{
-              create:{}
+            bankInformation: {
+              create: {},
             },
-            emergencyContact:{
-              create:{}
+            emergencyContact: {
+              create: {},
             },
           },
         });
@@ -589,7 +592,12 @@ export class UserService extends PrismaService {
             },
             userRole: {
               create: {
-                role: { connect: { id: role?.id } },
+                role: {
+                  connectOrCreate: {
+                    where: { id: role?.id },
+                    create: { name: 'EMPLOYEE' },
+                  },
+                },
                 company: { connect: { id: company.id } },
               },
             },
