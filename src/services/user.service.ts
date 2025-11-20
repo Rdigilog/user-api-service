@@ -1136,6 +1136,7 @@ export class UserService extends PrismaService {
       return this.responseService.errorHandler(e);
     }
   }
+  
   async unarchiveUser(userId: string) {
     try {
       const user = await this.user.findFirst({
