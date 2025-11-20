@@ -110,6 +110,7 @@ model Employee {
   id                         String                     @id @default(uuid())
   userId                     String                     @unique @map("user_id")
   companyId                  String                     @map("company_id")
+  employeeCode               String?                    @unique
   address                    String?
   phoneNumber                String?                    @map("phone_number")
   maritalStatus              MaritalStatus?             @map("marital_status")
@@ -127,7 +128,7 @@ model Employee {
   payRate                    Float                      @default(0) @map("pay_rate")
   period                     BillingCycle               @default(PER_HOUR)
   inviteAccepted             Boolean                    @default(false) @map("invite_accepted")
-  inviteLink String? @unique @map("invite_link")
+  inviteLink                 String?                    @unique @map("invite_link")
   passportId                 String?
   proofOfAddress             String?
   otherProofOfIdentification String[]

@@ -422,7 +422,7 @@ export class UserService extends PrismaService {
   async invite(payload: InviteUserDTO, companyId: string, invitedBy: string) {
     try {
       const plainPassword = this.utilsService.randomString();
-      const currentTime = new Date();
+      // const currentTime = new Date();
       const company = await this.company.findUniqueOrThrow({
         where: { id: companyId },
       });
@@ -450,6 +450,7 @@ export class UserService extends PrismaService {
       let jobRole: JobRole | null = null;
 
       const  inviteLink = this.utilsService.lisaUnique();
+     const memberId =  this.utilsService.lisaUnique()
       if (payload.roleId) {
         jobRole = await this.jobRole.findFirst({
           where: { id: payload.roleId },
@@ -483,6 +484,7 @@ export class UserService extends PrismaService {
         await this.employee.create({
           data: {
             inviteLink,
+            employeeCode:memberId,
             profile: { connect: { userId: user.id } },
             company: { connect: { id: companyId } },
             jobInformation: {
@@ -517,7 +519,7 @@ export class UserService extends PrismaService {
                 id: role?.id,
               },
             },
-            memberId: this.utilsService.lisaUnique(),
+            memberId,
             inviteLink,
           },
           include: {
@@ -537,6 +539,7 @@ export class UserService extends PrismaService {
           roleName: role?.name || 'Employee',
           plainPassword: 'You can login with your already existing password',
         };
+        
         const mailObject: SendMailDto = {
           to: payload.email,
           subject: mailSubjects.USER_INVITATION,
@@ -564,6 +567,7 @@ export class UserService extends PrismaService {
                 employee: {
                   create: {
                     inviteLink,
+                    employeeCode:memberId,
                     jobInformation: {
                       create: {
                         jobRole: jobRole?.id
@@ -633,7 +637,7 @@ export class UserService extends PrismaService {
                 id: role?.id,
               },
             },
-            memberId: this.utilsService.lisaUnique(),
+            memberId,
             inviteLink,
           },
           include: {
