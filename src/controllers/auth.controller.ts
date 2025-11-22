@@ -1,11 +1,31 @@
-
-import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  UseGuards,
+  Request,
+  Get,
+  Param,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiOkResponse,
+  ApiTags,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { LoginDTO } from 'src/models/onboarding/Login.dto';
-import { InitiateRegistrationDto, PhoneNumberDTO, UserOtpVerification, CompanyDetailsDTO, UsernameDTO, resetPasswordDTO } from 'src/models/onboarding/SignUp.dto';
+import {
+  InitiateRegistrationDto,
+  PhoneNumberDTO,
+  UserOtpVerification,
+  CompanyDetailsDTO,
+  UsernameDTO,
+  resetPasswordDTO,
+} from 'src/models/onboarding/SignUp.dto';
 import { UserService } from 'src/services/user.service';
 import { OtpService } from 'src/utils/services/otp.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
@@ -25,8 +45,8 @@ export class AuthController {
     private readonly responseService: ResponsesService,
     private readonly jwtService: JwtService,
     private readonly utilService: UtilsService,
-    private readonly configService: ConfigService
-  ) { }
+    private readonly configService: ConfigService,
+  ) {}
 
   @ApiExtraModels(ApiResponseDto, TokenDataDto)
   @ApiOkResponse({
@@ -45,7 +65,7 @@ export class AuthController {
   @Post('/signup')
   async create(@Body() payload: InitiateRegistrationDto) {
     try {
-      let result:{error:number, body:any} = {
+      let result: { error: number; body: any } = {
         error: 1,
         body: 'This signup option not functional yet',
       };
@@ -82,10 +102,10 @@ export class AuthController {
     try {
       try {
         await this.userService.findByUsername(payload.phoneNumber);
-        return this.responseService.badRequest(`Phone Number ${payload.phoneNumber} already tied to another account`)
-      } catch (e) {
-
-      }
+        return this.responseService.badRequest(
+          `Phone Number ${payload.phoneNumber} already tied to another account`,
+        );
+      } catch (e) {}
 
       const result = await this.userService.addPhoneNumber(
         payload,
@@ -141,13 +161,15 @@ export class AuthController {
         if (requestBody.username == result.email) {
           update.verified = true;
         }
-        update.active = true
+        update.active = true;
         await this.userService.updateUser(update, result.id);
         const userInfo = await this.userService.findById(result.id);
         const token = await this.jwtService.signAsync(payload);
         return this.responseService.success({
           access_token: token,
-          expires_in: this.configService.get<string>(CONFIG_KEYS.JWT_EXPIRATION_TIME),
+          expires_in: this.configService.get<string>(
+            CONFIG_KEYS.JWT_EXPIRATION_TIME,
+          ),
           user_info: userInfo,
         });
       } else {
@@ -164,7 +186,7 @@ export class AuthController {
   @Post('/company-details')
   async addCompanyDetails(
     @Body() payload: CompanyDetailsDTO,
-    @AuthUser() user:LoggedInUser
+    @AuthUser() user: LoggedInUser,
   ) {
     try {
       const result = await this.userService.addCompanyDetails(
@@ -179,7 +201,6 @@ export class AuthController {
       return this.responseService.exception(e.message);
     }
   }
-
 
   @ApiExtraModels(ApiResponseDto, AuthResponseDto)
   @ApiOkResponse({
@@ -198,14 +219,12 @@ export class AuthController {
   @Post('login')
   async login(@Body() requestBody: LoginDTO) {
     try {
-      let result:User | null;
+      let result: User | null;
       try {
-        result = await this.userService.findByUsername(
-          requestBody.username,
-        );
+        result = await this.userService.findByUsername(requestBody.username);
       } catch (e) {
         // console.log(e);
-        return this.responseService.unauthorized('invalid username/password')
+        return this.responseService.unauthorized('invalid username/password');
       }
       if (!result) {
         return this.responseService.unauthorized('Invalid username/password');
@@ -224,7 +243,7 @@ export class AuthController {
         );
         if (isMatch) {
           const userInfo = await this.userService.findById(result.id);
-          if (userInfo?.userRole.some(r => r.role.name == 'SUPER_ADMIN')) {
+          if (userInfo?.userRole.some((r) => r.role.name == 'SUPER_ADMIN')) {
             return this.processOtp(requestBody.username, result);
           }
           const payload = {
@@ -234,7 +253,9 @@ export class AuthController {
           const token = await this.jwtService.signAsync(payload);
           return this.responseService.success({
             access_token: token,
-            expiresIn: this.configService.get<string>(CONFIG_KEYS.JWT_EXPIRATION_TIME),
+            expiresIn: this.configService.get<string>(
+              CONFIG_KEYS.JWT_EXPIRATION_TIME,
+            ),
             user_info: userInfo,
           });
         } else {
@@ -350,10 +371,9 @@ export class AuthController {
       if (!isTokenValid) {
         return this.responseService.unauthorized('Invalid token or code');
       }
-      requestBody.password = await new UtilsService().hashPassword(
-        requestBody.password,
-        10,
-      ) || requestBody.password;
+      requestBody.password =
+        (await new UtilsService().hashPassword(requestBody.password, 10)) ||
+        requestBody.password;
       const userData = { password: requestBody.password, active: true };
       const result = await this.userService.updateUser(userData, user.id);
       if (result.error == 1)
@@ -397,6 +417,25 @@ export class AuthController {
       } else {
         return this.responseService.unauthorized('Invalid OTP');
       }
+    } catch (e) {
+      console.log(e);
+      return this.responseService.exception(e.message);
+    }
+  }
+
+  @Get('accept-invite/:inviteCode')
+  async acceptInvite(@Param('inviteCode') inviteCode: string) {
+    try {
+      const result = await this.userService.acceptInvite(inviteCode);
+      if (result.error == 1) {
+        return this.responseService.badRequest(result.body);
+      }
+
+      if (result.error == 2) {
+        return this.responseService.exception(result.body);
+      }
+
+      return this.responseService.success(result.body);
     } catch (e) {
       console.log(e);
       return this.responseService.exception(e.message);

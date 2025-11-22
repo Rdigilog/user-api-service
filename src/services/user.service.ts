@@ -780,7 +780,7 @@ export class UserService extends PrismaService {
     }
   }
 
-  async getByInviteLink(inviteLink: string) {
+  async acceptInvite(inviteLink: string) {
     try {
       const user = await this.invitation.findFirst({
         where: {
@@ -825,7 +825,7 @@ export class UserService extends PrismaService {
           body: 'Invited already accepted',
         };
       }
-      
+
       await this.employee.update({
         where: { inviteLink: user.inviteLink },
         data: {
