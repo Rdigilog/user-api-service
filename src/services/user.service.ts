@@ -422,7 +422,6 @@ export class UserService extends PrismaService {
   async invite(payload: InviteUserDTO, companyId: string, invitedBy: string) {
     try {
       const plainPassword = this.utilsService.randomString();
-      // const currentTime = new Date();
       const company = await this.company.findUniqueOrThrow({
         where: { id: companyId },
       });
@@ -539,6 +538,7 @@ export class UserService extends PrismaService {
           inviterName: invite.invitedByUser?.profile?.firstName || '',
           roleName: role?.name || 'Employee',
           plainPassword: '',
+          inviteCode: `${invite?.inviteLink}`,
         };
 
         const mailObject: SendMailDto = {
@@ -560,6 +560,7 @@ export class UserService extends PrismaService {
             active: true,
             deleted: false,
             password: hasnedPassword,
+            isPasswordReset: false,
             profile: {
               create: {
                 firstName: '',
@@ -633,6 +634,7 @@ export class UserService extends PrismaService {
             company: { connect: { id: company.id } },
             invitedByUser: { connect: { id: invitedBy } },
             email: payload.email,
+            tempPassword: plainPassword,
             role: {
               connect: {
                 id: role?.id,
@@ -658,6 +660,7 @@ export class UserService extends PrismaService {
           inviterName: invite.invitedByUser?.profile?.firstName || '',
           roleName: role?.name || 'Employee',
           plainPassword: plainPassword,
+          inviteCode: `${invite?.inviteLink}`,
         };
         const mailObject: SendMailDto = {
           to: payload.email,
@@ -724,7 +727,6 @@ export class UserService extends PrismaService {
 
   async reinvite(inviteLink: string, companyId: string) {
     try {
-      // const currentTime = new Date();
       const plainPassword = this.utilsService.randomString();
       const company = await this.company.findUniqueOrThrow({
         where: { id: companyId },
@@ -757,12 +759,13 @@ export class UserService extends PrismaService {
       });
       const inviteEmailData: InviteEmailFields = {
         recipientName: invite?.user?.profile?.firstName || '',
-        recipientEmail:invite?.email || '',
+        recipientEmail: invite?.email || '',
         inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/register/?code=${invite?.inviteLink}`,
         companyName: company.name || '',
         inviterName: invite?.invitedByUser?.profile?.firstName || '',
         roleName: invite?.role.name || 'Employee',
-        plainPassword: '',
+        plainPassword: invite?.tempPassword || '',
+        inviteCode: `${invite?.inviteLink}`,
       };
       const mailObject: SendMailDto = {
         to: invite?.user?.email || '',
@@ -784,22 +787,52 @@ export class UserService extends PrismaService {
           inviteLink,
         },
         select: {
+          inviteLink: true,
+          memberId: true,
           user: {
             select: {
+              id: true,
               email: true,
               phoneNumber: true,
+              isPasswordReset: true,
               profile: {
                 select: {
-                  firstName: true,
-                  lastName: true,
-                  email: true,
+                  employee: {
+                    where: {
+                      inviteLink,
+                    },
+                    select: {
+                      employeeCode: true,
+                      inviteAccepted: true,
+                    },
+                  },
                 },
               },
             },
           },
         },
       });
-      return { error: 0, body: user };
+      if (!user) {
+        return {
+          error: 1,
+          body: `No invite found with this invite code ${inviteLink}`,
+        };
+      }
+
+      if (user.user?.profile?.employee?.inviteAccepted) {
+        return {
+          error: 1,
+          body: 'Invited already accepted',
+        };
+      }
+      
+      await this.employee.update({
+        where: { inviteLink: user.inviteLink },
+        data: {
+          inviteAccepted: true,
+        },
+      });
+      return { error: 0, body: "Invite Accepted successfully" };
     } catch (e) {
       return { error: 1, body: 'Invite Link expired or invalid' };
     }

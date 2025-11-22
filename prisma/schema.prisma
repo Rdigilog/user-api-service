@@ -19,6 +19,7 @@ model User {
   locked        Boolean       @default(false)
   deleted       Boolean       @default(false)
   suspended     Boolean       @default(false)
+  isPasswordReset Boolean @default(true) @map("is_password_reset")
   verified      Boolean       @default(false)
   phoneVerified Boolean       @default(false) @map("phone_verified")
   deletedAt     DateTime?     @map("deleted_at")
@@ -1120,6 +1121,7 @@ model Invitation {
   companyId  String   @map("company_id")
   userId     String?  @map("user_id")
   memberId   String?
+  tempPassword String? @map("temp_password")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
   archived   Boolean  @default(false)

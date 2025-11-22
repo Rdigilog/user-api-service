@@ -31,4 +31,5 @@ export interface InviteEmailFields {
   inviteLink: string; // The unique invite URL
   inviterName: string; // The person who sent the invite
   plainPassword: string; // The person who sent the invite
+  inviteCode: string; // The person who sent the invite
 }

@@ -61,7 +61,6 @@ export class AuthController {
     }
   }
 
-
   @ApiExtraModels(ApiResponseDto, TokenDataDto)
   @ApiOkResponse({
     description: 'Token generated successfully',
