@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Patch, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -135,6 +143,28 @@ export class SubscriptionController {
         return this.responseService.exception(result.body);
       }
       return this.responseService.success(result.body);
-    } catch (e) {}
+    } catch (e) {
+      return this.responseService.exception(e.message);
+    }
+  }
+
+  @Post('cancel')
+  @ApiOperation({
+    summary: 'Update a company total number of users for subscription',
+    description:
+      'This endpoint updates the total number of users assigned to a specific company. The value must be an integer greater than or equal to zero.',
+  })
+  async cancelSubscription(@AuthUser() user: LoggedInUser) {
+    try {
+      const result = await this.service.cancelSubscription(
+        user.userRole[0].companyId as string,
+      );
+      if (result.error == 2) {
+        return this.responseService.exception(result.body);
+      }
+      return this.responseService.success(result.body);
+    } catch (e) {
+      return this.responseService.exception(e.message);
+    }
   }
 }

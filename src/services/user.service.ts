@@ -533,7 +533,7 @@ export class UserService extends PrismaService {
         const inviteEmailData: InviteEmailFields = {
           recipientName: user.profile?.firstName || '',
           recipientEmail: payload.email,
-          inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/register/?code=${invite.inviteLink}`,
+          inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/invitations/accept?inviteCode=${invite.inviteLink}`,
           companyName: company.name || '',
           inviterName: invite.invitedByUser?.profile?.firstName || '',
           roleName: role?.name || 'Employee',
@@ -652,14 +652,14 @@ export class UserService extends PrismaService {
           },
         });
 
-        const inviteEmailData: InviteEmailFields = {
+       const inviteEmailData: InviteEmailFields = {
           recipientName: user.profile?.firstName || '',
           recipientEmail: payload.email,
-          inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/register/?code=${invite.inviteLink}`,
+          inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/invitations/accept?inviteCode=${invite.inviteLink}`,
           companyName: company.name || '',
           inviterName: invite.invitedByUser?.profile?.firstName || '',
           roleName: role?.name || 'Employee',
-          plainPassword: plainPassword,
+          plainPassword: '',
           inviteCode: `${invite?.inviteLink}`,
         };
         const mailObject: SendMailDto = {
@@ -760,7 +760,7 @@ export class UserService extends PrismaService {
       const inviteEmailData: InviteEmailFields = {
         recipientName: invite?.user?.profile?.firstName || '',
         recipientEmail: invite?.email || '',
-        inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/register/?code=${invite?.inviteLink}`,
+        inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/invitations/accept?inviteCode=${invite?.inviteLink}`,
         companyName: company.name || '',
         inviterName: invite?.invitedByUser?.profile?.firstName || '',
         roleName: invite?.role.name || 'Employee',

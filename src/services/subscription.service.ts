@@ -80,4 +80,16 @@ export class SubscriptionService extends PrismaService {
       return this.responseService.errorHandler(e);
     }
   }
+
+  async cancelSubscription(companyId: string) {
+    try {
+      const result = await this.subscription.update({
+        where: { companyId },
+        data: { status: 'CANCELLED' },
+      });
+      return { error: 0, body: 'Subscription cancelled sccessfully' };
+    } catch (e) {
+      return this.responseService.errorHandler(e);
+    }
+  }
 }
