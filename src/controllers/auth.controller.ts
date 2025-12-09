@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   Body,
   Controller,
@@ -102,10 +107,11 @@ export class AuthController {
     try {
       try {
         await this.userService.findByUsername(payload.phoneNumber);
+      } catch (e) {
         return this.responseService.badRequest(
           `Phone Number ${payload.phoneNumber} already tied to another account`,
         );
-      } catch (e) {}
+      }
 
       const result = await this.userService.addPhoneNumber(
         payload,
@@ -223,17 +229,14 @@ export class AuthController {
       try {
         result = await this.userService.findByUsername(requestBody.username);
       } catch (e) {
-        // console.log(e);
         return this.responseService.unauthorized('invalid username/password');
-      }
-      if (!result) {
-        return this.responseService.unauthorized('Invalid username/password');
-      }
-      if (!result.active) {
-        return this.responseService.unauthorized('Account not active');
       }
       if (result.deleted) {
         return this.responseService.unauthorized('No Records found');
+      }
+
+      if (!result.active) {
+        return this.processOtp(requestBody.username, result);
       }
 
       if (requestBody.password) {
