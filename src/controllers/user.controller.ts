@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   Controller,
   Get,
@@ -8,27 +10,16 @@ import {
   Query,
   Param,
   Post,
-  UploadedFile,
-  UseInterceptors,
   Headers,
   Delete,
-  UploadedFiles,
-  Logger,
 } from '@nestjs/common';
 import {
-  FileFieldsInterceptor,
-  FileInterceptor,
-} from '@nestjs/platform-express';
-import {
   ApiBearerAuth,
-  ApiBody,
-  ApiConsumes,
   ApiExtraModels,
   // ApiHeader,
   ApiOperation,
   ApiQuery,
   ApiTags,
-  getSchemaPath,
 } from '@nestjs/swagger';
 import { AuthUser } from 'src/decorators/logged-in-user-decorator';
 import { RouteName } from 'src/decorators/route-name.decorator';
@@ -111,23 +102,24 @@ export class UserController {
   @Get('/:userId')
   async getUser(
     @Param('userId') userId: string,
-    @AuthUser() user: LoggedInUser,
+    // @AuthUser() user: LoggedInUser,
   ) {
     try {
+      // console.log(user.id);
       const result = await this.service.view(userId);
       if (result.error == 2)
         return this.responseService.notFound('no user found');
 
       return this.responseService.success(result.body);
-    } catch (e) {
-      return this.responseService.exception(e.message);
+    } catch (e: any) {
+      return this.responseService.exception(e?.message);
     }
   }
 
   @Delete('/:userId')
   async archivedUser(
     @Param('userId') userId: string,
-    @AuthUser() user: LoggedInUser,
+    // @AuthUser() user: LoggedInUser,
   ) {
     try {
       const result = await this.service.archiveUser(userId);
@@ -142,7 +134,7 @@ export class UserController {
   @Patch('/:userId/unarchive')
   async unarchiveUser(
     @Param('userId') userId: string,
-    @AuthUser() user: LoggedInUser,
+    // @AuthUser() user: LoggedInUser,
   ) {
     try {
       const result = await this.service.unarchiveUser(userId);
@@ -161,10 +153,7 @@ export class UserController {
     @AuthUser() user: LoggedInUser,
   ) {
     try {
-      const result = await this.service.updateProfile(
-        payload,
-        user.id,
-      );
+      const result = await this.service.updateProfile(payload, user.id);
       if (result.error == 1)
         return this.responseService.badRequest(result.body);
       if (result.error == 2) return this.responseService.exception(result.body);
@@ -181,10 +170,7 @@ export class UserController {
     @Param('userId') userId: string,
   ) {
     try {
-      const result = await this.service.updateProfile(
-        payload,
-        userId,
-      );
+      const result = await this.service.updateProfile(payload, userId);
       if (result.error == 1)
         return this.responseService.badRequest(result.body);
       if (result.error == 2) return this.responseService.exception(result.body);
@@ -356,7 +342,7 @@ export class UserController {
     @Query('search') search?: string,
     @Query('sortDirection') sortDirection?: 'asc' | 'desc',
     @Query('sortBy') sortBy?: string,
-    @Query('role') role?: string,
+    // @Query('role') role?: string,
   ) {
     try {
       const companyId = user.userRole[0]?.companyId as string;
@@ -381,7 +367,7 @@ export class UserController {
   @Delete('profile/picture')
   async removeProfilePic(@AuthUser() user: LoggedInUser) {
     try {
-      const payload = { imageUrl: null };
+      // const payload = { imageUrl: null };
       const result = await this.service.removeProfilePic(user.id);
       if (result.error == 1)
         return this.responseService.badRequest(result.body);

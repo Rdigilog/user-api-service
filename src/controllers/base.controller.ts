@@ -1,4 +1,3 @@
-
 import { Controller, Get, Param, Query, Request } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { RouteName } from 'src/decorators/route-name.decorator';

@@ -47,10 +47,10 @@ export class HealthController {
     try {
       // Check if we can query the database
       const dbHealth = await this.prismaService.healthCheck();
-      
+
       // Get available models to verify schema is loaded
       const models = await this.prismaService.models();
-      
+
       return {
         status: 'success',
         message: 'Migration system is working',

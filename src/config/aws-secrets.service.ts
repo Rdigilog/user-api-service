@@ -1,5 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
+import {
+  SecretsManagerClient,
+  GetSecretValueCommand,
+} from '@aws-sdk/client-secrets-manager';
 
 export interface AwsSecrets {
   REDIS_URL: string;
@@ -39,28 +42,34 @@ export class AwsSecretsService {
 
     try {
       this.logger.log(`Fetching secrets from AWS Secrets Manager: ${secretId}`);
-      
+
       const command = new GetSecretValueCommand({
         SecretId: secretId,
       });
 
       const response = await this.secretsClient.send(command);
-      
-      
+
       if (!response.SecretString) {
-        throw new Error('No secret string found in AWS Secrets Manager response');
+        throw new Error(
+          'No secret string found in AWS Secrets Manager response',
+        );
       }
 
       const secrets = JSON.parse(response.SecretString) as AwsSecrets;
-      
+
       // Cache the secrets
       this.cachedSecrets = secrets;
       this.cacheExpiry = Date.now() + this.CACHE_DURATION;
-      
-      this.logger.log('Successfully fetched and cached secrets from AWS Secrets Manager');
+
+      this.logger.log(
+        'Successfully fetched and cached secrets from AWS Secrets Manager',
+      );
       return secrets;
     } catch (error) {
-      this.logger.error('Failed to fetch secrets from AWS Secrets Manager:', error);
+      this.logger.error(
+        'Failed to fetch secrets from AWS Secrets Manager:',
+        error,
+      );
       throw new Error(`Failed to fetch secrets: ${error.message}`);
     }
   }

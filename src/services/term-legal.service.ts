@@ -1,4 +1,3 @@
-
 import { Injectable } from '@nestjs/common';
 import { Prisma, TermLegalType } from '@prisma/client';
 import { PrismaService } from 'src/config/prisma.service';

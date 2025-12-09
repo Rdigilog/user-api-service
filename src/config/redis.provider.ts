@@ -5,7 +5,9 @@ import { CONFIG_KEYS } from './config.keys';
 
 export const RedisProvider = {
   provide: 'REDIS_CONNECTION',
-  useFactory: async (configService: ConfigService): Promise<RedisClientType> => {
+  useFactory: async (
+    configService: ConfigService,
+  ): Promise<RedisClientType> => {
     const client: RedisClientType = createClient({
       url: configService.get<string>(CONFIG_KEYS.REDIS_URL),
     });

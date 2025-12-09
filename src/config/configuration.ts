@@ -93,15 +93,17 @@ export async function getConfigValues(): Promise<Partial<Configuration>> {
       },
     };
   } catch (error) {
-    console.error('Failed to load configuration from AWS Secrets Manager:', error);
+    console.error(
+      'Failed to load configuration from AWS Secrets Manager:',
+      error,
+    );
     throw new Error(`Configuration loading failed: ${error.message}`);
   }
 }
 
 export default async (): Promise<Configuration> => {
-
   const config = await getConfigValues();
-  console.log('Configuration values retrieved:', config)
+  console.log('Configuration values retrieved:', config);
   return {
     port: config.port || 3000,
     nodeEnv: config.nodeEnv || 'production',

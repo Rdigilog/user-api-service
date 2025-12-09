@@ -1,15 +1,14 @@
-
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import {
-  Controller,
-  Get,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { RouteName } from 'src/decorators/route-name.decorator';
 import { PlanService } from 'src/services/plan.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
-
 
 @Controller('plan')
 @ApiTags('Plans')

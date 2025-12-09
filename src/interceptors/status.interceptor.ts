@@ -37,13 +37,17 @@ export class StatusInterceptor implements NestInterceptor {
         //   description: routeDescription, // Add the route description to the log entry
         // };
         // this.activityService.save(payload);
-        
+
         // Only set status code if it exists and is a valid number
         if (responseBody && typeof responseBody.statusCode === 'number') {
           context.switchToHttp().getResponse().status(responseBody.statusCode);
         }
-        
-        if (responseBody && responseBody.message && Array.isArray(responseBody.message)) {
+
+        if (
+          responseBody &&
+          responseBody.message &&
+          Array.isArray(responseBody.message)
+        ) {
           responseBody.message = responseBody.message.join(', ');
         }
         return responseBody;

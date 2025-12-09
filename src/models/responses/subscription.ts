@@ -105,7 +105,6 @@ export class InvoiceDto {
   company: CompanyDto;
 }
 
-
 export class SubscriptionDto {
   @ApiProperty({ example: 1 })
   id: number;
@@ -144,19 +143,30 @@ export class SubscriptionDto {
   company: CompanyDto;
 }
 
-
 export class SubscriptionSummaryDto {
-  @ApiProperty({ example: null, nullable: true, description: 'Total revenue generated from subscriptions' })
+  @ApiProperty({
+    example: null,
+    nullable: true,
+    description: 'Total revenue generated from subscriptions',
+  })
   totalRevenue: number | null;
 
-  @ApiProperty({ example: 0, description: 'Total number of currently active subscriptions' })
+  @ApiProperty({
+    example: 0,
+    description: 'Total number of currently active subscriptions',
+  })
   totalActiveSubscription: number;
 
-  @ApiProperty({ example: 0, description: 'Total number of subscriptions expiring soon' })
+  @ApiProperty({
+    example: 0,
+    description: 'Total number of subscriptions expiring soon',
+  })
   totalExpiringSoon: number;
 
-  @ApiProperty({ example: null, nullable: true, description: 'Total monthly recurring revenue (MRR)' })
+  @ApiProperty({
+    example: null,
+    nullable: true,
+    description: 'Total monthly recurring revenue (MRR)',
+  })
   monththlyReoccuring: number | null;
 }
-
-

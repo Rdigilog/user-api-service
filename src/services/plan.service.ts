@@ -26,7 +26,7 @@ export class PlanService extends PrismaService {
       const result = await this.plan.findMany({
         where: filter,
         include: {
-          features:true
+          features: true,
         },
         orderBy: {
           [sortBy]: sortDirection,
@@ -36,13 +36,13 @@ export class PlanService extends PrismaService {
       });
 
       // if (result.length) {
-        const totalItems = await this.plan.count({ where: filter });
-        const paginatedPlan = this.responseService.pagingData(
-          { result, totalItems },
-          page,
-          limit,
-        );
-        return { error: 0, body: paginatedPlan };
+      const totalItems = await this.plan.count({ where: filter });
+      const paginatedPlan = this.responseService.pagingData(
+        { result, totalItems },
+        page,
+        limit,
+      );
+      return { error: 0, body: paginatedPlan };
       // }
       // return { error: 1, body: 'No Order found' };
     } catch (e) {

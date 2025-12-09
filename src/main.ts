@@ -10,8 +10,8 @@ import { Response } from 'express';
 import { writeFileSync } from 'fs';
 
 async function bootstrap() {
-  const response = await getConfigValues()
-  console.log('Starting application...', response)
+  const response = await getConfigValues();
+  console.log('Starting application...', response);
   const app = await NestFactory.create(AppModule, {
     cors: {
       origin: '*',
@@ -20,14 +20,13 @@ async function bootstrap() {
     },
   });
 
-
   const configService = app.get(ConfigService);
 
   app.setGlobalPrefix('user/api/v1');
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
-      whitelist:true,
+      whitelist: true,
       // forbidNonWhitelisted: true,
       // transformOptions: { enableImplicitConversion: true },
     }),

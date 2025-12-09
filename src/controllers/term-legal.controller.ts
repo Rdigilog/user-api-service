@@ -1,12 +1,4 @@
-
-import {
-  Body,
-  Controller,
-  Get,
-
-  Query,
-
-} from '@nestjs/common';
+import { Body, Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery } from '@nestjs/swagger';
 import { TermLegalType } from '@prisma/client';
 import { TermLegalService } from 'src/services/term-legal.service';
@@ -47,7 +39,7 @@ export class TermLegalController {
       }
       return this.responseService.success(result.body);
     } catch (e) {
-      return this.responseService.exception(e.message);
+      return this.responseService.exception(e);
     }
   }
 }

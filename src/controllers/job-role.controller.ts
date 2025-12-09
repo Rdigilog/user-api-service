@@ -9,7 +9,12 @@ import {
   Put,
   Param,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiQuery, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiQuery,
+  ApiOperation,
+} from '@nestjs/swagger';
 import { AuthUser } from 'src/decorators/logged-in-user-decorator';
 import { RouteName } from 'src/decorators/route-name.decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
@@ -30,11 +35,8 @@ export class JobRoleController {
 
   @RouteName('job-role.list')
   @ApiOperation({ summary: 'List all job roles with pagination and search' })
-
   @Get()
-  async list(
-    @AuthUser() user: LoggedInUser,
-  ) {
+  async list(@AuthUser() user: LoggedInUser) {
     try {
       const result = await this.service.all(
         user.userRole[0].companyId as string,

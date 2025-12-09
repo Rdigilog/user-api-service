@@ -9,9 +9,7 @@ import {
 // import { FileUploadService } from '@app/utils/services/file-upload.service';
 @Global()
 @Module({
-  providers: [
-    QueueService,
-  ],
+  providers: [QueueService],
   exports: [QueueService],
   imports: [],
 })

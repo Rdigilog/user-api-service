@@ -1,11 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { ApiResponseDto } from "./generic.dto";
+import { ApiProperty } from '@nestjs/swagger';
+import { ApiResponseDto } from './generic.dto';
 
 export class TokenDataDto {
   @ApiProperty({ example: 'JA5T6SL2F4VHANDLGQUVG2JOKNLW66RT' })
   token: string;
 }
-
 
 export class RoleDto {
   @ApiProperty({ example: '43cabb3a-6e49-4d57-ba09-cc6953922f67' })
@@ -106,7 +105,6 @@ export class AuthResponseDto {
   @ApiProperty({ type: () => UserInfoDto })
   user_info: UserInfoDto;
 }
-
 
 // export class LoginResponseDTO extends ApiResponseDto<TokenDataDto>{
 //     // data:TokenDataDto

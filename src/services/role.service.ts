@@ -1,4 +1,3 @@
-
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/config/prisma.service';
@@ -8,10 +7,8 @@ import { ResponsesService } from 'src/utils/services/responses.service';
 export class RoleService {
   constructor(
     private readonly responseService: ResponsesService,
-    private readonly prismaService:PrismaService
-  ) {
-    
-  }
+    private readonly prismaService: PrismaService,
+  ) {}
   async list() {
     try {
       const result = await this.prismaService.role.findMany({
@@ -51,7 +48,9 @@ export class RoleService {
       });
 
       if (result.length) {
-        const totalItems = await this.prismaService.role.count({ where: filter });
+        const totalItems = await this.prismaService.role.count({
+          where: filter,
+        });
         const paginatedProduct = this.responseService.pagingData(
           { result, totalItems },
           page,

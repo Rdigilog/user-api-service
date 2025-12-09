@@ -62,7 +62,8 @@ export class CooudinaryFileUploadProvider implements FileUploadProvider {
       );
       const uploadName = this.configService.get('CLOUD_NAME') || 'dwhvilwc3';
       const baseUrl =
-        this.configService.get('CLOUDINARY_BASEURL') || 'https://api.cloudinary.com/v1_1/';
+        this.configService.get('CLOUDINARY_BASEURL') ||
+        'https://api.cloudinary.com/v1_1/';
       const response = await axios.post(
         `${baseUrl}${uploadName}/image/upload`,
         formData,
@@ -89,7 +90,7 @@ export class CooudinaryFileUploadProvider implements FileUploadProvider {
     const apiKey = this.configService.get('CLOUDINARY_API_KEY') || '';
     const apiSecret = this.configService.get('CLOUDINARY_API_SECRET');
     // const baseUrl =
-      // this.configService.get() || 'https://api.cloudinary.com/v1_1/';
+    // this.configService.get() || 'https://api.cloudinary.com/v1_1/';
     const endpoint = `${this.configService.get('CLOUDINARY_BASEURL')}${cloudName}/resources/image/upload`;
 
     const response = await axios.delete(endpoint, {

@@ -49,7 +49,7 @@ import { JobRoleService } from './services/job-role.service';
     bullboardConfig,
     HttpModule,
     UtilsModule,
-    CacheModule.registerAsync(RedisCacheOptions)
+    CacheModule.registerAsync(RedisCacheOptions),
   ],
   controllers: [
     AuthController,
@@ -58,7 +58,7 @@ import { JobRoleService } from './services/job-role.service';
     HealthController,
     BaseController,
     SubscriptionController,
-    JobRoleController
+    JobRoleController,
   ],
   providers: [
     {
@@ -72,7 +72,7 @@ import { JobRoleService } from './services/job-role.service';
     PlanService,
     BaseService,
     SubscriptionService,
-    JobRoleService
+    JobRoleService,
   ],
 })
-export class AppModule { }
+export class AppModule {}

@@ -62,4 +62,3 @@ export class UpdateSubscriptionUsersDto {
   @Min(0)
   users: number;
 }
-

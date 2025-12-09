@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, Logger } from '@nestjs/common';
 import { JobRole, Prisma } from '@prisma/client';
 
@@ -107,7 +109,7 @@ export class UserService extends PrismaService {
       return { error: 1, body: 'No Employee(s) found' };
     } catch (e) {
       console.error(e);
-      return { error: 2, body: e.message };
+      return this.responseService.errorHandler(e);
     }
   }
 
@@ -179,7 +181,7 @@ export class UserService extends PrismaService {
       // return { error: 1, body: 'No Employee(s) found' };
     } catch (e) {
       console.error(e);
-      return { error: 2, body: e.message };
+      return this.responseService.errorHandler(e);
     }
   }
 
@@ -276,7 +278,7 @@ export class UserService extends PrismaService {
 
   async addCompanyDetails(payload: CompanyDetailsDTO, companyId: string) {
     try {
-      const company = await this.company.update({
+      await this.company.update({
         where: { id: companyId },
         data: {
           ...(payload.companyName && { name: payload.companyName }),
@@ -397,7 +399,7 @@ export class UserService extends PrismaService {
       });
       return { error: 0, body: result };
     } catch (e) {
-      return { error: 2, message: 'User update failed.' };
+      return this.responseService.errorHandler(e);
     }
   }
 
@@ -547,6 +549,7 @@ export class UserService extends PrismaService {
           template: mailTemplates.USER_INVITATION,
           content: inviteEmailData,
         };
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.mailQueue.add('INVITATION', mailObject);
       } else {
         const hasnedPassword = await this.utilsService.hashPassword(
@@ -652,7 +655,7 @@ export class UserService extends PrismaService {
           },
         });
 
-       const inviteEmailData: InviteEmailFields = {
+        const inviteEmailData: InviteEmailFields = {
           recipientName: user.profile?.firstName || '',
           recipientEmail: payload.email,
           inviteLink: `${this.userConfigService.get<string>(CONFIG_KEYS.FRONTEND_URL)}/auth/invitations/accept?inviteCode=${invite.inviteLink}`,
@@ -727,7 +730,7 @@ export class UserService extends PrismaService {
 
   async reinvite(inviteLink: string, companyId: string) {
     try {
-      const plainPassword = this.utilsService.randomString();
+      // const plainPassword = this.utilsService.randomString();
       const company = await this.company.findUniqueOrThrow({
         where: { id: companyId },
       });
@@ -832,9 +835,9 @@ export class UserService extends PrismaService {
           inviteAccepted: true,
         },
       });
-      return { error: 0, body: "Invite Accepted successfully" };
+      return { error: 0, body: 'Invite Accepted successfully' };
     } catch (e) {
-      return { error: 1, body: 'Invite Link expired or invalid' };
+      return this.responseService.errorHandler(e);
     }
   }
 
@@ -851,7 +854,7 @@ export class UserService extends PrismaService {
       await this.mailQueue.add('SEND_OTP', maidData);
       return { error: 0, body: { token: otpCode.secret } };
     } catch (e) {
-      return { error: 2, body: 'OTP sending failed.' };
+      return this.responseService.errorHandler(e);
     }
   }
 
@@ -867,7 +870,7 @@ export class UserService extends PrismaService {
       await this.smsQueue.add('SEND_OTP', maidData);
       return { error: 0, body: { token: otpCode.secret } };
     } catch (e) {
-      return { error: 2, body: e.message };
+      return this.responseService.errorHandler(e);
     }
   }
 
@@ -905,6 +908,7 @@ export class UserService extends PrismaService {
       //     }),
       //   );
       // }
+      console.log(companyId);
       const employee: Prisma.EmployeeUpdateInput = {
         ...(payload.address && { address: payload.address }),
         ...(payload.phoneNumber && { phoneNumber: payload.phoneNumber }),
@@ -1180,7 +1184,7 @@ export class UserService extends PrismaService {
       if (user.deleted) {
         return { error: 1, body: 'Account is already archived' };
       }
-      const result = await this.user.update({
+      await this.user.update({
         where: { id: userId },
         data: { deleted: true, deletedAt: new Date() },
       });
@@ -1201,7 +1205,7 @@ export class UserService extends PrismaService {
       if (!user.deleted) {
         return { error: 1, body: 'Account is not archived' };
       }
-      const result = await this.user.update({
+      await this.user.update({
         where: { id: userId },
         data: { deleted: false, deletedAt: new Date() },
       });

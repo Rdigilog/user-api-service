@@ -224,7 +224,7 @@ export class JobInformationDto {
 
   @ApiPropertyOptional({ description: 'Pay rate per hour' })
   @IsOptional()
-   @Type(() => Number)
+  @Type(() => Number)
   // @IsNumber()
   payRatePerHour?: number;
 
@@ -295,21 +295,20 @@ export class EmployeeDto {
   @IsString()
   phoneNumber?: string;
 
+  @ApiPropertyOptional({ description: 'Phone number of the employee' })
+  @IsOptional()
+  @IsString()
+  profilePicture: string;
 
   @ApiPropertyOptional({ description: 'Phone number of the employee' })
   @IsOptional()
   @IsString()
-   profilePicture : string
+  passportId: string;
 
   @ApiPropertyOptional({ description: 'Phone number of the employee' })
   @IsOptional()
   @IsString()
-  passportId:string
-
-  @ApiPropertyOptional({ description: 'Phone number of the employee' })
-  @IsOptional()
-  @IsString()
-  proofOfAddress: string
+  proofOfAddress: string;
 
   @ApiPropertyOptional({
     description: 'Array of branch IDs employee belongs to',
@@ -319,7 +318,6 @@ export class EmployeeDto {
   @IsArray()
   @IsString({ each: true })
   otherProofOfIdentification?: string[];
-
 
   @ApiPropertyOptional({
     enum: MaritalStatus,
@@ -391,7 +389,7 @@ export class EmployeeDto {
 
   @ApiPropertyOptional({ description: 'Pay rate (default 0)' })
   @IsOptional()
-    @Type(() => Number)
+  @Type(() => Number)
   // @IsNumber()
   payRate?: number;
 

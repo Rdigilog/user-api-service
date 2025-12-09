@@ -236,7 +236,6 @@ export class InviteUserDTO extends EmailDTO {
   @IsString()
   roleId: string;
 
-
   @ApiPropertyOptional({ example: 'Doe' })
   @IsOptional()
   @IsString()

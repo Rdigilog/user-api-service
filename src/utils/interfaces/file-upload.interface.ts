@@ -1,5 +1,3 @@
-
-
 export interface FileUploadProvider {
   upload(file: Express.Multer.File): Promise<UploadedFileDto>;
 }
