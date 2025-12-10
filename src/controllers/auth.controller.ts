@@ -11,6 +11,8 @@ import {
   Request,
   Get,
   Param,
+  ConsoleLogger,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -110,10 +112,11 @@ export class AuthController {
       );
       try {
         await this.userService.findByUsername(phoneNumber);
-      } catch (e) {
         return this.responseService.badRequest(
           `Phone Number ${phoneNumber} already tied to another account`,
         );
+      } catch (e) {
+        Logger.log('NO RECORDS FOUND SO PROCEED PLS');
       }
 
       const result = await this.userService.addPhoneNumber(
