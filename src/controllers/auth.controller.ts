@@ -105,8 +105,11 @@ export class AuthController {
   @Post('/phone-number')
   async verifyPhoneNumber(@Body() payload: PhoneNumberDTO, @Request() req) {
     try {
+      const phoneNumber = this.utilService.normalizePhoneNumber(
+        payload.phoneNumber,
+      );
       try {
-        await this.userService.findByUsername(payload.phoneNumber);
+        await this.userService.findByUsername(phoneNumber);
       } catch (e) {
         return this.responseService.badRequest(
           `Phone Number ${payload.phoneNumber} already tied to another account`,
@@ -114,7 +117,7 @@ export class AuthController {
       }
 
       const result = await this.userService.addPhoneNumber(
-        payload,
+        { phoneNumber: phoneNumber },
         req.user.id,
       );
       if (result.error == 1)
@@ -143,6 +146,9 @@ export class AuthController {
   @Post('/verify-otp')
   async otp(@Body() requestBody: UserOtpVerification) {
     try {
+      requestBody.username = this.utilService.normalizePhoneNumber(
+        requestBody.username,
+      );
       const result = await this.userService.findByUsername(
         requestBody.username,
       );

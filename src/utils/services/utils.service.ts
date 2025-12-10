@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { compare, genSalt, hash } from 'bcryptjs';
 import { process } from 'uniqid';
@@ -70,6 +76,7 @@ export class UtilsService {
     }
     return phoneNumber; // Return the phone number unchanged if it doesn't start with "0"
   }
+
   lisaUnique() {
     try {
       return process('RD').toUpperCase();
@@ -87,5 +94,19 @@ export class UtilsService {
       out += chars[bytes[i] % chars.length];
     }
     return out;
+  }
+
+  normalizePhoneNumber(phone: string) {
+    if (!phone) return phone;
+
+    // Trim whitespace
+    let normalized = phone.trim();
+
+    // Remove only one leading '+'
+    if (normalized.startsWith('+')) {
+      normalized = normalized.substring(1);
+    }
+
+    return normalized;
   }
 }
