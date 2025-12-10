@@ -112,7 +112,7 @@ export class AuthController {
         await this.userService.findByUsername(phoneNumber);
       } catch (e) {
         return this.responseService.badRequest(
-          `Phone Number ${payload.phoneNumber} already tied to another account`,
+          `Phone Number ${phoneNumber} already tied to another account`,
         );
       }
 
