@@ -24,16 +24,16 @@ import {
   CompanyDetailsDTO,
   InviteUserDTO,
 } from 'src/models/onboarding/SignUp.dto';
-import { FileUploadService } from 'src/utils/services/file-upload.service';
 import { OtpService } from 'src/utils/services/otp.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
 import { UtilsService } from 'src/utils/services/utils.service';
 import { ConfigService } from '@nestjs/config';
 import { CONFIG_KEYS } from '../config/config.keys';
 import { InjectFileRemovalQueue } from 'src/queue/src/decorators/queue.decorator';
+import { LoginDTO } from 'src/models/onboarding/Login.dto';
 
 @Injectable()
-export class UserService extends PrismaService {
+export class UserService {
   constructor(
     @InjectMailQueue() private mailQueue: Queue,
     @InjectSMSQueue() private smsQueue: Queue,
@@ -41,10 +41,11 @@ export class UserService extends PrismaService {
     private readonly utilsService: UtilsService,
     private readonly otpService: OtpService,
     private readonly responseService: ResponsesService,
-    private readonly fileUploadService: FileUploadService,
+    // private readonly fileUploadService: FileUploadService,
     private readonly userConfigService: ConfigService,
+    private readonly prisma: PrismaService,
   ) {
-    super(userConfigService);
+    // super(userConfigService);
   }
 
   async list(
@@ -66,7 +67,7 @@ export class UserService extends PrismaService {
         filter.user = { type: role };
       }
 
-      const result = await this.profile.findMany({
+      const result = await this.prisma.profile.findMany({
         where: filter,
         include: {
           user: {
@@ -97,16 +98,16 @@ export class UserService extends PrismaService {
         take: limit,
       });
 
-      if (result.length) {
-        const totalItems = await this.profile.count({ where: filter });
-        const paginatedProduct = this.responseService.pagingData(
-          { result, totalItems },
-          page,
-          limit,
-        );
-        return { error: 0, body: paginatedProduct };
-      }
-      return { error: 1, body: 'No Employee(s) found' };
+      // if (result.length) {
+      const totalItems = await this.prisma.profile.count({ where: filter });
+      const paginatedProduct = this.responseService.pagingData(
+        { result, totalItems },
+        page,
+        limit,
+      );
+      return { error: 0, body: paginatedProduct };
+      // }
+      // return { error: 1, body: 'No Employee(s) found' };
     } catch (e) {
       console.error(e);
       return this.responseService.errorHandler(e);
@@ -139,7 +140,7 @@ export class UserService extends PrismaService {
         filter.user = { userRole: { some: { role: { name: role } } } };
       }
 
-      const result = await this.profile.findMany({
+      const result = await this.prisma.profile.findMany({
         where: filter,
         include: {
           user: {
@@ -170,7 +171,7 @@ export class UserService extends PrismaService {
       });
 
       // if (result.length) {
-      const totalItems = await this.profile.count({ where: filter });
+      const totalItems = await this.prisma.profile.count({ where: filter });
       const paginatedProduct = this.responseService.pagingData(
         { result, totalItems },
         page,
@@ -187,7 +188,7 @@ export class UserService extends PrismaService {
 
   async createAccount(payload: InitiateRegistrationDto) {
     try {
-      const result = await this.$transaction(async (tx) => {
+      const result = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.findFirst({
           where: { email: payload.businessEmail },
         });
@@ -258,14 +259,82 @@ export class UserService extends PrismaService {
     }
   }
 
+  async socialAuth(payload: LoginDTO) {
+    try {
+      const result = await this.prisma.$transaction(async (tx) => {
+        const company = await tx.company.upsert({
+          where: { email: payload.username },
+          create: {
+            email: payload.username,
+            // heardAboutUs: payload.heardAboutUs,
+          },
+          update: {},
+        });
+
+        const result = await tx.user.upsert({
+          where: { email: payload.username },
+          update: {},
+          create: {
+            email: payload.username,
+            active: true,
+            verified: true,
+            providerId: payload.providerId,
+            provider: payload.provider,
+            userRole: {
+              create: {
+                role: {
+                  connectOrCreate: {
+                    where: { name: 'ADMIN' },
+                    create: { name: 'ADMIN' },
+                  },
+                },
+                company: {
+                  connect: {
+                    id: company.id,
+                  },
+                },
+              },
+            },
+            profile: {
+              create: {
+                firstName: payload.firstName,
+                lastName: payload.lastName,
+                email: payload.username,
+                employee: {
+                  create: {
+                    companyId: company.id,
+                    bankInformation: {
+                      create: {},
+                    },
+                    jobInformation: {
+                      create: {},
+                    },
+                    emergencyContact: {
+                      create: {},
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+        return result;
+      });
+      return result;
+    } catch (e) {
+      return null;
+      // return this.responseService.errorHandler(e);
+    }
+  }
+
   async addPhoneNumber(payload: PhoneNumberDTO, userId: string) {
     try {
-      await this.user.update({
+      await this.prisma.user.update({
         where: { id: userId },
         data: { phoneNumber: payload.phoneNumber },
       });
 
-      await this.profile.update({
+      await this.prisma.profile.update({
         where: { userId },
         data: { phoneNumber: payload.phoneNumber },
       });
@@ -278,7 +347,7 @@ export class UserService extends PrismaService {
 
   async addCompanyDetails(payload: CompanyDetailsDTO, companyId: string) {
     try {
-      await this.company.update({
+      await this.prisma.company.update({
         where: { id: companyId },
         data: {
           ...(payload.companyName && { name: payload.companyName }),
@@ -291,20 +360,22 @@ export class UserService extends PrismaService {
           }),
           ...(payload.closingTime && { closingTime: payload.closingTime }),
           ...(payload.planId && {
-            plan: {
-              connect: {
-                id: payload.planId,
-              },
-            },
+            plan: payload.planId
+              ? {
+                  connect: {
+                    id: payload.planId,
+                  },
+                }
+              : undefined,
           }),
         },
       });
 
       if (payload.planId) {
-        const plan = await this.plan.findUniqueOrThrow({
+        const plan = await this.prisma.plan.findUniqueOrThrow({
           where: { id: payload.planId },
         });
-        const subscription = await this.subscription.upsert({
+        const subscription = await this.prisma.subscription.upsert({
           where: {
             companyId,
           },
@@ -327,15 +398,16 @@ export class UserService extends PrismaService {
           },
         });
 
+        const invoiceNo = this.utilsService.lisaUnique();
         // if (payload.planId != company.planId) {
-        await this.billingHistory.create({
+        await this.prisma.billingHistory.create({
           data: {
             company: {
               connect: {
                 id: companyId,
               },
             },
-            invoiceNo: this.utilsService.lisaUnique(),
+            invoiceNo: invoiceNo,
             plan: {
               connect: {
                 id: payload.planId,
@@ -356,7 +428,7 @@ export class UserService extends PrismaService {
   }
 
   async findByUsername(username: any) {
-    const result = await this.user.findFirstOrThrow({
+    const result = await this.prisma.user.findFirstOrThrow({
       where: {
         OR: [
           { email: { equals: username, mode: 'insensitive' } },
@@ -368,7 +440,7 @@ export class UserService extends PrismaService {
   }
 
   async findById(id: string, includePassword = false) {
-    return await this.user.findUnique({
+    return await this.prisma.user.findUnique({
       where: { id },
       select: {
         id: true,
@@ -386,7 +458,7 @@ export class UserService extends PrismaService {
 
   async updateUser(payload: any, id: string) {
     try {
-      const result = await this.user.update({
+      const result = await this.prisma.user.update({
         where: { id },
         data: payload,
         select: {
@@ -407,7 +479,7 @@ export class UserService extends PrismaService {
     try {
       Logger.log('request payload to update user');
       Logger.log(payload);
-      const result = await this.profile.update({
+      const result = await this.prisma.profile.update({
         where: { userId: userId },
         data: {
           ...payload,
@@ -424,14 +496,14 @@ export class UserService extends PrismaService {
   async invite(payload: InviteUserDTO, companyId: string, invitedBy: string) {
     try {
       const plainPassword = this.utilsService.randomString();
-      const company = await this.company.findUniqueOrThrow({
+      const company = await this.prisma.company.findUniqueOrThrow({
         where: { id: companyId },
       });
 
-      const role = await this.role.findUnique({
+      const role = await this.prisma.role.findUnique({
         where: { name: 'EMPLOYEE' },
       });
-      let user = await this.user.findUnique({
+      let user = await this.prisma.user.findUnique({
         where: { email: payload.email },
         select: {
           id: true,
@@ -453,7 +525,7 @@ export class UserService extends PrismaService {
       const inviteLink = this.utilsService.lisaUnique();
       const memberId = this.utilsService.lisaUnique();
       if (payload.roleId) {
-        jobRole = await this.jobRole.findFirst({
+        jobRole = await this.prisma.jobRole.findFirst({
           where: { id: payload.roleId },
         });
       }
@@ -465,7 +537,7 @@ export class UserService extends PrismaService {
         ) {
           return { error: 1, body: 'User already exists in this company' };
         }
-        await this.userRole.create({
+        await this.prisma.userRole.create({
           data: {
             user: { connect: { id: user.id } },
             role: {
@@ -482,7 +554,7 @@ export class UserService extends PrismaService {
           },
         });
 
-        await this.employee.create({
+        await this.prisma.employee.create({
           data: {
             inviteLink,
             employeeCode: memberId,
@@ -509,7 +581,7 @@ export class UserService extends PrismaService {
           },
         });
 
-        const invite = await this.invitation.create({
+        const invite = await this.prisma.invitation.create({
           data: {
             user: { connect: { id: user.id } },
             company: { connect: { id: company.id } },
@@ -549,14 +621,14 @@ export class UserService extends PrismaService {
           template: mailTemplates.USER_INVITATION,
           content: inviteEmailData,
         };
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+
         this.mailQueue.add('INVITATION', mailObject);
       } else {
         const hasnedPassword = await this.utilsService.hashPassword(
           plainPassword,
           10,
         );
-        user = await this.user.create({
+        user = await this.prisma.user.create({
           data: {
             email: payload.email,
             verified: true,
@@ -631,7 +703,7 @@ export class UserService extends PrismaService {
           },
         });
 
-        const invite = await this.invitation.create({
+        const invite = await this.prisma.invitation.create({
           data: {
             user: { connect: { id: user.id } },
             company: { connect: { id: company.id } },
@@ -695,7 +767,7 @@ export class UserService extends PrismaService {
         where.OR = [];
       }
 
-      const invite = await this.invitation.findMany({
+      const invite = await this.prisma.invitation.findMany({
         skip: offset,
         take: limit,
         include: {
@@ -714,7 +786,7 @@ export class UserService extends PrismaService {
         orderBy: { [sortBy]: sortDirection },
       });
       if (invite.length) {
-        const totalItems = await this.invitation.count({ where });
+        const totalItems = await this.prisma.invitation.count({ where });
         const paginatedInvite = this.responseService.pagingData(
           { result: invite, totalItems },
           page,
@@ -731,10 +803,10 @@ export class UserService extends PrismaService {
   async reinvite(inviteLink: string, companyId: string) {
     try {
       // const plainPassword = this.utilsService.randomString();
-      const company = await this.company.findUniqueOrThrow({
+      const company = await this.prisma.company.findUniqueOrThrow({
         where: { id: companyId },
       });
-      const invite = await this.invitation.findFirst({
+      const invite = await this.prisma.invitation.findFirst({
         where: { inviteLink },
         include: {
           user: {
@@ -785,7 +857,7 @@ export class UserService extends PrismaService {
 
   async acceptInvite(inviteLink: string) {
     try {
-      const user = await this.invitation.findFirst({
+      const user = await this.prisma.invitation.findFirst({
         where: {
           inviteLink,
         },
@@ -829,7 +901,7 @@ export class UserService extends PrismaService {
         };
       }
 
-      await this.employee.update({
+      await this.prisma.employee.update({
         where: { inviteLink: user.inviteLink },
         data: {
           inviteAccepted: true,
@@ -997,7 +1069,7 @@ export class UserService extends PrismaService {
 
       if (payload.jobInformation) {
         const { jobRoleId, ...rest } = payload.jobInformation;
-        await this.jobInformation.upsert({
+        await this.prisma.jobInformation.upsert({
           where: { employeeId: id },
           update: {
             ...payload.jobInformation,
@@ -1023,7 +1095,7 @@ export class UserService extends PrismaService {
       }
 
       if (payload.emergencyContact) {
-        await this.emergencyContact.upsert({
+        await this.prisma.emergencyContact.upsert({
           where: { employeeId: id },
           update: payload.emergencyContact,
           create: {
@@ -1038,7 +1110,7 @@ export class UserService extends PrismaService {
       }
 
       if (payload.bankInformation) {
-        await this.bankInformation.upsert({
+        await this.prisma.bankInformation.upsert({
           where: { employeeId: id },
           update: payload.bankInformation,
           create: {
@@ -1052,7 +1124,7 @@ export class UserService extends PrismaService {
         });
       }
 
-      const result = await this.employee.update({
+      const result = await this.prisma.employee.update({
         where: {
           id: id,
           // userId_companyId: {
@@ -1084,7 +1156,7 @@ export class UserService extends PrismaService {
       });
 
       if (payload.profilePicture) {
-        await this.profile.updateMany({
+        await this.prisma.profile.updateMany({
           where: { employee: { id } },
           data: { imageUrl: payload.profilePicture },
         });
@@ -1098,11 +1170,11 @@ export class UserService extends PrismaService {
 
   async removeProfilePic(userId: string) {
     try {
-      const profile = await this.profile.findFirst({
+      const profile = await this.prisma.profile.findFirst({
         where: { userId },
       });
       this.fileRemovalQueue.add('REMOVE_PROFILE_PIC', profile?.imageUrl);
-      const result = await this.profile.update({
+      const result = await this.prisma.profile.update({
         where: { userId },
         data: { imageUrl: null },
       });
@@ -1114,7 +1186,7 @@ export class UserService extends PrismaService {
 
   async view(userId: string) {
     try {
-      const result = await this.profile.findUnique({
+      const result = await this.prisma.profile.findUnique({
         where: { userId },
         include: {
           user: {
@@ -1175,7 +1247,7 @@ export class UserService extends PrismaService {
 
   async archiveUser(userId: string) {
     try {
-      const user = await this.user.findFirst({
+      const user = await this.prisma.user.findFirst({
         where: { id: userId },
       });
       if (!user) {
@@ -1184,7 +1256,7 @@ export class UserService extends PrismaService {
       if (user.deleted) {
         return { error: 1, body: 'Account is already archived' };
       }
-      await this.user.update({
+      await this.prisma.user.update({
         where: { id: userId },
         data: { deleted: true, deletedAt: new Date() },
       });
@@ -1196,7 +1268,7 @@ export class UserService extends PrismaService {
 
   async unarchiveUser(userId: string) {
     try {
-      const user = await this.user.findFirst({
+      const user = await this.prisma.user.findFirst({
         where: { id: userId },
       });
       if (!user) {
@@ -1205,7 +1277,7 @@ export class UserService extends PrismaService {
       if (!user.deleted) {
         return { error: 1, body: 'Account is not archived' };
       }
-      await this.user.update({
+      await this.prisma.user.update({
         where: { id: userId },
         data: { deleted: false, deletedAt: new Date() },
       });

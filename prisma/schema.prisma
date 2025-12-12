@@ -9,43 +9,44 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(uuid())
-  email         String?       @unique(map: "index_users_on_email")
-  phoneNumber   String?       @unique(map: "index_users_on_phone_number") @map("phone_number")
-  googleId      String?       @map("google_id")
-  type          String?
-  password      String?
-  active        Boolean       @default(false)
-  locked        Boolean       @default(false)
-  deleted       Boolean       @default(false)
-  suspended     Boolean       @default(false)
-  isPasswordReset Boolean @default(true) @map("is_password_reset")
-  verified      Boolean       @default(false)
-  phoneVerified Boolean       @default(false) @map("phone_verified")
-  deletedAt     DateTime?     @map("deleted_at")
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
-  profile       Profile?      @relation(name: "user_profile")
-  userRole      UserRole[]    @relation(name: "user_user_role")
+  id              String        @id @default(uuid())
+  email           String?       @unique(map: "index_users_on_email")
+  phoneNumber     String?       @unique(map: "index_users_on_phone_number") @map("phone_number")
+  providerId        String?       @map("provider_id")
+  provider        String?      
+  type            String?
+  password        String?
+  active          Boolean       @default(false)
+  locked          Boolean       @default(false)
+  deleted         Boolean       @default(false)
+  suspended       Boolean       @default(false)
+  isPasswordReset Boolean       @default(true) @map("is_password_reset")
+  verified        Boolean       @default(false)
+  phoneVerified   Boolean       @default(false) @map("phone_verified")
+  deletedAt       DateTime?     @map("deleted_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  profile         Profile?      @relation(name: "user_profile")
+  userRole        UserRole[]    @relation(name: "user_user_role")
   // leave            Leave[]
   // attendance       Attendance[]
   // note             Note[]
-  celebration   Celebration[]
+  celebration     Celebration[]
   // rota             Rota[]
-  invitation    Invitation[]  @relation(name: "invitation_user")
-  invitees      Invitation[]  @relation(name: "invitation_invited_by_user")
+  invitation      Invitation[]  @relation(name: "invitation_user")
+  invitees        Invitation[]  @relation(name: "invitation_invited_by_user")
   // TaskStageLog     TaskStageLog[]
 
   // leaveApprovalLog LeaveApprovalLog[] @relation(name: "leave_actor")
   Message                Message[]
   ChatParticipant        ChatParticipant[]
   MessageStatus          MessageStatus[]
-  MentionsReceived       MessageMention[]       @relation("MessageMentionMentionedUser")
-  MentionsAuthored       MessageMention[]       @relation("MessageMentionAuthoredBy")
-  messageReactions       MessageReaction[]
-  announcementsCreated   Announcement[]         @relation("AnnouncementCreatedBy")
-  announcementsUpdated   Announcement[]         @relation("AnnouncementUpdatedBy")
+  announcementsCreated   Announcement[]         @relation("AnnouncementCreatedByUser")
+  announcementsUpdated   Announcement[]         @relation("AnnouncementUpdatedByUser")
   announcementDeliveries AnnouncementDelivery[]
+  announcementComments   AnnouncementComment[]
+  chatsCreated           Chat[]                 @relation("ChatCreatedByUser")
+  notifications          Notification[]
 
   @@map("users")
 }
@@ -108,61 +109,75 @@ model EmployeeBranch {
 }
 
 model Employee {
-  id                         String                     @id @default(uuid())
-  userId                     String                     @unique @map("user_id")
-  companyId                  String                     @map("company_id")
-  employeeCode               String?                    @unique
-  address                    String?
-  phoneNumber                String?                    @map("phone_number")
-  maritalStatus              MaritalStatus?             @map("marital_status")
-  bio                        String?                    @db.Text
-  interest                   String?                    @db.Text
-  gender                     Gender?
-  religion                   String?
-  altPhoneNumber             String?                    @map("alt_phone_number")
-  dateOfBirth                String?                    @map("date_of_birth")
-  bloodGroup                 BloodGroup?                @map("blood_group")
-  allergy                    String?                    @db.Text
-  countryCode                String?                    @map("country_code")
-  timezone                   String?
-  currencyCode               String?                    @map("currency_code")
-  payRate                    Float                      @default(0) @map("pay_rate")
-  period                     BillingCycle               @default(PER_HOUR)
-  inviteAccepted             Boolean                    @default(false) @map("invite_accepted")
-  inviteLink                 String?                    @unique @map("invite_link")
-  passportId                 String?
-  proofOfAddress             String?
-  otherProofOfIdentification String[]
-  annualLeave                Int                        @default(15)
-  bankHoliday                Int                        @default(0)
-  hours                      Int                        @default(0)
-  breakTime                  String?
-  screenshotFrequency        ScreenshotFrequency        @default(NONE) // NONE, 1X, 2X, 3X
-  screenshotIntervalMinutes  Int                        @default(30) // Time interval in minutes
-  appTrackingType            TrackingType               @default(OFF) // OFF, APPS_ONLY, URLS_ONLY, BOTH
-  appScrennshotNotification  Boolean                    @default(false)
-  LeavePolicyMember          LeavePolicy[]              @relation("PolicyMembers")
-  emergencyContact           EmergencyContact?
-  jobInformation             JobInformation?
-  bankInformation            BankInformation?
-  profile                    Profile                    @relation(fields: [userId], references: [userId])
-  company                    Company                    @relation(fields: [companyId], references: [id])
-  department                 DepartmentEmployee[]
-  branch                     EmployeeBranch[]
-  manager                    Branch[]
-  taskAssignee               TaskAssignee[]
-  task                       Task[]
-  leave                      Leave[]
-  taskStageLog               TaskStageLog[]
-  leaveApprovalLog           LeaveApprovalLog[]         @relation(name: "leave_actor")
-  schedules                  RotaSchedule[]
-  attendance                 Attendance[]
-  note                       Note[]
-  activityTrackingEmployee   ActivityTrackingEmployee[]
-  employeeDocument           employeeDocoment[]         @relation(name: "employee_documents")
-  rota                       Rota[]
-  EmployeeSchedule           EmployeeSchedule[]
-  EmployeeScheduleRequest    EmployeeScheduleRequest[]
+  id                            String                     @id @default(uuid())
+  userId                        String                     @unique @map("user_id")
+  companyId                     String                     @map("company_id")
+  employeeCode                  String?                    @unique
+  address                       String?
+  phoneNumber                   String?                    @map("phone_number")
+  maritalStatus                 MaritalStatus?             @map("marital_status")
+  bio                           String?                    @db.Text
+  interest                      String?                    @db.Text
+  gender                        Gender?
+  religion                      String?
+  altPhoneNumber                String?                    @map("alt_phone_number")
+  dateOfBirth                   String?                    @map("date_of_birth")
+  bloodGroup                    BloodGroup?                @map("blood_group")
+  allergy                       String?                    @db.Text
+  countryCode                   String?                    @map("country_code")
+  timezone                      String?
+  currencyCode                  String?                    @map("currency_code")
+  payRate                       Float                      @default(0) @map("pay_rate")
+  period                        BillingCycle               @default(PER_HOUR)
+  inviteAccepted                Boolean                    @default(false) @map("invite_accepted")
+  inviteLink                    String?                    @unique @map("invite_link")
+  passportId                    String?
+  proofOfAddress                String?
+  otherProofOfIdentification    String[]
+  annualLeave                   Int                        @default(15)
+  bankHoliday                   Int                        @default(0)
+  hours                         Int                        @default(0)
+  breakTime                     String?
+  screenshotFrequency           ScreenshotFrequency        @default(NONE) // NONE, 1X, 2X, 3X
+  screenshotIntervalMinutes     Int                        @default(30) // Time interval in minutes
+  appTrackingType               TrackingType               @default(OFF) // OFF, APPS_ONLY, URLS_ONLY, BOTH
+  appScrennshotNotification     Boolean                    @default(false)
+  status                        UserStatus                 @default(OFFLINE)
+  LeavePolicyMember             LeavePolicy[]              @relation("PolicyMembers")
+  emergencyContact              EmergencyContact?
+  jobInformation                JobInformation?
+  bankInformation               BankInformation?
+  profile                       Profile                    @relation(fields: [userId], references: [userId])
+  company                       Company                    @relation(fields: [companyId], references: [id])
+  department                    DepartmentEmployee[]
+  branch                        EmployeeBranch[]
+  manager                       Branch[]
+  taskAssignee                  TaskAssignee[]
+  task                          Task[]
+  leave                         Leave[]
+  taskStageLog                  TaskStageLog[]
+  leaveApprovalLog              LeaveApprovalLog[]         @relation(name: "leave_actor")
+  schedules                     RotaSchedule[]
+  attendance                    Attendance[]
+  note                          Note[]
+  activityTrackingEmployee      ActivityTrackingEmployee[]
+  employeeDocument              employeeDocoment[]         @relation(name: "employee_documents")
+  rota                          Rota[]
+  employeeSchedule              EmployeeSchedule[]
+  employeeScheduleRequest       EmployeeScheduleRequest[]  @relation(name: "request_employee")
+  targetEmployeeScheduleRequest EmployeeScheduleRequest[]  @relation(name: "request_target_employee")
+  chatParticipants              ChatParticipant[]
+  chatsCreated                  Chat[]                     @relation("ChatCreatedBy")
+  messages                      Message[]
+  messageStatuses               MessageStatus[]
+  announcementDeliveries        AnnouncementDelivery[]
+  announcementsCreated          Announcement[]             @relation("AnnouncementCreatedBy")
+  announcementsUpdated          Announcement[]             @relation("AnnouncementUpdatedBy")
+  announcementComments          AnnouncementComment[]
+  dailyActivityLogs             DailyActivityLog[]
+  rotaScheduleTimeOff           rotaScheduleTimeOff[]
+  notifications                 Notification[]
+  TaskComment                   TaskComment[]
 
   @@unique([userId, companyId])
   @@index([userId, companyId])
@@ -291,6 +306,8 @@ model Company {
   activityTrackingSetting   ActivityTrackingSetting?
   notificationSetting       notificationSetting?
   ActivityTrackingEmployee  ActivityTrackingEmployee[]
+  chats                     Chat[]
+  dailyActivityLogs         DailyActivityLog[]
 
   @@map("companies")
 }
@@ -589,7 +606,7 @@ model Role {
 
 model Permission {
   id                       String           @id @default(uuid())
-  name                     String
+  name                     String @unique
   description              String?
   createdAt                DateTime         @default(now()) @map("created_at")
   updatedAt                DateTime         @updatedAt @map("updated_at")
@@ -691,11 +708,11 @@ model Department {
   id                 String               @id @default(uuid())
   name               String
   description        String?
-  branchId           String               @map("branch_id")
+  companyId          String?              @map("company_id")
   createdAt          DateTime             @default(now()) @map("created_at")
   updatedAt          DateTime             @updatedAt @map("updated_at")
   archived           Boolean              @default(false)
-  branch             Branch               @relation(fields: [branchId], references: [id])
+  branch             Branch[] //  @relation(fields: [branchId], references: [id])
   departmentEmployee DepartmentEmployee[]
 
   @@map("departments")
@@ -805,22 +822,48 @@ model BillingHistory {
 // }
 
 model Attendance {
+  id             String           @id @default(uuid())
+  employeeId     String           @map("user_id")
+  date           String
+  status         AttendanceStatus
+  companyId      String           @map("company_id")
+  activityType   String           @default("GENERAL")
+  timeIn         String?          @map("time_in")
+  timeOut        String?          @map("time_out")
+  timezone       String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+  rotaScheduleId String?
+  isSwap         Boolean          @default(false)
+
+  rotaSchedule RotaSchedule? @relation(fields: [rotaScheduleId], references: [id])
+
+  employee          Employee           @relation(fields: [employeeId], references: [id])
+  dailyActivityLogs DailyActivityLog[]
+
+  @@unique([date, employeeId, companyId])
+  @@map("attendances")
+}
+
+model DailyActivityLog {
   id           String           @id @default(uuid())
-  employeeId   String           @map("user_id")
+  location     String
+  employeeId   String
   date         String
   status       AttendanceStatus
   companyId    String           @map("company_id")
   activityType String           @default("GENERAL")
-  timeIn       String?          @map("time_in")
-  timeOut      String?          @map("time_out")
-  timezone     String?
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @default(now()) @updatedAt
+  time         String?          @map("time")
+  attendanceId String
 
-  employee Employee @relation(fields: [employeeId], references: [id])
+  employee   Employee   @relation(fields: [employeeId], references: [id])
+  company    Company    @relation(fields: [companyId], references: [id])
+  attendance Attendance @relation(fields: [attendanceId], references: [id])
 
-  @@unique([date, employeeId, companyId])
-  @@map("attendances")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("daily_activity_log")
 }
 
 model TermLegal {
@@ -911,39 +954,46 @@ model LeaveApprovalLog {
 }
 
 model Task {
-  id          String          @id @default(uuid())
-  title       String
-  description String?
-  isRecurring Boolean         @default(false) @map("is_recurring")
-  recurrence  RecurrenceType?
-  interval    Int?
-  startDate   DateTime        @map("start_date")
-  endDate     DateTime?       @map("end_date")
-  dueDate     DateTime?       @map("due_date")
-  status      TaskStatus      @default(DRAFT)
-  taskStatus  TaskStages      @default(PLANNED)
-  managerId   String          @map("manager_id")
-  companyId   String          @map("company_id")
-  tags        String[]
-  checklist   String[]
-  category    String[]
-  onceEvery   String?
-  endAfter    String?
-  timeType    String          @map("time_type")
-  metrics     String?
-  startTime   String?
-  finishTime  String?
-  priority    Priority        @default(LOW)
-  stageId     String?         @map("stage_id")
-  createdAt   DateTime        @default(now()) @map("created_at")
-  updatedAt   DateTime        @updatedAt @map("updated_at")
+  id           String          @id @default(uuid())
+  title        String
+  description  String?
+  isRecurring  Boolean         @default(false) @map("is_recurring")
+  recurrence   RecurrenceType?
+  interval     Int?
+  startDate    DateTime        @map("start_date")
+  endDate      DateTime?       @map("end_date")
+  dueDate      DateTime?       @map("due_date")
+  status       TaskStatus      @default(DRAFT)
+  taskStatus   TaskStages      @default(PLANNED)
+  managerId    String?         @map("manager_id")
+  companyId    String          @map("company_id")
+  tags         String[]
+  attachements String[]
+  checklist    Json?
+  category     String[]
+  onceEvery    String?
+  endAfter     String?
+  timeType     String?         @map("time_type")
+  metrics      String?
+  startTime    String?
+  finishTime   String?
+  priority     Priority        @default(LOW)
+  stageId      String?         @map("stage_id")
 
-  stage TaskStage? @relation(fields: [stageId], references: [id])
+  /// 🔥 NEW FIELD (self relation)
+  parentId String? @map("parent_id")
+  parent   Task?   @relation("TaskToSubTask", fields: [parentId], references: [id])
+  subTasks Task[]  @relation("TaskToSubTask")
 
-  manager      Employee       @relation(fields: [managerId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  stage        TaskStage?     @relation(fields: [stageId], references: [id])
+  manager      Employee?      @relation(fields: [managerId], references: [id])
   company      Company        @relation(fields: [companyId], references: [id])
   taskAssignee TaskAssignee[]
   taskStageLog TaskStageLog[]
+  TaskComment  TaskComment[]
 
   @@map("tasks")
 }
@@ -963,6 +1013,7 @@ model TaskStage {
   id        String @id @default(uuid())
   name      String
   companyId String
+  index     Int?
 
   company          Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
   Task             Task[]
@@ -986,6 +1037,27 @@ model TaskStageLog {
   employee  Employee   @relation(fields: [movedById], references: [id])
 
   @@map("task_stage_logs")
+}
+
+model TaskComment {
+  id       String  @id @default(uuid())
+  taskId   String
+  authorId String
+  content  String
+  parentId String? // for threaded replies
+
+  attachments String[] @default([]) // array of URLs
+
+  // Relations
+  task    Task          @relation(fields: [taskId], references: [id])
+  author  Employee      @relation(fields: [authorId], references: [id])
+  parent  TaskComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies TaskComment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("task_comments")
 }
 
 model Demo {
@@ -1061,13 +1133,35 @@ model RotaSchedule {
   userClaimShift Boolean    @default(false) @map("user_clain_shift")
   employees      Employee[]
   rota           Rota?      @relation(name: "rota_schedules", fields: [rotaId], references: [id])
+  isOpen         Boolean    @default(false)
+  maxmember      Int        @default(0)
 
-  createdAt               DateTime                  @default(now()) @map("created_at")
-  updatedAt               DateTime                  @updatedAt @map("updated_at")
-  employeeSchedule        EmployeeSchedule[]
-  employeeScheduleRequest EmployeeScheduleRequest[]
+  createdAt                     DateTime                  @default(now()) @map("created_at")
+  updatedAt                     DateTime                  @updatedAt @map("updated_at")
+  employeeSchedule              EmployeeSchedule[]
+  employeeScheduleRequest       EmployeeScheduleRequest[] @relation(name: "request_schedule")
+  attandance                    Attendance[]
+  rotaScheduleTimeOff           rotaScheduleTimeOff[]
+  targetEmployeeScheduleRequest EmployeeScheduleRequest[] @relation(name: "request_target_rota_schedule")
 
   @@map("rota_schedules")
+}
+
+model rotaScheduleTimeOff {
+  id             String   @id @default(uuid())
+  reason         String
+  dates          String[]
+  employeeId     String
+  rotaScheduleId String
+  status         Status   @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+  rotaSchedule RotaSchedule @relation(fields: [rotaScheduleId], references: [id])
+
+  @@map("rota_schedule_time_off")
 }
 
 model EmployeeSchedule {
@@ -1082,21 +1176,78 @@ model EmployeeSchedule {
   @@map("employee_schedules")
 }
 
-model EmployeeScheduleRequest {
-  id             String   @id @default(uuid())
-  employeeId     String   @map("user_id")
-  rotaScheduleId String   @map("rota_schedule_id")
-  startDate      DateTime @map("start_date") @db.Date
-  endDate        DateTime @map("end_date") @db.Date
-  startTime      String   @map("start_time")
-  endTime        String   @map("end_time")
-  reason         String?
-  status         Status   @default(PENDING)
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+// model EmployeeScheduleRequest {
+//   id             String   @id @default(uuid())
+//   employeeId     String   @map("user_id")
+//   rotaScheduleId String   @map("rota_schedule_id")
+//   startDate      DateTime @map("start_date") @db.Date
+//   endDate        DateTime @map("end_date") @db.Date
+//   startTime      String   @map("start_time")
+//   endTime        String   @map("end_time")
+//   reason         String?
+//   status         Status   @default(PENDING)
+//   createdAt      DateTime @default(now()) @map("created_at")
+//   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  employee     Employee     @relation(fields: [employeeId], references: [id])
-  rotaSchedule RotaSchedule @relation(fields: [rotaScheduleId], references: [id])
+//   employee     Employee     @relation(fields: [employeeId], references: [id])
+//   rotaSchedule RotaSchedule @relation(fields: [rotaScheduleId], references: [id])
+
+//   @@map("employee_schedule_requests")
+// }
+
+model EmployeeScheduleRequest {
+  id String @id @default(uuid())
+
+  employeeId String @map("user_id")
+
+  rotaScheduleId String @map("rota_schedule_id")
+
+  startDate DateTime @map("start_date") @db.Date
+
+  endDate DateTime @map("end_date") @db.Date
+
+  reason String?
+
+  status Status @default(PENDING)
+
+  type employeeScheduleRequestType?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  isOff Boolean @default(false)
+
+  // -------------------------------------------------------------------------
+  // SWAP-RELATED OPTIONAL FIELDS
+  // -------------------------------------------------------------------------
+
+  /// The rota schedule the employee wants to swap *to*.
+  /// This is left optional because:
+  /// - An employee might request a swap without selecting the target schedule yet.
+  /// - The system or manager might later assign the matching schedule.
+  targetTRotaScheduleId String? @map("target_rota_schedule_id")
+
+  /// The employee the requester wants to swap shifts with.
+  /// This is also optional because:
+  /// - The requester might not know who they want to swap with.
+  /// - The system or manager may auto-match another employee.
+  targetEmployeeId String? @map("target_employee_id")
+
+  // -------------------------------------------------------------------------
+  // RELATIONSHIPS
+  // -------------------------------------------------------------------------
+
+  /// Relation to the employee making the request.
+  employee Employee @relation(fields: [employeeId], references: [id], name: "request_employee")
+
+  /// Relation to the employee's current rota schedule.
+  rotaSchedule RotaSchedule @relation(fields: [rotaScheduleId], references: [id], name: "request_schedule")
+
+  /// Relation to the optional target rota schedule the employee wants to swap to.
+  targetRotaSchedule RotaSchedule? @relation(fields: [targetTRotaScheduleId], references: [id], name: "request_target_rota_schedule")
+
+  /// Relation to the optional employee they intend to swap with.
+  targetEmployee Employee? @relation(fields: [targetEmployeeId], references: [id], name: "request_target_employee")
 
   @@map("employee_schedule_requests")
 }
@@ -1115,18 +1266,18 @@ model RotaApprovalLog {
 }
 
 model Invitation {
-  id         String   @id @default(uuid())
-  email      String
-  inviteLink String   @map("invite_link")
-  companyId  String   @map("company_id")
-  userId     String?  @map("user_id")
-  memberId   String?
-  tempPassword String? @map("temp_password")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-  archived   Boolean  @default(false)
-  invitedBy  String?  @map("invited_by")
-  roleId     String   @map("role_id")
+  id           String   @id @default(uuid())
+  email        String
+  inviteLink   String   @map("invite_link")
+  companyId    String   @map("company_id")
+  userId       String?  @map("user_id")
+  memberId     String?
+  tempPassword String?  @map("temp_password")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  archived     Boolean  @default(false)
+  invitedBy    String?  @map("invited_by")
+  roleId       String   @map("role_id")
 
   role          Role    @relation(fields: [roleId], references: [id])
   company       Company @relation(fields: [companyId], references: [id])
@@ -1199,32 +1350,42 @@ model FormResponse {
 
 // Announcement-related models
 model Announcement {
-  id            String    @id @default(uuid())
-  companyId     String    @map("company_id")
-  type          String
-  title         String
-  description   String?
-  attachments   Json?     @map("attachments")
-  publishMode   String    @default("immediate") @map("publish_mode")
-  status        String    @default("draft")
-  deliverAt     DateTime? @map("deliver_at")
-  publishedAt   DateTime? @map("published_at")
-  isDraft       Boolean   @default(true) @map("is_draft")
-  deleted       Boolean   @default(false)
-  branchIds     Json?     @map("branch_ids")
-  departmentIds Json?     @map("department_ids")
-  employeeIds   Json?     @map("employee_ids")
-  createdById   String    @map("created_by_id")
-  updatedById   String?   @map("updated_by_id")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id                  String    @id @default(uuid())
+  companyId           String    @map("company_id")
+  type                String
+  title               String
+  description         String?
+  attachments         Json?     @map("attachments")
+  publishMode         String    @default("immediate") @map("publish_mode")
+  status              String    @default("draft")
+  deliverAt           DateTime? @map("deliver_at")
+  publishedAt         DateTime? @map("published_at")
+  isDraft             Boolean   @default(true) @map("is_draft")
+  deleted             Boolean   @default(false)
+  reactions           Json      @default("[]") @map("reactions")
+  branchIds           Json?     @map("branch_ids")
+  departmentIds       Json?     @map("department_ids")
+  employeeIds         Json?     @map("employee_ids")
+  createdByUserId     String    @map("created_by_user_id")
+  updatedByUserId     String?   @map("updated_by_user_id")
+  createdByEmployeeId String    @map("created_by_employee_id")
+  updatedByEmployeeId String?   @map("updated_by_employee_id")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
 
-  createdBy  User                   @relation("AnnouncementCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
-  updatedBy  User?                  @relation("AnnouncementUpdatedBy", fields: [updatedById], references: [id], onDelete: Cascade)
-  deliveries AnnouncementDelivery[]
+  createdByUser     User?                  @relation("AnnouncementCreatedByUser", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  updatedByUser     User?                  @relation("AnnouncementUpdatedByUser", fields: [updatedByUserId], references: [id], onDelete: Cascade)
+  createdByEmployee Employee?              @relation("AnnouncementCreatedBy", fields: [createdByEmployeeId], references: [id], onDelete: Cascade)
+  updatedByEmployee Employee?              @relation("AnnouncementUpdatedBy", fields: [updatedByEmployeeId], references: [id], onDelete: Cascade)
+  deliveries        AnnouncementDelivery[]
+  comments          AnnouncementComment[]
 
   @@index([companyId, status])
   @@index([companyId, isDraft])
+  @@index([createdByUserId])
+  @@index([createdByEmployeeId])
+  @@index([updatedByUserId])
+  @@index([updatedByEmployeeId])
   @@map("announcements")
 }
 
@@ -1232,6 +1393,7 @@ model AnnouncementDelivery {
   id             String    @id @default(uuid())
   announcementId String    @map("announcement_id")
   userId         String    @map("user_id")
+  employeeId     String    @map("employee_id")
   delivered      Boolean   @default(false)
   deliveredAt    DateTime? @map("delivered_at")
   channel        String?   @map("channel")
@@ -1240,120 +1402,159 @@ model AnnouncementDelivery {
 
   announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employee     Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
-  @@unique([announcementId, userId])
-  @@index([userId, delivered])
+  @@unique([announcementId, employeeId])
+  @@index([userId])
+  @@index([employeeId, delivered])
   @@map("announcement_deliveries")
 }
 
-// Chat-related models
-model Chat {
-  id        String   @id @default(uuid())
-  name      String?  @map("name")
-  group     Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  messages     Message[]
-  participants ChatParticipant[]
-
-  @@map("chats")
-}
-
-model Message {
+model AnnouncementComment {
   id              String   @id @default(uuid())
-  chatId          String   @map("chat_id")
-  senderId        String   @map("sender_id")
-  parentMessageId String?  @map("parent_message_id")
-  batchId         String?  @map("batch_id")
+  announcementId  String   @map("announcement_id")
+  userId          String   @map("user_id")
+  employeeId      String   @map("employee_id")
+  parentCommentId String?  @map("parent_comment_id")
   content         String
-  mediaType       String   @default("text") @map("media_type")
-  extra           Json? // For additional metadata like file URLs, thumbnails, etc.
+  mentions        String[] @default([])
+  reactions       Json     @default("[]") @map("reactions")
   deleted         Boolean  @default(false)
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
+  announcement  Announcement          @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employee      Employee              @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  parentComment AnnouncementComment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies       AnnouncementComment[] @relation("CommentReplies")
+
+  @@index([announcementId])
+  @@index([userId])
+  @@index([employeeId])
+  @@index([parentCommentId])
+  @@map("announcement_comments")
+}
+
+// Chat-related models
+model Chat {
+  id         String   @id @default(uuid())
+  companyId  String   @map("company_id")
+  userId     String?  @map("user_id") // Creators userId
+  employeeId String?  @map("employee_id") // Creators employeeId (for group chats)
+  name       String?  @map("name")
+  group      Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
   // Relations
-  chat            Chat              @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  sender          User              @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  parentMessage   Message?          @relation("MessageThreads", fields: [parentMessageId], references: [id], onDelete: Cascade)
-  threadMessages  Message[]         @relation("MessageThreads")
+  company       Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdByUser User?             @relation("ChatCreatedByUser", fields: [userId], references: [id], onDelete: SetNull)
+  createdBy     Employee?         @relation("ChatCreatedBy", fields: [employeeId], references: [id], onDelete: SetNull)
+  messages      Message[]
+  participants  ChatParticipant[]
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([employeeId])
+  @@map("chats")
+}
+
+model Message {
+  id               String   @id @default(uuid())
+  chatId           String   @map("chat_id")
+  senderUserId     String   @map("sender_user_id")
+  senderEmployeeId String   @map("sender_employee_id")
+  parentMessageId  String?  @map("parent_message_id")
+  batchId          String?  @map("batch_id")
+  content          String
+  mediaType        String   @default("text") @map("media_type")
+  extra            Json? // For additional metadata like file URLs, thumbnails, etc.
+  mentions         String[] @default([]) // Array of employee UUIDs mentioned in the message (parsed from @UUID in content)
+  reactions        Json     @default("[]") // Array of reaction objects: [{ emoji: "👍", employeeIds: ["uuid"], count: 1 }]
+  deleted          Boolean  @default(false)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  chat            Chat            @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  senderUser      User            @relation(fields: [senderUserId], references: [id], onDelete: Cascade)
+  sender          Employee        @relation(fields: [senderEmployeeId], references: [id], onDelete: Cascade)
+  parentMessage   Message?        @relation("MessageThreads", fields: [parentMessageId], references: [id], onDelete: Cascade)
+  threadMessages  Message[]       @relation("MessageThreads")
   messageStatuses MessageStatus[]
-  mentions        MessageMention[]
-  reactions       MessageReaction[]
 
   @@index([chatId])
-  @@index([senderId])
+  @@index([senderUserId])
+  @@index([senderEmployeeId])
   @@index([parentMessageId])
   @@index([batchId])
   @@map("messages")
 }
 
 model ChatParticipant {
-  chatId    String   @map("chat_id")
-  userId    String   @map("user_id")
-  starred   Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
+  chatId     String   @map("chat_id")
+  userId     String   @map("user_id")
+  employeeId String   @map("employee_id")
+  starred    Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
 
   // Relations
-  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chat     Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
-  @@id([chatId, userId])
+  @@id([chatId, employeeId])
   @@index([chatId])
   @@index([userId])
+  @@index([employeeId])
   @@map("chat_participants")
 }
 
 model MessageStatus {
-  messageId String   @map("message_id")
-  userId    String   @map("user_id")
-  delivered Boolean  @default(false)
-  seen      Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  messageId  String   @map("message_id")
+  userId     String   @map("user_id")
+  employeeId String   @map("employee_id")
+  delivered  Boolean  @default(false)
+  seen       Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   // Relations
-  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message  Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
-  @@id([messageId, userId])
+  @@id([messageId, employeeId])
   @@index([messageId])
   @@index([userId])
+  @@index([employeeId])
   @@map("message_statuses")
 }
 
-model MessageMention {
-  id              String   @id @default(uuid())
-  messageId       String   @map("message_id")
-  mentionedUserId String   @map("mentioned_user_id")
-  mentionedById   String   @map("mentioned_by_id")
-  createdAt       DateTime @default(now()) @map("created_at")
+model Notification {
+  id            String    @id @default(uuid())
+  companyId     String    @map("company_id")
+  userId        String    @map("user_id")
+  employeeId    String    @map("employee_id")
+  type          String
+  title         String
+  body          String?
+  referenceId   String?   @map("reference_id")
+  referenceType String?   @map("reference_type")
+  data          Json?
+  read          Boolean   @default(false)
+  readAt        DateTime? @map("read_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  // Relations
-  message       Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  mentionedUser User    @relation("MessageMentionMentionedUser", fields: [mentionedUserId], references: [id], onDelete: Cascade)
-  mentionedBy   User    @relation("MessageMentionAuthoredBy", fields: [mentionedById], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
-  @@unique([messageId, mentionedUserId])
-  @@map("message_mentions")
-}
-
-model MessageReaction {
-  id        String   @id @default(uuid())
-  messageId String   @map("message_id")
-  userId    String   @map("user_id")
-  reaction  String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([messageId, userId, reaction])
-  @@map("message_reactions")
+  @@index([employeeId, read, createdAt])
+  @@index([companyId, employeeId])
+  @@index([userId])
+  @@map("notifications")
 }
 
 model checklist {
@@ -1587,6 +1788,7 @@ enum BillingHistoryStatus {
   PAID
   FAILED
   PENDING
+  REFUNDED
 }
 
 enum UserStatus {
@@ -1626,4 +1828,9 @@ enum TaskStages {
   IN_PROGRESS
   IN_REVIEW
   COMPLETED
+}
+
+enum employeeScheduleRequestType {
+  PAID
+  UNPAID
 }

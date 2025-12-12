@@ -1,7 +1,8 @@
 import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { GoogleAuthDto } from './SignUp.dto';
 
-export class LoginDTO {
+export class LoginDTO extends GoogleAuthDto {
   @ApiProperty({
     description: 'Foreign key to the users model',
     type: 'string',
@@ -28,4 +29,14 @@ export class LoginDTO {
   @IsString()
   @IsOptional()
   type: 'SOCIAL' | 'NON_SOCIAL';
+
+  @ApiProperty({ example: 'John' })
+  @IsString()
+  @IsOptional()
+  firstName: string;
+
+  @ApiProperty({ example: 'Doe' })
+  @IsString()
+  @IsOptional()
+  lastName: string;
 }

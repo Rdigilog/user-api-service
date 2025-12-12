@@ -79,6 +79,53 @@ export class AuthController {
       if (payload.type == 'NON_SOCIAL') {
         result = await this.userService.createAccount(payload);
       }
+
+      if (payload.type == 'SOCIAL') {
+        const requestBody: LoginDTO = {
+          username: payload.businessEmail,
+          provider: payload.provider,
+          providerId: payload.providerId,
+          password: '',
+          type: 'SOCIAL',
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+        };
+
+        if (!requestBody.providerId || !requestBody.provider) {
+          return this.responseService.badRequest('Provider data missing');
+        }
+
+        const responseResult = await this.userService.socialAuth(requestBody);
+
+        if (responseResult) {
+          if (requestBody.providerId != responseResult.providerId) {
+            return this.responseService.badRequest('providerId mismatch');
+          }
+
+          const userInfo = await this.userService.findById(responseResult.id);
+
+          const jwtPayload = {
+            sub: responseResult.id,
+            email: responseResult.email,
+            phoneNumber: responseResult.phoneNumber,
+          };
+
+          const token = await this.jwtService.signAsync(jwtPayload);
+
+          return this.responseService.success({
+            access_token: token,
+            expires_in: this.configService.get<string>(
+              CONFIG_KEYS.JWT_EXPIRATION_TIME,
+            ),
+            user_info: userInfo,
+          });
+        } else {
+          return this.responseService.exception(
+            'Login failed pls try again later',
+          );
+        }
+      }
+
       if (result.error == 1)
         return this.responseService.badRequest(result.body);
       if (result.error == 2) return this.responseService.exception(result.body);
@@ -235,6 +282,37 @@ export class AuthController {
   async login(@Body() requestBody: LoginDTO) {
     try {
       let result: User | null;
+
+      if (requestBody.type == 'SOCIAL') {
+        if (!requestBody.providerId || !requestBody.provider) {
+          return this.responseService.badRequest('Provider data missing');
+        }
+        const responseResult = await this.userService.socialAuth(requestBody);
+        if (responseResult) {
+          if (requestBody.providerId != responseResult.providerId) {
+            return this.responseService.badRequest('providerId mismatch');
+          }
+          const userInfo = await this.userService.findById(responseResult.id);
+          const jwtPayload = {
+            sub: responseResult.id,
+            email: responseResult.email,
+            phoneNumber: responseResult.phoneNumber,
+          };
+          const token = await this.jwtService.signAsync(jwtPayload);
+          return this.responseService.success({
+            access_token: token,
+            expires_in: this.configService.get<string>(
+              CONFIG_KEYS.JWT_EXPIRATION_TIME,
+            ),
+            user_info: userInfo,
+          });
+        } else {
+          return this.responseService.exception(
+            'Login failed pls try again later',
+          );
+        }
+      }
+
       try {
         result = await this.userService.findByUsername(requestBody.username);
       } catch (e) {

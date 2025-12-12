@@ -5,11 +5,25 @@ import {
   IsEmail,
   IsNotEmpty,
   Matches,
-  MinLength,
-  MaxLength,
 } from 'class-validator';
 
-export class InitiateRegistrationDto {
+export class GoogleAuthDto {
+  @ApiProperty({ example: '123456789012345678901' })
+  @IsString()
+  @IsNotEmpty()
+  providerId: string;
+
+  @ApiProperty({
+    example: 'eyJhbGciOiJSUzI1NiIsImtpZCI6Ij...',
+    description: 'Optional Auth Provider, Google, Apple, ect.',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  provider?: string;
+}
+
+export class InitiateRegistrationDto extends GoogleAuthDto {
   @ApiProperty({ example: 'John' })
   @IsString()
   @IsNotEmpty()
@@ -27,7 +41,7 @@ export class InitiateRegistrationDto {
 
   @ApiProperty({ example: 'StrongPass123!' })
   @IsString()
-  // @MinLength(6)
+  @IsOptional()
   password: string;
 
   @ApiProperty({ example: 'Facebook, friend, ad, etc.' })
@@ -43,39 +57,6 @@ export class InitiateRegistrationDto {
   @IsString()
   @IsOptional()
   type?: 'SOCIAL' | 'NON_SOCIAL';
-}
-
-export class GoogleAuthDto {
-  @ApiProperty({ example: 'John Doe' })
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @ApiProperty({ example: 'johndoe@gmail.com' })
-  @IsEmail()
-  email: string;
-
-  @ApiProperty({ example: '123456789012345678901' })
-  @IsString()
-  @IsNotEmpty()
-  googleId: string;
-
-  @ApiProperty({
-    example: 'https://lh3.googleusercontent.com/a/...',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  avatar?: string;
-
-  @ApiProperty({
-    example: 'eyJhbGciOiJSUzI1NiIsImtpZCI6Ij...',
-    description: 'Optional Google ID token for server-side verification.',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  idToken?: string;
 }
 
 export class EmailDTO {
