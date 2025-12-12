@@ -10,7 +10,7 @@ import {
 export class GoogleAuthDto {
   @ApiProperty({ example: '123456789012345678901' })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   providerId: string;
 
   @ApiProperty({
