@@ -1,61 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from 'src/config/prisma.service';
-import { CreateJobRoleDto } from 'src/models/company/job-role.dto';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { ResponsesService } from 'src/utils/services/responses.service';
 
 @Injectable()
-export class JobRoleService extends PrismaService {
+export class JobRoleService {
+  private prisma: PrismaClient;
+
   constructor(private readonly responseService: ResponsesService) {
-    super();
+    this.prisma = new PrismaClient();
   }
 
-  // async list(
-  //   companyId: string,
-  //   page: number,
-  //   size: number,
-  //   search: string = '',
-  //   sortBy: string = 'updatedAt',
-  //   sortDirection: 'asc' | 'desc' = 'desc',
-  // ) {
-  //   try {
-  //     const { offset, limit } = this.responseService.pagination(page, size);
-  //     const filter: Prisma.jobRoleWhereInput = { companyId };
-  //     if (search) {
-  //       filter.OR = [];
-  //     }
-
-  //     const result = await this.jobRole.findMany({
-  //       where: filter,
-  //       include: {
-  //         company: true,
-  //       },
-  //       orderBy: {
-  //         [sortBy]: sortDirection,
-  //       },
-  //       skip: offset,
-  //       take: limit,
-  //     });
-
-  //     if (result.length) {
-  //       const totalItems = await this.jobRole.count({ where: filter });
-  //       const paginatedProduct = this.responseService.pagingData(
-  //         { result, totalItems },
-  //         page,
-  //         limit,
-  //       );
-  //       return { error: 0, body: paginatedProduct };
-  //     }
-  //     return { error: 1, body: 'No Record found' };
-  //   } catch (e) {
-  //     console.error(e);
-  //     return this.responseService.errorHandler(e);
-  //   }
-  // }
   async all(companyId: string) {
     try {
       const filter: Prisma.JobRoleWhereInput = { companyId };
-      const result = await this.jobRole.findMany({
+      const result = await this.prisma.jobRole.findMany({
         where: filter,
         select: {
           id: true,
@@ -71,7 +29,7 @@ export class JobRoleService extends PrismaService {
 
   // async create(payload: CreateJobRoleDto, companyId: string) {
   //   try {
-  //     const result = await this.jobRole.create({
+  //     const result = await this.prisma.jobRole.create({
   //       data: {
   //         ...payload,
   //         company: {
@@ -89,7 +47,7 @@ export class JobRoleService extends PrismaService {
 
   // async update(payload: Partial<CreateJobRoleDto>, id: string) {
   //   try {
-  //     const result = await this.jobRole.update({
+  //     const result = await this.prisma.jobRole.update({
   //       where: {
   //         id,
   //       },

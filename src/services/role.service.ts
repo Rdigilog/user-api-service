@@ -7,8 +7,10 @@ import { ResponsesService } from 'src/utils/services/responses.service';
 export class RoleService {
   constructor(
     private readonly responseService: ResponsesService,
-    private readonly prismaService: PrismaService,
+    private readonly prismaService: PrismaService, // instantiated via DI
   ) {}
+
+  // Simple list of roles
   async list() {
     try {
       const result = await this.prismaService.role.findMany({
@@ -21,9 +23,11 @@ export class RoleService {
       return { error: 0, body: result };
     } catch (e) {
       console.error(e);
-      return { error: 2, body: e.message };
+      return this.responseService.errorHandler(e);
     }
   }
+
+  // Paginated and sortable list of roles
   async all(
     page: number,
     size: number,
@@ -33,9 +37,13 @@ export class RoleService {
   ) {
     try {
       const { offset, limit } = this.responseService.pagination(page, size);
+
       const filter: Prisma.RoleWhereInput = {};
+
       if (search) {
-        filter.OR = [];
+        filter.OR = [
+          { name: { contains: search, mode: 'insensitive' } }, // example search
+        ];
       }
 
       const result = await this.prismaService.role.findMany({
@@ -51,17 +59,20 @@ export class RoleService {
         const totalItems = await this.prismaService.role.count({
           where: filter,
         });
-        const paginatedProduct = this.responseService.pagingData(
+
+        const paginatedData = this.responseService.pagingData(
           { result, totalItems },
           page,
           limit,
         );
-        return { error: 0, body: paginatedProduct };
+
+        return { error: 0, body: paginatedData };
       }
-      return { error: 1, body: 'No Employee(s) found' };
+
+      return { error: 1, body: 'No Role(s) found' };
     } catch (e) {
       console.error(e);
-      return { error: 2, body: e.message };
+      return this.responseService.errorHandler(e);
     }
   }
 }

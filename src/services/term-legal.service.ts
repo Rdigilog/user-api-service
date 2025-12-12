@@ -4,10 +4,12 @@ import { PrismaService } from 'src/config/prisma.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
 
 @Injectable()
-export class TermLegalService extends PrismaService {
-  constructor(private readonly responseService: ResponsesService) {
-    super();
-  }
+export class TermLegalService {
+  constructor(
+    private readonly prisma: PrismaService, // Inject Prisma
+    private readonly responseService: ResponsesService,
+  ) {}
+
   async list(
     page: number,
     size: number,
@@ -18,16 +20,22 @@ export class TermLegalService extends PrismaService {
   ) {
     try {
       const { offset, limit } = this.responseService.pagination(page, size);
+
       const filter: Prisma.TermLegalWhereInput = {};
+
       if (search) {
-        filter.OR = [];
+        filter.OR = [
+          // Optional search fields:
+          // { title: { contains: search, mode: 'insensitive' } },
+          // { content: { contains: search, mode: 'insensitive' } },
+        ];
       }
 
       if (type) {
         filter.type = type;
       }
 
-      const result = await this.termLegal.findMany({
+      const result = await this.prisma.termLegal.findMany({
         where: filter,
         orderBy: {
           [sortBy]: sortDirection,
@@ -37,25 +45,28 @@ export class TermLegalService extends PrismaService {
       });
 
       if (result.length) {
-        const totalItems = await this.termLegal.count({ where: filter });
-        const paginatedProduct = this.responseService.pagingData(
+        const totalItems = await this.prisma.termLegal.count({ where: filter });
+        const paginatedData = this.responseService.pagingData(
           { result, totalItems },
           page,
           limit,
         );
-        return { error: 0, body: paginatedProduct };
+        return { error: 0, body: paginatedData };
       }
+
       return { error: 1, body: [] };
     } catch (e) {
       console.error(e);
-      return { error: 2, body: e.message };
+      return this.responseService.errorHandler(e);
     }
   }
+
   async view(id: string) {
     try {
-      const result = await this.termLegal.findUnique({
+      const result = await this.prisma.termLegal.findUnique({
         where: { id },
       });
+
       return { error: 0, body: result };
     } catch (e) {
       return this.responseService.errorHandler(e);

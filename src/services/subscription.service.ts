@@ -6,17 +6,17 @@ import { UpdateSubscriptionUsersDto } from 'src/models/plans/plan.dto';
 import { ResponsesService } from 'src/utils/services/responses.service';
 
 @Injectable()
-export class SubscriptionService extends PrismaService {
+export class SubscriptionService {
   constructor(
-    private readonly userConfigService: ConfigService,
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService, // ← Injected
     private readonly responseService: ResponsesService,
-  ) {
-    super(userConfigService);
-  }
+  ) {}
 
   async companySubscription(companyId: string) {
     try {
-      const result = await this.subscription.findFirst({
+      const result = await this.prisma.subscription.findFirst({
+        // ← updated
         where: { companyId },
         include: {
           plan: true,
@@ -39,12 +39,17 @@ export class SubscriptionService extends PrismaService {
   ) {
     try {
       const { offset, limit } = this.responseService.pagination(page, size);
+
       const filter: Prisma.BillingHistoryWhereInput = { companyId };
+
       if (search) {
-        filter.OR = [];
+        filter.OR = [
+          // add search fields here if needed
+          // { reference: { contains: search, mode: 'insensitive' } },
+        ];
       }
 
-      const result = await this.billingHistory.findMany({
+      const result = await this.prisma.billingHistory.findMany({
         where: filter,
         include: {
           plan: true,
@@ -56,22 +61,26 @@ export class SubscriptionService extends PrismaService {
         take: limit,
       });
 
-      const totalItems = await this.billingHistory.count({ where: filter });
-      const paginatedProduct = this.responseService.pagingData(
+      const totalItems = await this.prisma.billingHistory.count({
+        where: filter,
+      });
+
+      const paginatedData = this.responseService.pagingData(
         { result, totalItems },
         page,
         limit,
       );
-      return { error: 0, body: paginatedProduct };
+
+      return { error: 0, body: paginatedData };
     } catch (e) {
       console.error(e);
-      return { error: 2, body: e.message };
+      return this.responseService.errorHandler(e);
     }
   }
 
   async addUsers(companyId: string, payload: UpdateSubscriptionUsersDto) {
     try {
-      const result = await this.subscription.update({
+      const result = await this.prisma.subscription.update({
         where: { companyId },
         data: payload,
       });
@@ -83,11 +92,12 @@ export class SubscriptionService extends PrismaService {
 
   async cancelSubscription(companyId: string) {
     try {
-      const result = await this.subscription.update({
+      await this.prisma.subscription.update({
         where: { companyId },
         data: { status: 'CANCELLED' },
       });
-      return { error: 0, body: 'Subscription cancelled sccessfully' };
+
+      return { error: 0, body: 'Subscription cancelled successfully' };
     } catch (e) {
       return this.responseService.errorHandler(e);
     }

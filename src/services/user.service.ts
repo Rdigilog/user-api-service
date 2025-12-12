@@ -322,6 +322,7 @@ export class UserService {
       });
       return result;
     } catch (e) {
+      Logger.log(e);
       return null;
       // return this.responseService.errorHandler(e);
     }

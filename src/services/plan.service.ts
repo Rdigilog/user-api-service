@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from 'src/config/prisma.service';
-import { PlanDto } from 'src/models/plans/plan.dto';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { ResponsesService } from 'src/utils/services/responses.service';
 
 @Injectable()
-export class PlanService extends PrismaService {
+export class PlanService {
+  private prisma: PrismaClient;
+
   constructor(private readonly responseService: ResponsesService) {
-    super();
+    this.prisma = new PrismaClient();
   }
+
   async all(
     page: number,
     size: number,
@@ -23,7 +24,7 @@ export class PlanService extends PrismaService {
         filter.OR = [];
       }
 
-      const result = await this.plan.findMany({
+      const result = await this.prisma.plan.findMany({
         where: filter,
         include: {
           features: true,
@@ -35,25 +36,23 @@ export class PlanService extends PrismaService {
         take: limit,
       });
 
-      // if (result.length) {
-      const totalItems = await this.plan.count({ where: filter });
+      const totalItems = await this.prisma.plan.count({ where: filter });
       const paginatedPlan = this.responseService.pagingData(
         { result, totalItems },
         page,
         limit,
       );
+
       return { error: 0, body: paginatedPlan };
-      // }
-      // return { error: 1, body: 'No Order found' };
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      return { error: 2, body: e.message };
+      return this.responseService.errorHandler(e);
     }
   }
 
   async list() {
     try {
-      const plans = await this.plan.findMany({
+      const plans = await this.prisma.plan.findMany({
         where: { active: true },
         select: {
           id: true,
