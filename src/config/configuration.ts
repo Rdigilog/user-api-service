@@ -1,4 +1,5 @@
-import { registerAs } from '@nestjs/config';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+// import { registerAs } from '@nestjs/config';
 import { AwsSecretsService } from './aws-secrets.service';
 
 export interface Configuration {
