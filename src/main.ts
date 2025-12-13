@@ -5,9 +5,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { CONFIG_KEYS } from './config/config.keys';
 import { getConfigValues } from './config/configuration';
-import { join } from 'path';
-import { Response } from 'express';
-import { writeFileSync } from 'fs';
+// import { join } from 'path';
+// import { Response } from 'express';
+// import { writeFileSync } from 'fs';
 
 async function bootstrap() {
   const response = await getConfigValues();
@@ -49,14 +49,14 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  writeFileSync(
-    join(process.cwd(), 'swagger.json'),
-    JSON.stringify(document, null, 2),
-  );
-  const swaggerFile = join(process.cwd(), 'swagger.json');
-  app.getHttpAdapter().get('/user/swagger-json', (req, res: Response) => {
-    res.sendFile(swaggerFile);
-  });
+  // writeFileSync(
+  //   join(process.cwd(), 'swagger.json'),
+  //   JSON.stringify(document, null, 2),
+  // );
+  // const swaggerFile = join(process.cwd(), 'swagger.json');
+  // app.getHttpAdapter().get('/user/swagger-json', (req, res: Response) => {
+  //   res.sendFile(swaggerFile);
+  // });
   SwaggerModule.setup('user/api/docs', app, document);
   await app.listen(configService.get<number>(CONFIG_KEYS.PORT) ?? 3001);
 }
