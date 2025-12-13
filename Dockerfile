@@ -59,7 +59,7 @@ COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
-# COPY --from=builder --chown=nestjs:nodejs /app/swagger.json ./swagger.json
+COPY --from=builder --chown=nestjs:nodejs /app/swagger.json ./swagger.json
 
 # Set production environment with resource optimization
 ENV NODE_ENV=production \
