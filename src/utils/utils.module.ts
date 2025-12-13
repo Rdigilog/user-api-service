@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UtilsService } from './services/utils.service';
@@ -8,6 +9,7 @@ import { ResponsesService } from './services/responses.service';
 import Redis from 'ioredis';
 import { FileUploadService } from './services/file-upload.service';
 import { fileUploadProviderFactory } from './services/factory.provider';
+import { firebaseAdminProvider } from './providers/firebase.auth.provider';
 
 @Global()
 @Module({
@@ -36,6 +38,7 @@ import { fileUploadProviderFactory } from './services/factory.provider';
         return new Redis(configService.get<string>('REDIS_URL') || '');
       },
     },
+    firebaseAdminProvider,
   ],
   exports: [
     UtilsService,
@@ -45,6 +48,7 @@ import { fileUploadProviderFactory } from './services/factory.provider';
     ResponsesService,
     FileUploadService,
     'REDIS_CLIENT',
+    'FIREBASE_ADMIN',
   ],
 })
 export class UtilsModule {}

@@ -13,6 +13,7 @@ import {
   Param,
   ConsoleLogger,
   Logger,
+  Inject,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -32,6 +33,7 @@ import {
   CompanyDetailsDTO,
   UsernameDTO,
   resetPasswordDTO,
+  SocialLoginRequest,
 } from 'src/models/onboarding/SignUp.dto';
 import { UserService } from 'src/services/user.service';
 import { OtpService } from 'src/utils/services/otp.service';
@@ -43,11 +45,16 @@ import { ApiResponseDto } from 'src/models/responses/generic.dto';
 import { AuthResponseDto, TokenDataDto } from 'src/models/responses/Login.dto';
 import { AuthUser } from 'src/decorators/logged-in-user-decorator';
 import type { LoggedInUser } from 'src/models/types/user.types';
+import * as admin from 'firebase-admin';
+import { FirebaseAuthError } from 'node_modules/firebase-admin/lib/utils/error';
+// import { FirebaseAuthError } from 'firebase-admin/lib/utils/error'
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
+    @Inject('FIREBASE_ADMIN')
+    private readonly firebaseAdmin: typeof admin,
     private readonly userService: UserService,
     private readonly responseService: ResponsesService,
     private readonly jwtService: JwtService,
@@ -76,32 +83,18 @@ export class AuthController {
         error: 1,
         body: 'This signup option not functional yet',
       };
-      if (payload.type == 'NON_SOCIAL') {
-        result = await this.userService.createAccount(payload);
-      }
 
       if (payload.type == 'SOCIAL') {
-        const requestBody: LoginDTO = {
-          username: payload.businessEmail,
-          provider: payload.provider,
-          providerId: payload.providerId,
-          password: '',
-          type: 'SOCIAL',
-          firstName: payload.firstName,
-          lastName: payload.lastName,
-        };
+        if (!payload.idToken)
+          return this.responseService.badRequest(
+            'No token provided for social logi',
+          );
 
-        if (!requestBody.providerId || !requestBody.provider) {
-          return this.responseService.badRequest('Provider data missing');
-        }
+        const result = await this.validateToken(payload.idToken);
 
-        const responseResult = await this.userService.socialAuth(requestBody);
+        const responseResult = await this.userService.socialAuth(result);
 
         if (responseResult) {
-          if (requestBody.providerId != responseResult.providerId) {
-            return this.responseService.badRequest('providerId mismatch');
-          }
-
           const userInfo = await this.userService.findById(responseResult.id);
 
           const jwtPayload = {
@@ -124,6 +117,10 @@ export class AuthController {
             'Login failed pls try again later',
           );
         }
+      }
+
+      if (payload.type == 'NON_SOCIAL') {
+        result = await this.userService.createAccount(payload);
       }
 
       if (result.error == 1)
@@ -284,21 +281,26 @@ export class AuthController {
       let result: User | null;
 
       if (requestBody.type == 'SOCIAL') {
-        if (!requestBody.providerId || !requestBody.provider) {
-          return this.responseService.badRequest('Provider data missing');
-        }
-        const responseResult = await this.userService.socialAuth(requestBody);
+        if (!requestBody.idToken)
+          return this.responseService.badRequest(
+            'No token provided for social logi',
+          );
+
+        const result = await this.validateToken(requestBody.idToken);
+
+        const responseResult = await this.userService.socialAuth(result);
+
         if (responseResult) {
-          if (requestBody.providerId != responseResult.providerId) {
-            return this.responseService.badRequest('providerId mismatch');
-          }
           const userInfo = await this.userService.findById(responseResult.id);
+
           const jwtPayload = {
             sub: responseResult.id,
             email: responseResult.email,
             phoneNumber: responseResult.phoneNumber,
           };
+
           const token = await this.jwtService.signAsync(jwtPayload);
+
           return this.responseService.success({
             access_token: token,
             expires_in: this.configService.get<string>(
@@ -322,40 +324,34 @@ export class AuthController {
         return this.responseService.unauthorized('No Records found');
       }
 
-      if (!result.active) {
-        return this.processOtp(requestBody.username, result);
+      if (!result.active || !requestBody.password) {
+        return this.processOtp(requestBody.username as string, result);
       }
 
-      if (requestBody.password) {
-        const isMatch = await this.utilService.comparePassword(
-          requestBody.password,
-          result.password,
-        );
-        if (isMatch) {
-          const userInfo = await this.userService.findById(result.id);
-          if (userInfo?.userRole.some((r) => r.role.name == 'SUPER_ADMIN')) {
-            return this.processOtp(requestBody.username, result);
-          }
-          const payload = {
-            sub: result.id,
-            username: result.email,
-          };
-          const token = await this.jwtService.signAsync(payload);
-          return this.responseService.success({
-            access_token: token,
-            expiresIn: this.configService.get<string>(
-              CONFIG_KEYS.JWT_EXPIRATION_TIME,
-            ),
-            user_info: userInfo,
-          });
-        } else {
-          return this.responseService.unauthorized('Invalid username/Password');
+      const isMatch = await this.utilService.comparePassword(
+        requestBody.password,
+        result.password,
+      );
+      if (isMatch) {
+        const userInfo = await this.userService.findById(result.id);
+        if (userInfo?.userRole.some((r) => r.role.name == 'SUPER_ADMIN')) {
+          return this.processOtp(requestBody.username as string, result);
         }
+        const payload = {
+          sub: result.id,
+          username: result.email,
+        };
+        const token = await this.jwtService.signAsync(payload);
+        return this.responseService.success({
+          access_token: token,
+          expiresIn: this.configService.get<string>(
+            CONFIG_KEYS.JWT_EXPIRATION_TIME,
+          ),
+          user_info: userInfo,
+        });
+      } else {
+        return this.responseService.unauthorized('Invalid username/Password');
       }
-      return this.processOtp(requestBody.username, result);
-      // return this.responseService.success(
-      //   `OTP sent to ${requestBody.username}`,
-      // );
     } catch (e) {
       console.log(e);
       return this.responseService.exception(e.message);
@@ -550,5 +546,25 @@ export class AuthController {
     return this.responseService.badRequest(
       'Otp recipient needs to be either phone or email',
     );
+  }
+
+  async validateToken(idToken: string) {
+    try {
+      const result = await this.firebaseAdmin.auth().verifyIdToken(idToken);
+      const names = this.utilService.splitFullName(result.name);
+      const requestBody: SocialLoginRequest = {
+        provider: result.firebase.sign_in_provider,
+        email: result.email || '',
+        providerId: result.uid,
+        firstName: names.firstName,
+        lastName: names.lastName,
+      };
+      return requestBody;
+    } catch (error) {
+      if (error instanceof FirebaseAuthError) {
+        console.error(error.code, error.message);
+      }
+      throw error;
+    }
   }
 }

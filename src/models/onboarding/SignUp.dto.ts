@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsOptional,
@@ -5,58 +6,52 @@ import {
   IsEmail,
   IsNotEmpty,
   Matches,
+  ValidateIf,
 } from 'class-validator';
 
 export class GoogleAuthDto {
-  @ApiProperty({ example: '123456789012345678901' })
+  @ApiProperty({ example: 'firebase-id-token' })
   @IsString()
-  @IsOptional()
-  providerId: string;
-
-  @ApiProperty({
-    example: 'eyJhbGciOiJSUzI1NiIsImtpZCI6Ij...',
-    description: 'Optional Auth Provider, Google, Apple, ect.',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  provider?: string;
+  @IsNotEmpty()
+  @ValidateIf((o) => o.type === 'SOCIAL')
+  idToken?: string;
 }
 
 export class InitiateRegistrationDto extends GoogleAuthDto {
-  @ApiProperty({ example: 'John' })
+  @ApiProperty({ example: 'SOCIAL | NON_SOCIAL' })
   @IsString()
   @IsNotEmpty()
-  firstName: string;
+  type: 'SOCIAL' | 'NON_SOCIAL';
+
+  @ApiProperty({ example: 'John' })
+  @IsString()
+  @ValidateIf((o) => o.type === 'NON_SOCIAL')
+  @IsNotEmpty()
+  firstName?: string;
 
   @ApiProperty({ example: 'Doe' })
   @IsString()
+  @ValidateIf((o) => o.type === 'NON_SOCIAL')
   @IsNotEmpty()
-  lastName: string;
+  lastName?: string;
 
-  @ApiProperty({ example: 'jondoe@exmple.com' })
-  @IsString()
+  @ApiProperty({ example: 'johndoe@example.com' })
+  @IsEmail()
+  @ValidateIf((o) => o.type === 'NON_SOCIAL')
   @IsNotEmpty()
-  businessEmail: string;
+  businessEmail?: string;
 
   @ApiProperty({ example: 'StrongPass123!' })
   @IsString()
-  @IsOptional()
-  password: string;
-
-  @ApiProperty({ example: 'Facebook, friend, ad, etc.' })
-  @IsString()
+  @ValidateIf((o) => o.type === 'NON_SOCIAL')
   @IsNotEmpty()
-  heardAboutUs: string;
+  password?: string;
 
-  @ApiProperty({
-    description: 'lOGIN TYPE FIELD',
-    type: 'string',
-    example: 'SOCIAL', // Adjust the example according to your expected BigInt format
-  })
+  @ApiProperty({ example: 'Facebook, friend, ad' })
   @IsString()
-  @IsOptional()
-  type?: 'SOCIAL' | 'NON_SOCIAL';
+  @ValidateIf((o) => o.type === 'NON_SOCIAL')
+  @IsNotEmpty()
+  heardAboutUs?: string;
 }
 
 export class EmailDTO {
@@ -127,6 +122,7 @@ export class UserOtpVerification {
   @IsNotEmpty()
   token: string;
 }
+
 export class CompanyDetailsDTO {
   @ApiPropertyOptional({ example: 'Enter Phone Number' })
   @IsString()
@@ -221,4 +217,12 @@ export class InviteUserDTO extends EmailDTO {
   @IsOptional()
   @IsString()
   branchId: string;
+}
+
+export interface SocialLoginRequest {
+  provider: string;
+  email: string;
+  providerId: string;
+  firstName: string;
+  lastName: string;
 }

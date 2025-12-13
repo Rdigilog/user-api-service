@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { IsString, IsNotEmpty, ValidateIf } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { GoogleAuthDto } from './SignUp.dto';
 
@@ -6,37 +7,29 @@ export class LoginDTO extends GoogleAuthDto {
   @ApiProperty({
     description: 'Foreign key to the users model',
     type: 'string',
-    example: '123456789012345678', // Adjust the example according to your expected BigInt format
+    example: '123456789012345678', // string representation of BigInt
   })
   @IsString()
-  @IsNotEmpty()
-  username: string;
+  @ValidateIf((o) => o.type === 'NON_SOCIAL')
+  @IsNotEmpty({ message: 'username is required for NON_SOCIAL login' })
+  username?: string;
 
   @ApiProperty({
     description: 'pass phrase to the users model',
     type: 'string',
-    example: '123456789012345678', // Adjust the example according to your expected BigInt format
+    example: 'StrongPass123!',
   })
   @IsString()
-  @IsOptional()
-  password: string;
+  @ValidateIf((o) => o.type === 'NON_SOCIAL')
+  @IsNotEmpty({ message: 'password is required for NON_SOCIAL login' })
+  password?: string;
 
   @ApiProperty({
-    description: 'lOGIN TYPE FIELD',
+    description: 'LOGIN TYPE FIELD',
     type: 'string',
-    example: 'SOCIAL', // Adjust the example according to your expected BigInt format
+    example: 'SOCIAL',
   })
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   type: 'SOCIAL' | 'NON_SOCIAL';
-
-  @ApiProperty({ example: 'John' })
-  @IsString()
-  @IsOptional()
-  firstName: string;
-
-  @ApiProperty({ example: 'Doe' })
-  @IsString()
-  @IsOptional()
-  lastName: string;
 }

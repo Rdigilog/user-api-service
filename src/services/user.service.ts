@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { JobRole, Prisma } from '@prisma/client';
 
 import { Queue } from 'bullmq';
@@ -23,6 +23,7 @@ import {
   PhoneNumberDTO,
   CompanyDetailsDTO,
   InviteUserDTO,
+  SocialLoginRequest,
 } from 'src/models/onboarding/SignUp.dto';
 import { OtpService } from 'src/utils/services/otp.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
@@ -30,18 +31,20 @@ import { UtilsService } from 'src/utils/services/utils.service';
 import { ConfigService } from '@nestjs/config';
 import { CONFIG_KEYS } from '../config/config.keys';
 import { InjectFileRemovalQueue } from 'src/queue/src/decorators/queue.decorator';
-import { LoginDTO } from 'src/models/onboarding/Login.dto';
+// import { LoginDTO } from 'src/models/onboarding/Login.dto';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class UserService {
   constructor(
+    @Inject('FIREBASE_ADMIN')
+    private readonly firebaseAdmin: typeof admin,
     @InjectMailQueue() private mailQueue: Queue,
     @InjectSMSQueue() private smsQueue: Queue,
     @InjectFileRemovalQueue() private fileRemovalQueue: Queue,
     private readonly utilsService: UtilsService,
     private readonly otpService: OtpService,
     private readonly responseService: ResponsesService,
-    // private readonly fileUploadService: FileUploadService,
     private readonly userConfigService: ConfigService,
     private readonly prisma: PrismaService,
   ) {
@@ -199,12 +202,12 @@ export class UserService {
           return this.sendOtp(user.email as string);
         }
         const password = await this.utilsService.hashPassword(
-          payload.password,
+          payload.password as string,
           10,
         );
         const company = await tx.company.create({
           data: {
-            email: payload.businessEmail,
+            email: payload.businessEmail as string,
             heardAboutUs: payload.heardAboutUs,
           },
         });
@@ -259,23 +262,23 @@ export class UserService {
     }
   }
 
-  async socialAuth(payload: LoginDTO) {
+  async socialAuth(payload: SocialLoginRequest) {
     try {
       const result = await this.prisma.$transaction(async (tx) => {
         const company = await tx.company.upsert({
-          where: { email: payload.username },
+          where: { email: payload.email },
           create: {
-            email: payload.username,
+            email: payload.email,
             // heardAboutUs: payload.heardAboutUs,
           },
           update: {},
         });
 
         const result = await tx.user.upsert({
-          where: { email: payload.username },
+          where: { email: payload.email },
           update: {},
           create: {
-            email: payload.username,
+            email: payload.email,
             active: true,
             verified: true,
             providerId: payload.providerId,
@@ -299,7 +302,7 @@ export class UserService {
               create: {
                 firstName: payload.firstName,
                 lastName: payload.lastName,
-                email: payload.username,
+                email: payload.email,
                 employee: {
                   create: {
                     companyId: company.id,

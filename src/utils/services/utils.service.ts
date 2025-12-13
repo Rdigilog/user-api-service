@@ -109,4 +109,14 @@ export class UtilsService {
 
     return normalized;
   }
+
+  splitFullName(fullName: string | undefined) {
+    if (!fullName) return { firstName: '', lastName: '' };
+
+    const names = fullName.trim().split(' ');
+    const firstName = names.shift() || '';
+    const lastName = names.join(' ') || '';
+
+    return { firstName, lastName };
+  }
 }
