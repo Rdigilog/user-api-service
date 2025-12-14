@@ -1,4 +1,4 @@
-#  Build and Push to ECR 
+name: Build and Deploy to Dev
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-
     permissions:
       id-token: write
       contents: read
@@ -32,27 +31,18 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, Tag, and Push image to Amazon ECR
-        run: |
-          docker build -t ${{ secrets.ECR_REPO }} .
-          docker tag ${{ secrets.ECR_REPO }}:latest ${{ secrets.ECR_REG }}/${{ secrets.ECR_REPO }}:$(git rev-list --count HEAD)
-          docker push ${{ secrets.ECR_REG }}/${{ secrets.ECR_REPO }}:$(git rev-list --count HEAD)
-          
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-
-      - name: Prune Old Images  
-        run: |
-          aws ecr describe-images --repository-name ${{ secrets.ECR_REPO }} --output json \
-          | jq -r '.imageDetails | sort_by(.imagePushedAt) | reverse | .[5:] |.[].imageTags[]' \
-          | grep -v latest \
-          | xargs -I {} aws ecr batch-delete-image --repository-name ${{ secrets.ECR_REPO }} --image-ids imageTag={}
+      - name: Build and Push (Dev Tag)
         env:
-          AWS_DEFAULT_REGION: eu-west-2
-
-
-       
-      - name: Clean up
+          ECR_REGISTRY: ${{ secrets.ECR_REG }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
+          IMAGE_TAG: dev-${{ github.run_number }}
         run: |
-          docker rmi ${{ secrets.ECR_REG }}/${{ secrets.ECR_REPO }}:$(git rev-list --count HEAD)
+          # Use the variable defined above
+          GIT_REV_COUNT=$(git rev-list --count HEAD)
+          FULL_TAG="dev-$GIT_REV_COUNT"
+          
+          docker build -t $ECR_REPOSITORY .
+          
+          # Tag with the dev- prefix
+          docker tag $ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:$FULL_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$FULL_TAG
