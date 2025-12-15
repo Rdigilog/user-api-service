@@ -1,0 +1,57 @@
+name: Promote Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_number:
+        description: 'The numeric version to promote (e.g. 105 for dev-105)'
+        required: true
+      target_env:
+        description: 'Target Environment'
+        required: true
+        type: choice
+        options:
+        - beta
+        - uat
+        - prod
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.AWS_ECR_ROLE_ARN }}
+
+      - name: Retag Image for Promotion
+        env:
+          ECR_REPO: ${{ secrets.ECR_REPO }}
+          VERSION: ${{ inputs.version_number }}
+          TARGET: ${{ inputs.target_env }}
+        run: |
+          # 1. Define source and destination tags
+          # We assume the source is always the 'dev' version, or you can chain them (dev->beta->uat)
+          # For simplicity, let's promote from 'dev' to Target.
+          SRC_TAG="dev-$VERSION"
+          NEW_TAG="$TARGET-$VERSION"
+
+          echo "Promoting $SRC_TAG to $NEW_TAG..."
+
+          # 2. Get the manifest of the source image
+          MANIFEST=$(aws ecr batch-get-image --repository-name $ECR_REPO --image-ids imageTag=$SRC_TAG --query 'images[].imageManifest' --output text)
+
+          if [ -z "$MANIFEST" ]; then
+            echo "Error: Image $SRC_TAG not found in ECR."
+            exit 1
+          fi
+
+          # 3. Put the same manifest back with the NEW tag (Retagging)
+          aws ecr put-image --repository-name $ECR_REPO --image-tag $NEW_TAG --image-manifest "$MANIFEST"
+          
+          echo "Success! $NEW_TAG is now in ECR. Flux $TARGET will pick it up shortly."
