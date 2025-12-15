@@ -21,7 +21,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthUser } from 'src/decorators/logged-in-user-decorator';
+import { AuthComapny, AuthUser } from 'src/decorators/logged-in-user-decorator';
 import { RouteName } from 'src/decorators/route-name.decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
 import {
@@ -31,7 +31,7 @@ import {
   ChangeStatus,
 } from 'src/models/onboarding/profile.dto';
 import { InviteUserDTO } from 'src/models/onboarding/SignUp.dto';
-import type { LoggedInUser } from 'src/models/types/user.types';
+import type { activeCompaany, LoggedInUser } from 'src/models/types/user.types';
 import { UserService } from 'src/services/user.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
 import { UtilsService } from 'src/utils/services/utils.service';
@@ -56,7 +56,8 @@ export class UserController {
   @Get('')
   async companyList(
     // @Headers('X-Company-id') companyId: string, // single header
-    @AuthUser() user: LoggedInUser,
+    // @AuthUser() user: LoggedInUser,
+    @AuthComapny() company: activeCompaany,
     @Query('page') page: number = 1,
     @Query('size') size: number = 50,
     @Query('search') search?: string,
@@ -71,10 +72,9 @@ export class UserController {
         search,
         sortBy,
         sortDirection,
-        user.userRole[0].company?.id as string,
+        company.id,
         role,
       );
-      console.log(user);
       if (result.error == 2) {
         return this.responseService.exception(result.body);
       }
@@ -87,7 +87,7 @@ export class UserController {
   @Get('/profile')
   @ApiOperation({ summary: 'Fetch profile of login user' })
   async userProfile(@AuthUser() user: LoggedInUser) {
-    console.log('login user', user);
+    // console.log('login user', user);
     try {
       const result = await this.service.view(user.id);
       if (result.error == 1)
@@ -186,15 +186,16 @@ export class UserController {
   @RouteName('settings.company.update')
   async updateEmployeeInfo(
     @Body() payload: EmployeeDto,
-    @AuthUser() user: LoggedInUser,
+    // @AuthUser() user: LoggedInUser,
     @Param('id') id: string,
+    @AuthComapny() company: activeCompaany,
   ) {
     try {
-      const { userRole } = user;
+      // const { userRole } = user;
       const result = await this.service.updateJobInformation(
         payload,
         id,
-        userRole[0].companyId as string,
+        company.id,
       );
 
       if (result.error === 2) {
@@ -290,13 +291,10 @@ export class UserController {
   async inviteUser(
     @Body() payload: InviteUserDTO,
     @AuthUser() user: LoggedInUser,
+    @AuthComapny() company: activeCompaany,
   ) {
     try {
-      const result = await this.service.invite(
-        payload,
-        user.userRole[0]?.companyId as string,
-        user.id,
-      );
+      const result = await this.service.invite(payload, company.id, user.id);
       if (result.error == 1)
         return this.responseService.badRequest(result.body);
       if (result.error == 2) return this.responseService.exception(result.body);
@@ -311,13 +309,11 @@ export class UserController {
   async reInviteUser(
     @Headers('X-Company-id') companyId: string, // single header
     @Param('inviteLink') inviteLink: string,
-    @AuthUser() user: LoggedInUser,
+    // @AuthUser() user: LoggedInUser,
+    @AuthComapny() company: activeCompaany,
   ) {
     try {
-      const result = await this.service.reinvite(
-        inviteLink,
-        user.userRole[0]?.companyId as string,
-      );
+      const result = await this.service.reinvite(inviteLink, company.id);
       if (result.error == 1)
         return this.responseService.badRequest(result.body);
       if (result.error == 2) return this.responseService.exception(result.body);
@@ -337,6 +333,7 @@ export class UserController {
   @ApiQuery({ name: 'role', required: false, type: String })
   async invites(
     @AuthUser() user: LoggedInUser,
+    @AuthComapny() company: activeCompaany,
     @Query('page') page: number = 1,
     @Query('size') size: number = 50,
     @Query('search') search?: string,
@@ -345,9 +342,9 @@ export class UserController {
     // @Query('role') role?: string,
   ) {
     try {
-      const companyId = user.userRole[0]?.companyId as string;
+      // const companyId = user.userRole[0]?.companyId as string;
       const result = await this.service.invites(
-        companyId,
+        company.id,
         page,
         size,
         search,

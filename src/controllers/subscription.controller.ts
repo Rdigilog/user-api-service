@@ -18,7 +18,7 @@ import {
   ApiOkResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { AuthUser } from 'src/decorators/logged-in-user-decorator';
+import { AuthComapny, AuthUser } from 'src/decorators/logged-in-user-decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { UpdateSubscriptionUsersDto } from 'src/models/plans/plan.dto';
 import {
@@ -26,7 +26,7 @@ import {
   PaginatedResponse,
 } from 'src/models/responses/generic.dto';
 import { InvoiceDto, SubscriptionDto } from 'src/models/responses/subscription';
-import type { LoggedInUser } from 'src/models/types/user.types';
+import type { activeCompaany, LoggedInUser } from 'src/models/types/user.types';
 import { SubscriptionService } from 'src/services/subscription.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
 
@@ -73,7 +73,8 @@ export class SubscriptionController {
   @ApiQuery({ name: 'sortBy', required: false, type: String })
   @Get('/billing-history')
   async list(
-    @AuthUser() user: LoggedInUser,
+    // @AuthUser() user: LoggedInUser,
+    @AuthComapny() company: activeCompaany,
     @Query('page') page: number = 1,
     @Query('size') size: number = 50,
     @Query('search') search?: string,
@@ -81,8 +82,11 @@ export class SubscriptionController {
     @Query('sortBy') sortBy?: string,
   ) {
     try {
+      if (!company) {
+        return this.responseService.unauthorized('No company selected');
+      }
       const result = await this.service.companyBillingHistory(
-        user.userRole[0].companyId as string,
+        company.id,
         page,
         size,
         search,
@@ -133,14 +137,15 @@ export class SubscriptionController {
       'This endpoint updates the total number of users assigned to a specific company. The value must be an integer greater than or equal to zero.',
   })
   async updateUserSubscription(
-    @AuthUser() user: LoggedInUser,
+    // @AuthUser() user: LoggedInUser,
+    @AuthComapny() company: activeCompaany,
     @Body() payload: UpdateSubscriptionUsersDto,
   ) {
     try {
-      const result = await this.service.addUsers(
-        user.userRole[0].companyId as string,
-        payload,
-      );
+      if (!company) {
+        return this.responseService.unauthorized('No company selected');
+      }
+      const result = await this.service.addUsers(company.id, payload);
       if (result.error == 2) {
         return this.responseService.exception(result.body);
       }
@@ -156,11 +161,15 @@ export class SubscriptionController {
     description:
       'This endpoint updates the total number of users assigned to a specific company. The value must be an integer greater than or equal to zero.',
   })
-  async cancelSubscription(@AuthUser() user: LoggedInUser) {
+  async cancelSubscription(
+    // @AuthUser() user: LoggedInUser,
+    @AuthComapny() company: activeCompaany,
+  ) {
     try {
-      const result = await this.service.cancelSubscription(
-        user.userRole[0].companyId as string,
-      );
+      if (!company) {
+        return this.responseService.unauthorized('No company selected');
+      }
+      const result = await this.service.cancelSubscription(company.id);
       if (result.error == 2) {
         return this.responseService.exception(result.body);
       }

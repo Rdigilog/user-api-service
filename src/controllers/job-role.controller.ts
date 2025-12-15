@@ -1,25 +1,27 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   Controller,
   UseGuards,
   Get,
-  Query,
-  Post,
-  Body,
-  Patch,
-  Put,
-  Param,
+  // Query,
+  // Post,
+  // Body,
+  // Patch,
+  // Put,
+  // Param,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
-  ApiQuery,
+  // ApiQuery,
   ApiOperation,
 } from '@nestjs/swagger';
-import { AuthUser } from 'src/decorators/logged-in-user-decorator';
+import { AuthUser, AuthComapny } from 'src/decorators/logged-in-user-decorator';
 import { RouteName } from 'src/decorators/route-name.decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
-import { CreateJobRoleDto } from 'src/models/company/job-role.dto';
-import type { LoggedInUser } from 'src/models/types/user.types';
+// import { CreateJobRoleDto } from 'src/models/company/job-role.dto';
+import type { activeCompaany, LoggedInUser } from 'src/models/types/user.types';
 import { JobRoleService } from 'src/services/job-role.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
 
@@ -36,11 +38,12 @@ export class JobRoleController {
   @RouteName('job-role.list')
   @ApiOperation({ summary: 'List all job roles with pagination and search' })
   @Get()
-  async list(@AuthUser() user: LoggedInUser) {
+  async list(
+    @AuthUser() user: LoggedInUser,
+    @AuthComapny() company: activeCompaany,
+  ) {
     try {
-      const result = await this.service.all(
-        user.userRole[0].companyId as string,
-      );
+      const result = await this.service.all(company.id);
       if (result.error == 2) {
         return this.responseService.exception(result.body);
       }

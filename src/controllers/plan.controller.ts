@@ -1,9 +1,10 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { Controller, Get, Query } from '@nestjs/common';
 import {
-  ApiBearerAuth,
-  ApiOperation,
+  // ApiBearerAuth,
+  // ApiOperation,
   ApiQuery,
-  ApiResponse,
+  // ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { RouteName } from 'src/decorators/route-name.decorator';

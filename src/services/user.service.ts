@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JobRole, Prisma } from '@prisma/client';
 
 import { Queue } from 'bullmq';
@@ -32,13 +32,13 @@ import { ConfigService } from '@nestjs/config';
 import { CONFIG_KEYS } from '../config/config.keys';
 import { InjectFileRemovalQueue } from 'src/queue/src/decorators/queue.decorator';
 // import { LoginDTO } from 'src/models/onboarding/Login.dto';
-import * as admin from 'firebase-admin';
+// import * as admin from 'firebase-admin';
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject('FIREBASE_ADMIN')
-    private readonly firebaseAdmin: typeof admin,
+    // @Inject('FIREBASE_ADMIN')
+    // private readonly firebaseAdmin: typeof admin,
     @InjectMailQueue() private mailQueue: Queue,
     @InjectSMSQueue() private smsQueue: Queue,
     @InjectFileRemovalQueue() private fileRemovalQueue: Queue,
@@ -1289,5 +1289,11 @@ export class UserService {
     } catch (e) {
       return this.responseService.errorHandler(e);
     }
+  }
+
+  async findComapnyById(companyId: string) {
+    return await this.prisma.company.findUnique({
+      where: { id: companyId },
+    });
   }
 }

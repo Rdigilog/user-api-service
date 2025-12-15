@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   CanActivate,
   ExecutionContext,
@@ -8,7 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { UserService } from 'src/services/user.service';
 import { ConfigService } from '@nestjs/config';
-import { CONFIG_KEYS } from '../config/config.keys';
+// import { CONFIG_KEYS } from '../config/config.keys';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -32,6 +35,15 @@ export class AuthGuard implements CanActivate {
       if (!result) {
         throw new UnauthorizedException();
       }
+
+      const companyId = this.extractCompanyIdFromHeader(request);
+      if (companyId) {
+        const company = await this.userService.findComapnyById(companyId);
+        if (!company) {
+          throw new UnauthorizedException();
+        }
+        request['company'] = company;
+      }
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request['user'] = result;
@@ -45,5 +57,13 @@ export class AuthGuard implements CanActivate {
   private extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
+  }
+
+  // eslint-disable-next-line prettier/prettier
+    private extractCompanyIdFromHeader(request: Request): string | undefined {
+    // eslint-disable-next-line prettier/prettier
+    return (
+      request.headers['x-company-id'] ||
+      request.headers['X-Company-Id']) as string | undefined;
   }
 }

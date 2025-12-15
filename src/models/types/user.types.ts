@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Company, Prisma } from '@prisma/client';
 
 export type LoggedInUser = Prisma.UserGetPayload<{
   include: {
@@ -12,3 +12,5 @@ export type LoggedInUser = Prisma.UserGetPayload<{
     };
   };
 }>;
+
+export type activeCompaany = Company;

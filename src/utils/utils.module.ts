@@ -9,7 +9,7 @@ import { ResponsesService } from './services/responses.service';
 import Redis from 'ioredis';
 import { FileUploadService } from './services/file-upload.service';
 import { fileUploadProviderFactory } from './services/factory.provider';
-import { firebaseAdminProvider } from './providers/firebase.auth.provider';
+// import { firebaseAdminProvider } from './providers/firebase.auth.provider';
 
 @Global()
 @Module({
@@ -38,7 +38,7 @@ import { firebaseAdminProvider } from './providers/firebase.auth.provider';
         return new Redis(configService.get<string>('REDIS_URL') || '');
       },
     },
-    firebaseAdminProvider,
+    // firebaseAdminProvider,
   ],
   exports: [
     UtilsService,
@@ -48,7 +48,7 @@ import { firebaseAdminProvider } from './providers/firebase.auth.provider';
     ResponsesService,
     FileUploadService,
     'REDIS_CLIENT',
-    'FIREBASE_ADMIN',
+    // 'FIREBASE_ADMIN',
   ],
 })
 export class UtilsModule {}
