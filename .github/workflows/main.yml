@@ -40,6 +40,11 @@ jobs:
           # Use the variable defined above
           GIT_REV_COUNT=$(git rev-list --count HEAD)
           FULL_TAG="dev-$GIT_REV_COUNT"
+
+          # This writes the tag to the GitHub Action Summary UI
+          echo "### 🐳 Docker Image Pushed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Image Tag:** \`$FULL_TAG\`" >> $GITHUB_STEP_SUMMARY
+          echo "📦 **Repository:** $ECR_REPOSITORY" >> $GITHUB_STEP_SUMMARY
           
           docker build -t $ECR_REPOSITORY .
           
