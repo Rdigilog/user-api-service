@@ -53,5 +53,10 @@ jobs:
 
           # 3. Put the same manifest back with the NEW tag (Retagging)
           aws ecr put-image --repository-name $ECR_REPO --image-tag $NEW_TAG --image-manifest "$MANIFEST"
+
+          echo "### 🚀 Image Promoted" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **New Tag:** \`$NEW_TAG\`" >> $GITHUB_STEP_SUMMARY
+          echo "🔙 **Source:** \`$SRC_TAG\`" >> $GITHUB_STEP_SUMMARY
+          echo "📦 **Repository:** $ECR_REPO" >> $GITHUB_STEP_SUMMARY
           
           echo "Success! $NEW_TAG is now in ECR. Flux $TARGET will pick it up shortly."
