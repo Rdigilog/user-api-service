@@ -331,6 +331,12 @@ export class AuthController {
         if (userInfo?.userRole.some((r) => r.role.name == 'SUPER_ADMIN')) {
           return this.processOtp(requestBody.username as string, result);
         }
+
+        if (result.mfaEnabled) {
+          return this.responseService.success({
+            token: result.mfaSecret,
+          });
+        }
         const payload = {
           sub: result.id,
           username: result.email,

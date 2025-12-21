@@ -56,6 +56,7 @@ export class UtilsService {
       return false;
     }
   }
+
   validateContact(identifier: string): 'email' | 'phone' | null {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\+?\d{7,15}$/; // Supports international and local numbers

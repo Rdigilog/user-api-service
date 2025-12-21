@@ -60,10 +60,9 @@ export class AuthGuard implements CanActivate {
   }
 
   // eslint-disable-next-line prettier/prettier
-    private extractCompanyIdFromHeader(request: Request): string | undefined {
+  private extractCompanyIdFromHeader(request: Request): string | undefined {
     // eslint-disable-next-line prettier/prettier
-    return (
-      request.headers['x-company-id'] ||
+    return (request.headers['x-company-id'] ||
       request.headers['X-Company-Id']) as string | undefined;
   }
 }

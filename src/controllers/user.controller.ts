@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
@@ -12,6 +14,7 @@ import {
   Post,
   Headers,
   Delete,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -32,7 +35,9 @@ import {
 } from 'src/models/onboarding/profile.dto';
 import { InviteUserDTO } from 'src/models/onboarding/SignUp.dto';
 import type { activeCompaany, LoggedInUser } from 'src/models/types/user.types';
+import { MFASetupCompleteDTO } from 'src/models/user/mfa.dto';
 import { UserService } from 'src/services/user.service';
+import { OtpService } from 'src/utils/services/otp.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
 import { UtilsService } from 'src/utils/services/utils.service';
 
@@ -370,6 +375,81 @@ export class UserController {
         return this.responseService.badRequest(result.body);
       if (result.error == 2) return this.responseService.exception(result.body);
       return this.responseService.success(result.body);
+    } catch (e) {
+      return this.responseService.exception(e.message);
+    }
+  }
+
+  @Post('/mfa')
+  async enableMFA(@AuthUser() loggedInUser: LoggedInUser) {
+    try {
+      const otpService = new OtpService();
+      const result = await otpService.generateSecret(
+        loggedInUser.email as string,
+      );
+
+      if (result == null)
+        return this.responseService.exception('something went wrong');
+
+      const qrcode = await otpService.generateQRCode(result.secret.otpauth_url);
+      return this.responseService.success({
+        secret: result.base32,
+        data: {
+          otpauth_url: result.otpauth_url,
+          qrCode: qrcode,
+          token: result.base32,
+        },
+      });
+    } catch (e) {
+      return this.responseService.exception(e.message);
+    }
+  }
+
+  @Put('/mfa')
+  async completeMFAsetup(
+    @AuthUser() loggedInUser: LoggedInUser,
+    @Body() payload: MFASetupCompleteDTO,
+  ) {
+    try {
+      const verify = await new OtpService().isTokenValid(
+        payload.secret,
+        payload.code,
+      );
+
+      if (!verify) {
+        return this.responseService.badRequest('Invalid OTP');
+      }
+
+      const result = await this.service.updateUser(
+        {
+          mfaEnabled: true,
+          mfaSecret: payload.secret,
+        },
+        loggedInUser.id,
+      );
+      if (result.error == 1)
+        return this.responseService.badRequest('No Record found');
+      if (result.error == 2) return this.responseService.exception(result.body);
+      return this.responseService.success('MFA enabled successfully');
+    } catch (e) {
+      return this.responseService.exception(e.message);
+    }
+  }
+
+  @Delete('/mfa')
+  async disableMFA(@AuthUser() loggedInUser: LoggedInUser) {
+    try {
+      const result = await this.service.updateUser(
+        {
+          mfaEnabled: false,
+          mfaSecret: '',
+        },
+        loggedInUser.id,
+      );
+      if (result.error == 1)
+        return this.responseService.badRequest('No Record found');
+      if (result.error == 2) return this.responseService.exception(result.body);
+      return this.responseService.success('MFA disabled successfully');
     } catch (e) {
       return this.responseService.exception(e.message);
     }

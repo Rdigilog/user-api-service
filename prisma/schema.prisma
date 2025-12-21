@@ -12,9 +12,11 @@ model User {
   id              String        @id @default(uuid())
   email           String?       @unique(map: "index_users_on_email")
   phoneNumber     String?       @unique(map: "index_users_on_phone_number") @map("phone_number")
-  providerId        String?       @map("provider_id")
-  provider        String?      
+  providerId      String?       @map("provider_id")
+  provider        String?
   type            String?
+  mfaEnabled      Boolean       @default(false) @map("mfa_enabled")
+  mfaSecret       String?       @map("mfa_secret")
   password        String?
   active          Boolean       @default(false)
   locked          Boolean       @default(false)
@@ -69,6 +71,7 @@ model Profile {
   status   UserStatus @default(OFFLINE)
   employee Employee?
   // branch   Branch[]
+  Ticket   Ticket[]
 
   @@map("profiles")
 }
@@ -606,7 +609,7 @@ model Role {
 
 model Permission {
   id                       String           @id @default(uuid())
-  name                     String @unique
+  name                     String           @unique
   description              String?
   createdAt                DateTime         @default(now()) @map("created_at")
   updatedAt                DateTime         @updatedAt @map("updated_at")
@@ -1567,6 +1570,65 @@ model checklist {
   @@map("checklists")
 }
 
+model Export {
+  id          String       @id @default(uuid())
+  employeeId  String       @map("employee_id")
+  type        String // 'users' | 'subscriptions' | 'companies'
+  format      String // 'csv' | 'excel'
+  status      ExportStatus @default(PENDING)
+  s3Key       String?      @map("s3_key")
+  expiresAt   DateTime     @map("expires_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  completedAt DateTime?    @map("completed_at")
+  error       String?
+  filters     Json? // Store search/sort/filter params
+
+  @@map("exports")
+}
+
+model Ticket {
+  id        String         @id @default(uuid())
+  reference String         @unique
+  subject   String
+  status    TicketStatus   @default(OPEN)
+  priority  TicketPriority @default(MEDIUM)
+  companyId String
+
+  createdById  String
+  assignedToId String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  closedAt  DateTime?
+
+  messages TicketMessage[]
+
+  assignedTo Profile? @relation(fields: [assignedToId], references: [userId])
+
+  @@index([status])
+  @@index([priority])
+  @@index([createdById])
+  @@index([assignedToId])
+  @@map("tickets")
+}
+
+model TicketMessage {
+  id         String            @id @default(uuid())
+  ticketId   String            @map("ticket_id")
+  senderId   String            @map("sender_id")
+  senderType MessageSenderType @map("sender_type")
+  message    String
+  isInternal Boolean           @default(false) @map("is_internal")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  attachments String[]
+
+  @@index([ticketId, createdAt])
+  @@map("ticket_messages")
+}
+
 /// Enum for field types
 enum FieldType {
   DROPDOWN
@@ -1833,4 +1895,32 @@ enum TaskStages {
 enum employeeScheduleRequestType {
   PAID
   UNPAID
+}
+
+enum ExportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
+enum TicketStatus {
+  OPEN
+  PENDING
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum MessageSenderType {
+  USER
+  AGENT
+  SYSTEM
 }
