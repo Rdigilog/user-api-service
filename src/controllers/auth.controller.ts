@@ -151,9 +151,7 @@ export class AuthController {
   @Post('/phone-number')
   async verifyPhoneNumber(@Body() payload: PhoneNumberDTO, @Request() req) {
     try {
-      const phoneNumber = this.utilService.normalizePhoneNumber(
-        payload.phoneNumber,
-      );
+      const phoneNumber = this.utilService.normalizeInput(payload.phoneNumber);
       try {
         await this.userService.findByUsername(phoneNumber);
         return this.responseService.badRequest(
@@ -375,16 +373,17 @@ export class AuthController {
   @Post('resend-otp')
   async resentOtp(@Body() requestBody: UsernameDTO) {
     try {
-      const result = await this.userService.findByUsername(
-        requestBody.username,
-      );
-      if (!result) {
+      const username = this.utilService.normalizeInput(requestBody.username);
+
+      try {
+        const result = await this.userService.findByUsername(username);
+        if (result.deleted) {
+          return this.responseService.unauthorized('No Records found');
+        }
+        return this.processOtp(username, result);
+      } catch (e) {
         return this.responseService.unauthorized('Invalid username/password');
       }
-      if (result.deleted) {
-        return this.responseService.unauthorized('No Records found');
-      }
-      return this.processOtp(requestBody.username, result);
     } catch (e) {
       console.log(e);
       return this.responseService.exception(e.message);

@@ -97,10 +97,23 @@ export class UtilsService {
     return out;
   }
 
+  normalizeInput(username: string) {
+    if (!username) return username;
+
+    const trimmed = username.trim();
+
+    // If it contains '@', treat it as email, return as is
+    if (trimmed.includes('@')) {
+      return trimmed.toLowerCase(); // optional: normalize email to lowercase
+    }
+
+    // Otherwise, treat as phone number and normalize
+    return this.normalizePhoneNumber(trimmed);
+  }
+
   normalizePhoneNumber(phone: string) {
     if (!phone) return phone;
 
-    // Trim whitespace
     let normalized = phone.trim();
 
     // Remove only one leading '+'
