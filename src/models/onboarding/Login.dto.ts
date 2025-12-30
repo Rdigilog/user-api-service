@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { IsString, IsNotEmpty, ValidateIf } from 'class-validator';
+import { IsString, IsNotEmpty, ValidateIf, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { GoogleAuthDto } from './SignUp.dto';
 
@@ -21,7 +21,7 @@ export class LoginDTO extends GoogleAuthDto {
   })
   @IsString()
   @ValidateIf((o) => o.type === 'NON_SOCIAL')
-  @IsNotEmpty({ message: 'password is required for NON_SOCIAL login' })
+  @IsOptional({ message: 'password is required for NON_SOCIAL login' })
   password?: string;
 
   @ApiProperty({

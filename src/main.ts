@@ -46,6 +46,15 @@ async function bootstrap() {
       },
       'access-token', // This name is used in the decorator below
     )
+    .addApiKey(
+      {
+        type: 'apiKey',
+        name: 'x-company-id',
+        in: 'header',
+        description: 'Company ID',
+      },
+      'x-company-id',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

@@ -191,46 +191,43 @@ export class AuthController {
   @Post('/verify-otp')
   async otp(@Body() requestBody: UserOtpVerification) {
     try {
-      requestBody.username = this.utilService.normalizePhoneNumber(
-        requestBody.username,
-      );
-      const result = await this.userService.findByUsername(
-        requestBody.username,
-      );
-      if (!result) {
-        return this.responseService.notFound('User not found');
-      }
+      const phoneNumber = this.utilService.normalizeInput(requestBody.username);
+      try {
+        const result = await this.userService.findByUsername(phoneNumber);
 
-      const isValid = await new OtpService().isTokenValid(
-        requestBody.token,
-        requestBody.code,
-      );
-      if (isValid) {
-        const payload = {
-          sub: result.id,
-          email: result.email,
-          phoneNumber: result.phoneNumber,
-        };
-        const update: any = {};
-        if (requestBody.username == result.phoneNumber) {
-          update.phoneVerified = true;
+        const isValid = await new OtpService().isTokenValid(
+          requestBody.token,
+          requestBody.code,
+        );
+        if (isValid) {
+          const payload = {
+            sub: result.id,
+            email: result.email,
+            phoneNumber: result.phoneNumber,
+          };
+          const update: any = {};
+          if (requestBody.username == result.phoneNumber) {
+            update.phoneVerified = true;
+          }
+          if (requestBody.username == result.email) {
+            update.verified = true;
+          }
+          update.active = true;
+          await this.userService.updateUser(update, result.id);
+          const userInfo = await this.userService.findById(result.id);
+          const token = await this.jwtService.signAsync(payload);
+          return this.responseService.success({
+            access_token: token,
+            expires_in: this.configService.get<string>(
+              CONFIG_KEYS.JWT_EXPIRATION_TIME,
+            ),
+            user_info: userInfo,
+          });
+        } else {
+          return this.responseService.unauthorized('Invalid OTP');
         }
-        if (requestBody.username == result.email) {
-          update.verified = true;
-        }
-        update.active = true;
-        await this.userService.updateUser(update, result.id);
-        const userInfo = await this.userService.findById(result.id);
-        const token = await this.jwtService.signAsync(payload);
-        return this.responseService.success({
-          access_token: token,
-          expires_in: this.configService.get<string>(
-            CONFIG_KEYS.JWT_EXPIRATION_TIME,
-          ),
-          user_info: userInfo,
-        });
-      } else {
-        return this.responseService.unauthorized('Invalid OTP');
+      } catch (e) {
+        return this.responseService.unauthorized('invalid username');
       }
     } catch (e) {
       console.log(e);
@@ -308,8 +305,13 @@ export class AuthController {
       }
 
       try {
-        result = await this.userService.findByUsername(requestBody.username);
+        const username = this.utilService.normalizeInput(
+          requestBody.username as string,
+        );
+        console.log(username);
+        result = await this.userService.findByUsername(username);
       } catch (e) {
+        console.log(e);
         return this.responseService.unauthorized('invalid username/password');
       }
       if (result.deleted) {
@@ -406,20 +408,26 @@ export class AuthController {
   })
   @Post('forgot-password')
   async forgotPassword(@Body() requestBody: UsernameDTO) {
+    const username = this.utilService.normalizeInput(requestBody.username);
+
     try {
-      const result = await this.userService.findByUsername(
-        requestBody.username,
-      );
-      if (!result) {
-        return this.responseService.unauthorized('Invalid username/password');
+      try {
+        const result = await this.userService.findByUsername(
+          requestBody.username,
+        );
+        if (!result) {
+          return this.responseService.unauthorized('Invalid username/password');
+        }
+        if (!result.active) {
+          return this.responseService.unauthorized('Account not activated yet');
+        }
+        if (result.deleted) {
+          return this.responseService.unauthorized('No Records found');
+        }
+        return this.processOtp(requestBody.username, result);
+      } catch {
+        return this.responseService.badRequest('invalid username');
       }
-      if (!result.active) {
-        return this.responseService.unauthorized('Account not activated yet');
-      }
-      if (result.deleted) {
-        return this.responseService.unauthorized('No Records found');
-      }
-      return this.processOtp(requestBody.username, result);
     } catch (e) {
       console.log(e);
       return this.responseService.exception(e.message);
@@ -443,28 +451,29 @@ export class AuthController {
   @Post('reset-password')
   async resetPassword(@Body() requestBody: resetPasswordDTO) {
     try {
-      const user = await this.userService.findByUsername(requestBody.email);
-      if (!user) {
-        return this.responseService.notFound('User not found');
-      }
+      try {
+        const user = await this.userService.findByUsername(requestBody.email);
+        const isTokenValid = new OtpService().isTokenValid(
+          requestBody.token,
+          requestBody.code,
+        );
 
-      const isTokenValid = new OtpService().isTokenValid(
-        requestBody.token,
-        requestBody.code,
-      );
-
-      if (!isTokenValid) {
-        return this.responseService.unauthorized('Invalid token or code');
+        if (!isTokenValid) {
+          return this.responseService.unauthorized('Invalid token or code');
+        }
+        requestBody.password =
+          (await new UtilsService().hashPassword(requestBody.password, 10)) ||
+          requestBody.password;
+        const userData = { password: requestBody.password, active: true };
+        const result = await this.userService.updateUser(userData, user.id);
+        if (result.error == 1)
+          return this.responseService.badRequest(result.body);
+        if (result.error == 2)
+          return this.responseService.exception(result.body);
+        return this.responseService.success('Password reset successfully');
+      } catch {
+        return this.responseService.unauthorized('invalid username');
       }
-      requestBody.password =
-        (await new UtilsService().hashPassword(requestBody.password, 10)) ||
-        requestBody.password;
-      const userData = { password: requestBody.password, active: true };
-      const result = await this.userService.updateUser(userData, user.id);
-      if (result.error == 1)
-        return this.responseService.badRequest(result.body);
-      if (result.error == 2) return this.responseService.exception(result.body);
-      return this.responseService.success('Password reset successfully');
     } catch (e) {
       // console.log(e);
       return this.responseService.exception(e.message);
