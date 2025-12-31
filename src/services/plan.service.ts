@@ -19,7 +19,7 @@ export class PlanService {
   ) {
     try {
       const { offset, limit } = this.responseService.pagination(page, size);
-      const filter: Prisma.PlanWhereInput = {};
+      const filter: Prisma.PlanWhereInput = {active:true};
       if (search) {
         filter.OR = [];
       }
