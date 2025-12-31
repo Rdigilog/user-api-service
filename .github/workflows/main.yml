@@ -51,3 +51,4 @@ jobs:
           # Tag with the dev- prefix
           docker tag $ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:$FULL_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$FULL_TAG
+
