@@ -193,38 +193,41 @@ export class AuthController {
     try {
       const phoneNumber = this.utilService.normalizeInput(requestBody.username);
       try {
-        const result = await this.userService.findByUsername(phoneNumber);
-
-        const isValid = await new OtpService().isTokenValid(
-          requestBody.token,
-          requestBody.code,
-        );
-        if (isValid) {
-          const payload = {
-            sub: result.id,
-            email: result.email,
-            phoneNumber: result.phoneNumber,
-          };
-          const update: any = {};
-          if (requestBody.username == result.phoneNumber) {
-            update.phoneVerified = true;
+        try {
+          const result = await this.userService.findByUsername(phoneNumber);
+          const isValid = await new OtpService().isTokenValid(
+            requestBody.token,
+            requestBody.code,
+          );
+          if (isValid) {
+            const payload = {
+              sub: result.id,
+              email: result.email,
+              phoneNumber: result.phoneNumber,
+            };
+            const update: any = {};
+            if (requestBody.username == result.phoneNumber) {
+              update.phoneVerified = true;
+            }
+            if (requestBody.username == result.email) {
+              update.verified = true;
+            }
+            update.active = true;
+            await this.userService.updateUser(update, result.id);
+            const userInfo = await this.userService.findById(result.id);
+            const token = await this.jwtService.signAsync(payload);
+            return this.responseService.success({
+              access_token: token,
+              expires_in: this.configService.get<string>(
+                CONFIG_KEYS.JWT_EXPIRATION_TIME,
+              ),
+              user_info: userInfo,
+            });
+          } else {
+            return this.responseService.unauthorized('Invalid OTP');
           }
-          if (requestBody.username == result.email) {
-            update.verified = true;
-          }
-          update.active = true;
-          await this.userService.updateUser(update, result.id);
-          const userInfo = await this.userService.findById(result.id);
-          const token = await this.jwtService.signAsync(payload);
-          return this.responseService.success({
-            access_token: token,
-            expires_in: this.configService.get<string>(
-              CONFIG_KEYS.JWT_EXPIRATION_TIME,
-            ),
-            user_info: userInfo,
-          });
-        } else {
-          return this.responseService.unauthorized('Invalid OTP');
+        } catch (e) {
+          return this.responseService.unauthorized('invalid username');
         }
       } catch (e) {
         return this.responseService.unauthorized('invalid username');
@@ -415,9 +418,9 @@ export class AuthController {
         const result = await this.userService.findByUsername(
           requestBody.username,
         );
-        if (!result) {
-          return this.responseService.unauthorized('Invalid username/password');
-        }
+        // if (!result) {
+        //   return this.responseService.unauthorized('Invalid username/password');
+        // }
         if (!result.active) {
           return this.responseService.unauthorized('Account not activated yet');
         }
@@ -425,8 +428,8 @@ export class AuthController {
           return this.responseService.unauthorized('No Records found');
         }
         return this.processOtp(requestBody.username, result);
-      } catch {
-        return this.responseService.badRequest('invalid username');
+      } catch (e) {
+        return this.responseService.unauthorized('invalid username ');
       }
     } catch (e) {
       console.log(e);
@@ -471,7 +474,7 @@ export class AuthController {
         if (result.error == 2)
           return this.responseService.exception(result.body);
         return this.responseService.success('Password reset successfully');
-      } catch {
+      } catch (e) {
         return this.responseService.unauthorized('invalid username');
       }
     } catch (e) {
@@ -497,10 +500,13 @@ export class AuthController {
   @Post('password-reset/verify-otp')
   async passwordResetVerifyOtp(@Body() payload: UserOtpVerification) {
     try {
-      const result = await this.userService.findByUsername(payload.username);
-      if (!result) {
+      try {
+        const result = await this.userService.findByUsername(payload.username);
+      } catch (e) {
         return this.responseService.notFound('User not found');
       }
+      // if (!result) {
+      // }
 
       const isValid = await new OtpService().isTokenValid(
         payload.token,
