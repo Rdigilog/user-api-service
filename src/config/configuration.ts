@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 // import { registerAs } from '@nestjs/config';
+// import { logger } from 'handlebars';
 import { AwsSecretsService } from './aws-secrets.service';
+// import { Logger } from '@nestjs/common';
 
 export interface Configuration {
   port: number;
@@ -24,6 +26,11 @@ export interface Configuration {
     user: string;
     pass: string;
   };
+  firebase: {
+    projectId: string;
+    privateKey: string;
+    clientEmail: string;
+  };
 }
 
 /**
@@ -32,34 +39,40 @@ export interface Configuration {
 export async function getConfigValues(): Promise<Partial<Configuration>> {
   // When working locally, use local environment in .env file
 
-  const nodeEnv = process.env.NODE_ENV || 'production';
+  // const nodeEnv = process.env.NODE_ENV || 'production';
   // console.log(nodeEnv)
   // For local development, use environment variables
-  if (nodeEnv === 'local') {
-    return {
-      port: parseInt(process.env.PORT || '3001', 10),
-      nodeEnv: process.env.NODE_ENV || 'local',
-      frontendUrl: process.env.FRONTEND_URL || '',
-      jwt: {
-        secret: process.env.JWT_SECRET || '',
-        expirationTime: process.env.JWT_EXPIRATION_TIME || '1h',
-      },
-      database: {
-        url: process.env.DATABASE_URL || '',
-        replicaUrl: process.env.DATABASE_URL_REPLICA || '',
-        autoMigrate: process.env.AUTO_MIGRATE || 'false',
-      },
-      redis: {
-        url: process.env.REDIS_URL || '',
-      },
-      mail: {
-        host: process.env.MAIL_HOST || '',
-        port: parseInt(process.env.MAIL_PORT || '465', 10),
-        user: process.env.MAIL_USER || '',
-        pass: process.env.MAIL_PASS || '',
-      },
-    };
-  }
+  // if (nodeEnv === 'local') {
+  // Logger.log(process.env);
+  return {
+    port: parseInt(process.env.PORT || '3001', 10),
+    nodeEnv: process.env.NODE_ENV || 'local',
+    frontendUrl: process.env.FRONTEND_URL || '',
+    jwt: {
+      secret: process.env.JWT_SECRET || '',
+      expirationTime: process.env.JWT_EXPIRATION_TIME || '1h',
+    },
+    database: {
+      url: process.env.DATABASE_URL || '',
+      replicaUrl: process.env.DATABASE_URL_REPLICA || '',
+      autoMigrate: process.env.AUTO_MIGRATE || 'false',
+    },
+    redis: {
+      url: process.env.REDIS_URL || '',
+    },
+    mail: {
+      host: process.env.MAIL_HOST || '',
+      port: parseInt(process.env.MAIL_PORT || '465', 10),
+      user: process.env.MAIL_USER || '',
+      pass: process.env.MAIL_PASS || '',
+    },
+    firebase: {
+      projectId: process.env.FIREBASE_PROJECT_ID || '',
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL || '',
+      privateKey: process.env.FIREBASE_PRIVATE_KEY || '',
+    },
+  };
+  // }
 
   // For development and production, use AWS Secrets Manager
   try {
@@ -126,6 +139,11 @@ export default async (): Promise<Configuration> => {
       port: config.mail?.port || 465,
       user: config.mail?.user || '',
       pass: config.mail?.pass || '',
+    },
+    firebase: {
+      projectId: config.firebase?.projectId || '',
+      clientEmail: config.firebase?.clientEmail || '',
+      privateKey: config.firebase?.privateKey || '',
     },
   };
 };
