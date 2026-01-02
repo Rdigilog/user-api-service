@@ -37,8 +37,6 @@ import { InjectFileRemovalQueue } from 'src/queue/src/decorators/queue.decorator
 @Injectable()
 export class UserService {
   constructor(
-    // @Inject('FIREBASE_ADMIN')
-    // private readonly firebaseAdmin: typeof admin,
     @InjectMailQueue() private mailQueue: Queue,
     @InjectSMSQueue() private smsQueue: Queue,
     @InjectFileRemovalQueue() private fileRemovalQueue: Queue,
