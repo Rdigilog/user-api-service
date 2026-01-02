@@ -45,7 +45,7 @@ import { ApiResponseDto } from 'src/models/responses/generic.dto';
 import { AuthResponseDto, TokenDataDto } from 'src/models/responses/Login.dto';
 import { AuthUser } from 'src/decorators/logged-in-user-decorator';
 import type { LoggedInUser } from 'src/models/types/user.types';
-// import * as admin from 'firebase-admin';
+import * as admin from 'firebase-admin';
 import { FirebaseAuthError } from 'node_modules/firebase-admin/lib/utils/error';
 // import { FirebaseAuthError } from 'firebase-admin/lib/utils/error'
 
@@ -53,8 +53,8 @@ import { FirebaseAuthError } from 'node_modules/firebase-admin/lib/utils/error';
 @Controller('auth')
 export class AuthController {
   constructor(
-    // @Inject('FIREBASE_ADMIN')
-    // private readonly firebaseAdmin: typeof admin,
+    @Inject('FIREBASE_ADMIN')
+    private readonly firebaseAdmin: typeof admin,
     private readonly userService: UserService,
     private readonly responseService: ResponsesService,
     private readonly jwtService: JwtService,
@@ -84,40 +84,40 @@ export class AuthController {
         body: 'This signup option not functional yet',
       };
 
-      // if (payload.type == 'SOCIAL') {
-      //   if (!payload.idToken)
-      //     return this.responseService.badRequest(
-      //       'No token provided for social logi',
-      //     );
+      if (payload.type == 'SOCIAL') {
+        if (!payload.idToken)
+          return this.responseService.badRequest(
+            'No token provided for social logi',
+          );
 
-      //   const result = await this.validateToken(payload.idToken);
+        const result = await this.validateToken(payload.idToken);
 
-      //   const responseResult = await this.userService.socialAuth(result);
+        const responseResult = await this.userService.socialAuth(result);
 
-      //   if (responseResult) {
-      //     const userInfo = await this.userService.findById(responseResult.id);
+        if (responseResult) {
+          const userInfo = await this.userService.findById(responseResult.id);
 
-      //     const jwtPayload = {
-      //       sub: responseResult.id,
-      //       email: responseResult.email,
-      //       phoneNumber: responseResult.phoneNumber,
-      //     };
+          const jwtPayload = {
+            sub: responseResult.id,
+            email: responseResult.email,
+            phoneNumber: responseResult.phoneNumber,
+          };
 
-      //     const token = await this.jwtService.signAsync(jwtPayload);
+          const token = await this.jwtService.signAsync(jwtPayload);
 
-      //     return this.responseService.success({
-      //       access_token: token,
-      //       expires_in: this.configService.get<string>(
-      //         CONFIG_KEYS.JWT_EXPIRATION_TIME,
-      //       ),
-      //       user_info: userInfo,
-      //     });
-      //   } else {
-      //     return this.responseService.exception(
-      //       'Login failed pls try again later',
-      //     );
-      //   }
-      // }
+          return this.responseService.success({
+            access_token: token,
+            expires_in: this.configService.get<string>(
+              CONFIG_KEYS.JWT_EXPIRATION_TIME,
+            ),
+            user_info: userInfo,
+          });
+        } else {
+          return this.responseService.exception(
+            'Login failed pls try again later',
+          );
+        }
+      }
 
       if (payload.type == 'NON_SOCIAL') {
         result = await this.userService.createAccount(payload);
@@ -562,23 +562,23 @@ export class AuthController {
     );
   }
 
-  // async validateToken(idToken: string) {
-  //   try {
-  //     const result = await this.firebaseAdmin.auth().verifyIdToken(idToken);
-  //     const names = this.utilService.splitFullName(result.name);
-  //     const requestBody: SocialLoginRequest = {
-  //       provider: result.firebase.sign_in_provider,
-  //       email: result.email || '',
-  //       providerId: result.uid,
-  //       firstName: names.firstName,
-  //       lastName: names.lastName,
-  //     };
-  //     return requestBody;
-  //   } catch (error) {
-  //     if (error instanceof FirebaseAuthError) {
-  //       console.error(error.code, error.message);
-  //     }
-  //     throw error;
-  //   }
-  // }
+  async validateToken(idToken: string) {
+    try {
+      const result = await this.firebaseAdmin.auth().verifyIdToken(idToken);
+      const names = this.utilService.splitFullName(result.name);
+      const requestBody: SocialLoginRequest = {
+        provider: result.firebase.sign_in_provider,
+        email: result.email || '',
+        providerId: result.uid,
+        firstName: names.firstName,
+        lastName: names.lastName,
+      };
+      return requestBody;
+    } catch (error) {
+      if (error instanceof FirebaseAuthError) {
+        console.error(error.code, error.message);
+      }
+      throw error;
+    }
+  }
 }
