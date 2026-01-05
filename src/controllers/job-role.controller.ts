@@ -43,6 +43,9 @@ export class JobRoleController {
     @AuthComapny() company: activeCompaany,
   ) {
     try {
+      if (!company) {
+        return this.responseService.badRequest('No company specified');
+      }
       const result = await this.service.all(company.id);
       if (result.error == 2) {
         return this.responseService.exception(result.body);

@@ -7,7 +7,7 @@ import {
   Get,
   Patch,
   UseGuards,
-  Request,
+  // Request,
   Body,
   Query,
   Param,
@@ -71,6 +71,9 @@ export class UserController {
     @Query('role') role?: string,
   ) {
     try {
+      if (!company) {
+        return this.responseService.badRequest('No company specified');
+      }
       const result = await this.service.companyList(
         page,
         size,
@@ -259,7 +262,7 @@ export class UserController {
       );
       const result = await this.service.updateUser(
         { password: hashPassword },
-        user.id,
+        user.id as string,
       );
       if (result.error == 1)
         return this.responseService.badRequest(result.body);

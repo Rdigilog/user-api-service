@@ -442,7 +442,7 @@ export class UserService {
   }
 
   async findById(id: string, includePassword = false) {
-    return await this.prisma.user.findUnique({
+    const result = await this.prisma.user.findUnique({
       where: { id },
       select: {
         id: true,
@@ -452,10 +452,50 @@ export class UserService {
         profile: true,
         password: includePassword,
         userRole: {
-          select: { companyId: true, role: true, company: true },
+          select: {
+            companyId: true,
+            role: {
+              select: {
+                id: true,
+                name: true,
+                rolePermission: {
+                  select: {
+                    permission: {
+                      select: {
+                        id: true,
+                        name: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            company: {
+              select: {
+                id: true,
+                name: true,
+                aboutMe: true,
+                heardAboutUs: true,
+                totalEmployee: true,
+                address: true,
+              },
+            },
+          },
         },
       },
     });
+
+    const userRole = result?.userRole.map((ur) => ({
+      ...ur,
+      role: {
+        ...ur.role,
+        rolePermission: ur.role.rolePermission.map((rp) => ({
+          ...rp.permission,
+        })),
+      },
+    }));
+
+    return { ...result, userRole };
   }
 
   async updateUser(payload: any, id: string) {

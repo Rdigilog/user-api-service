@@ -87,7 +87,7 @@ export class AuthController {
       if (payload.type == 'SOCIAL') {
         if (!payload.idToken)
           return this.responseService.badRequest(
-            'No token provided for social logi',
+            'No token provided for social login',
           );
 
         const result = await this.validateToken(payload.idToken);
@@ -331,7 +331,7 @@ export class AuthController {
       );
       if (isMatch) {
         const userInfo = await this.userService.findById(result.id);
-        if (userInfo?.userRole.some((r) => r.role.name == 'SUPER_ADMIN')) {
+        if (userInfo?.userRole?.some((r) => r.role.name == 'SUPER_ADMIN')) {
           return this.processOtp(requestBody.username as string, result);
         }
 
