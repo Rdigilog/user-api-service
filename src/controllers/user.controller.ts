@@ -107,23 +107,6 @@ export class UserController {
     }
   }
 
-  @Get('/:userId')
-  async getUser(
-    @Param('userId') userId: string,
-    // @AuthUser() user: LoggedInUser,
-  ) {
-    try {
-      // console.log(user.id);
-      const result = await this.service.view(userId);
-      if (result.error == 2)
-        return this.responseService.notFound('no user found');
-
-      return this.responseService.success(result.body);
-    } catch (e: any) {
-      return this.responseService.exception(e?.message);
-    }
-  }
-
   @Delete('/:userId')
   async archivedUser(
     @Param('userId') userId: string,
@@ -455,6 +438,43 @@ export class UserController {
       return this.responseService.success('MFA disabled successfully');
     } catch (e) {
       return this.responseService.exception(e.message);
+    }
+  }
+
+  @Get('/permissions')
+  @RouteName('permission.list')
+  async getAllPermissions(
+    @AuthUser() user: LoggedInUser,
+    @AuthComapny() company: activeCompaany,
+  ) {
+    try {
+      const result = await this.service.userPermissions(user.id, company.id);
+      if (result.error == 2) {
+        return this.responseService.exception(result.body);
+      }
+      if (result.error == 1) {
+        return this.responseService.badRequest(result.body);
+      }
+      return this.responseService.success(result.body);
+    } catch (e) {
+      return this.responseService.exception(e.message);
+    }
+  }
+
+  @Get('/:userId')
+  async getUser(
+    @Param('userId') userId: string,
+    // @AuthUser() user: LoggedInUser,
+  ) {
+    try {
+      // console.log(user.id);
+      const result = await this.service.view(userId);
+      if (result.error == 2)
+        return this.responseService.notFound('no user found');
+
+      return this.responseService.success(result.body);
+    } catch (e: any) {
+      return this.responseService.exception(e?.message);
     }
   }
 }

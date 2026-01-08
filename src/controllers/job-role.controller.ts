@@ -17,11 +17,11 @@ import {
   // ApiQuery,
   ApiOperation,
 } from '@nestjs/swagger';
-import { AuthUser, AuthComapny } from 'src/decorators/logged-in-user-decorator';
+import { AuthComapny } from 'src/decorators/logged-in-user-decorator';
 import { RouteName } from 'src/decorators/route-name.decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
 // import { CreateJobRoleDto } from 'src/models/company/job-role.dto';
-import type { activeCompaany, LoggedInUser } from 'src/models/types/user.types';
+import type { activeCompaany } from 'src/models/types/user.types';
 import { JobRoleService } from 'src/services/job-role.service';
 import { ResponsesService } from 'src/utils/services/responses.service';
 
@@ -39,7 +39,7 @@ export class JobRoleController {
   @ApiOperation({ summary: 'List all job roles with pagination and search' })
   @Get()
   async list(
-    @AuthUser() user: LoggedInUser,
+    // @AuthUser() user: LoggedInUser,
     @AuthComapny() company: activeCompaany,
   ) {
     try {

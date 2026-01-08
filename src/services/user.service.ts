@@ -1334,4 +1334,28 @@ export class UserService {
       where: { id: companyId },
     });
   }
+
+  async userPermissions(userId: string, companyId: string) {
+    try {
+      const result = await this.prisma.permission.findMany({
+        where: {
+          permissionRolePermission: {
+            some: {
+              role: {
+                userRoles: {
+                  some: {
+                    userId,
+                    companyId,
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+      return { error: 0, body: result };
+    } catch (e) {
+      return this.responseService.errorHandler(e);
+    }
+  }
 }
